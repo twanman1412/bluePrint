@@ -8,33 +8,41 @@ code-block {
 	overflow-x: auto;
 }
 
-keyword {
+bp-keyword {
 	color: #A020F0;
 	font-weight: bold;
 }
 
-string {
+bp-string {
 	color: #228B22;
 }
 
-number,
-boolean {
+bp-number,
+bp-boolean {
 	color: #BA8E23;
 }
 
-boolean {
+bp-boolean {
 	font-weight: bold;
 }
 
-class {
+bp-class {
 	color: #026440;
 	font-weight: bold;
 }
 
-attribute {
+bp-attribute {
 	color: #00008B;
 }
 
-static {
+bp-static {
 	color: #8B0000;
+}
+
+bp-comment {
+	color: #AAA;
+}
+
+bp-error {
+	color: #F00;
 }

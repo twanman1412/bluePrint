@@ -11,12 +11,16 @@ class BooleanElement extends HTMLElement { }
 class Class extends HTMLElement { }
 class Attribute extends HTMLElement { }
 class Static extends HTMLElement { }
+class Comment extends HTMLElement { }
+class Error extends HTMLElement { }
 
 customElements.define('code-block', CodeBlock);
-customElements.define('keyword', Keyword);
-customElements.define('string', StringElement);
-customElements.define('number', NumberElement);
-customElements.define('boolean', BooleanElement);
-customElements.define('class', Class);
-customElements.define('attribute', Attribute);
-customElements.define('static', Static);
+customElements.define('pb-keyword', Keyword);
+customElements.define('pb-string', StringElement);
+customElements.define('pb-number', NumberElement);
+customElements.define('pb-boolean', BooleanElement);
+customElements.define('pb-class', Class);
+customElements.define('pb-attribute', Attribute);
+customElements.define('pb-static', Static);
+customElements.define('pb-comment', Comment);
+customElements.define('pb-error', Error);
