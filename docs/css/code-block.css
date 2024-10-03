@@ -1,0 +1,40 @@
+code-block {
+	display: block;
+	background-color: #f5f5f5;
+	border-left: 5px solid #007BFF;
+	padding: 10px;
+	margin: 20px 0;
+	font-family: 'Courier New', Courier, monospace;
+	overflow-x: auto;
+}
+
+keyword {
+	color: #A020F0;
+	font-weight: bold;
+}
+
+string {
+	color: #228B22;
+}
+
+number,
+boolean {
+	color: #BA8E23;
+}
+
+boolean {
+	font-weight: bold;
+}
+
+class {
+	color: #026440;
+	font-weight: bold;
+}
+
+attribute {
+	color: #00008B;
+}
+
+static {
+	color: #8B0000;
+}
