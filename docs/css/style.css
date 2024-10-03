@@ -63,3 +63,26 @@ body {
 	position: absolute;
 	bottom: 0;
 }
+
+.nested {
+	display: none;
+	margin-left: 20px;
+}
+
+.collapsible {
+	cursor: pointer;
+	/* Change cursor to pointer for collapsible links */
+}
+
+.triangle {
+	margin-right: 5px;
+	/* Space between triangle and text */
+	transition: transform 0.3s;
+	/* Smooth transition for rotation */
+}
+
+/* Rotate the triangle when the nested list is visible */
+.collapsible.active .triangle {
+	transform: rotate(90deg);
+	/* Rotate right triangle to point down */
+}

@@ -8,4 +8,20 @@ document.addEventListener('DOMContentLoaded', function() {
 			targetSection.scrollIntoView({ behavior: 'smooth' });
 		});
 	});
+
+	const collapsibleLinks = document.querySelectorAll('.collapsible');
+	collapsibleLinks.forEach(link => {
+		link.addEventListener('click', function(e) {
+			e.preventDefault();
+			const nestedList = this.nextElementSibling;
+
+			if (nestedList.style.display === 'block') {
+				nestedList.style.display = 'none';
+				this.classList.remove('active');
+			} else {
+				nestedList.style.display = 'block';
+				this.classList.add('active');
+			}
+		});
+	});
 });
