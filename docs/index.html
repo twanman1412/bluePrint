@@ -19,50 +19,109 @@
 		<div class="sidebar">
 			<h1>BluePrint</h1>
 			<ul id="doc-list">
-				<li><a href="#section1">Section 1</a></li>
+				<!-- Collapsable triangle			!-->
+				<!-- <span class="triangle">&#9654;</span> !-->
+				<li>
+					<a href="#section1" class="collapsible">
+						<span class="triangle">&#9654;</span> Conventions
+					</a>
+					<ul class="nested">
+						<li><a href="#section1.1">File names</a></li>
+						<li><a href="#section1.2">Comments</a></li>
+						<li><a href="#section1.3">Line endings</a></li>
+					</ul>
+				</li>
+				<!--
 				<li>
 					<a href="#section2" class="collapsible">
-						<span class="triangle">&#9654;</span> Section 2
+						<span class="triangle">&#9654;</span> Variables
 					</a>
 					<ul class="nested">
 						<li>
-							<a href="#subsection1" class="collapsible">
-								<span class="triangle">&#9654;</span> Subsection 1
+							<a href="#section2.1" class="collapsible">
+								<span class="triangle">&#9654;</span> Numbers
 							</a>
 							<ul class="nested">
-								<li>
-									<a href="#subsubsection1">Subsubsection 1</a>
+								<li><a href="#section2.1.1">Integers</a></li>
+								<li><a href="#section2.1.2">Floating point numbers</a>
 								</li>
-								<li><a href="#subsubsection2">Subsubsection 2</a></li>
+								<li><a href="#section2.1.3">Double precision numbers</a>
+								</li>
 							</ul>
 						</li>
-						<li><a href="#subsection2">Subsection 2</a></li>
+						<li><a href="#section2.2">Characters</a></li>
+						<li><a href="#section2.3">Booleans</a></li>
 					</ul>
 				</li>
-				<li><a href="#section3">Section 3</a></li>
+				!-->
 			</ul>
 			<div class="credits">
 				<p>By: <a href="https://github.com/twanman1412" target="_blank">Twanman1412</a></p>
 			</div>
 		</div>
 		<div class="content">
-			<h2 id="section1">Section 1</h2>
+			<h2 id="setcion1">Conventions</h2>
 
+			<h3 id="section1.1">File names</h3>
+			<p>A bluePrint file has the file extention '.bp'. Files without the '.bp' extention will be
+				ignored by the compiler.
+
+			<h3 id="section1.2">Comments</h3>
+			<p>A comment is text within the code that is ignored by the compiler. They can be used as hints
+				and descriptions in your code.</p>
+			<p>A single-line comment is started with an '#' and ends at the end of the line.</p>
+			<p>A multi-line comment starts with '-#' and ends with '#-'.</p>
+			<p>For example:</p>
 			<code-block>
-				<keyword>keyword</keyword><br>
-				<string>string</string><br>
-				<number>number</number><br>
-				<boolean>boolean</boolean><br>
-				<class>class</class><br>
-				<attribute>attribute</attribute><br>
-				<static>static</static><br>
+				<bp-comment># This is a single line comment</bp-comment><br>
+				<br>
+				<bp-comment>-#<br>
+					This is a multi line comment.<br>
+					It continues on the line below!<br>
+					#-</bp-comment>
 			</code-block>
 
-			<h2 id="section2">Section 2</h2>
-			<p>Content for section 2 goes here.</p>
 
-			<h2 id="section3">Section 3</h2>
-			<p>Content for section 3 goes here.</p>
+			<h3 id="section1.3">Line endings</h3>
+			<p>Every line in a bluePrint file, except for comments, must end with an ';' to indicate the
+				line ending. The only exception to this rule are <a href="">attributes</a> of <a
+					href="">classes</a>, which are explained in their respective sections.</p>
+			<code-block>
+				<bp-comment># Line ended with ';'</bp-comment><br>
+				<bp-keyword>int</bp-keyword> myInt = <bp-number>10</bp-number>;<br>
+				<br>
+				<bp-comment># Line not ended with ';'</bp-comment><br>
+				<bp-keyword>int</bp-keyword> myInt = <bp-number>10</bp-number><br>
+				<bp-error>Syntax Error MyBluePrintFile.bp: <br>
+					4:15 -> ';' expected
+				</bp-error>
+			</code-block>
+
+			<!--
+			<h2 id="section2">Variables</h2>
+
+			<h3 id="section2.1">Numbers</h3>
+
+			<h4 id="section2.1.1">Integers</h4>
+			<p>An integer in BluePrint is a 32-bit integer. This means that an integer can
+				be a
+				whole number
+				between -2^31 and 2^31 - 1.</p>
+			<p>An integer can be defined as following:</p>
+			<code-block>
+				<bp-comment># Definition and declaration</bp-comment><br>
+				<bp-keyword>int</bp-keyword> myInt = <bp-number>10</bp-number>;
+			</code-block>
+
+			<h4 id="section2.1.2">Floating point numbers</h4>
+
+			<h4 id="section2.1.3">Double precision numbers</h4>
+
+			<h3 id="section2.2">Characters</h3>
+
+			<h3 id="section2.3">Booleans</h3>
+!-->
+
 		</div>
 	</div>
 </body>
