@@ -31,7 +31,8 @@ bp-class {
 	font-weight: bold;
 }
 
-bp-attribute {
+bp-attribute,
+bp-character {
 	color: #00008B;
 }
 

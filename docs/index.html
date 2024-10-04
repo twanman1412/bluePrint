@@ -177,13 +177,19 @@
 			<h4 id="section2.1.4">Long integers</h4>
 			<p>A long integer is a 64-bit integer. This means that a long integer can eb a whole number
 				between -2^63 and 2^63 - 1.</p>
-			<p>A long integer can be defined as following:</p>
+			<p>A long integer can be declared and defined as following:</p>
 			<code-block>
-				<bp-comment># Defining a long</bp-comment><br>
+				<bp-comment># Declaring a long</bp-comment><br>
+				<bp-keyword>long</bp-keyword> myLong;<br>
+				<br>
+				<bp-comment># Declaring and defining a long</bp-comment><br>
 				<bp-keyword>long</bp-keyword> myLong = <bp-number>12345678901234567890</bp-number>;<br>
 				<br>
-				<bp-comment># Defining a Long</bp-comment><br>
-				<bp-keyword>Long</bp-keyword> myLong = <bp-number>12345678901234567890</bp-number>;<br>
+				<bp-comment># Declaring a Long</bp-comment><br>
+				<bp-class>Long</bp-class> myLong;<br>
+				<br>
+				<bp-comment># Declaring and defining a Long</bp-comment><br>
+				<bp-class>Long</bp-class> myLong = <bp-number>12345678901234567890</bp-number>;<br>
 			</code-block>
 			<p>The difference between using 'long' and 'Long' is explained in <a href=""><strong>primitive
 						and non-primitive types (tba)</strong></a>.
