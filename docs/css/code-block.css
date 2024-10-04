@@ -47,3 +47,8 @@ bp-comment {
 bp-error {
 	color: #F00;
 }
+
+inline-code {
+	background-color: #f5f5f5;
+	font-family: 'Courier New', Courier, monospace;
+}

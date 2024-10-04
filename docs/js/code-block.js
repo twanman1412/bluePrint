@@ -15,6 +15,8 @@ class Comment extends HTMLElement { }
 class Error extends HTMLElement { }
 class Character extends HTMLElement { }
 
+class InlineCode extends HTMLElement { }
+
 customElements.define('code-block', CodeBlock);
 customElements.define('pb-keyword', Keyword);
 customElements.define('pb-string', StringElement);
@@ -26,3 +28,5 @@ customElements.define('pb-static', Static);
 customElements.define('pb-comment', Comment);
 customElements.define('pb-error', Error);
 customElements.define('pb-character', Character);
+
+customElements.define('inline-code', InlineCode);
