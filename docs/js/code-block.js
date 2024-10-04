@@ -13,6 +13,7 @@ class Attribute extends HTMLElement { }
 class Static extends HTMLElement { }
 class Comment extends HTMLElement { }
 class Error extends HTMLElement { }
+class Character extends HTMLElement { }
 
 customElements.define('code-block', CodeBlock);
 customElements.define('pb-keyword', Keyword);
@@ -24,3 +25,4 @@ customElements.define('pb-attribute', Attribute);
 customElements.define('pb-static', Static);
 customElements.define('pb-comment', Comment);
 customElements.define('pb-error', Error);
+customElements.define('pb-character', Character);
