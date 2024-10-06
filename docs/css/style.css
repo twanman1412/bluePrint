@@ -14,11 +14,12 @@ body {
 
 .sidebar {
 	width: 250px;
-	background-color: rgba(255, 255, 255, 0.6);
+	background-color: rgba(255, 255, 255, 0);
 	padding: 20px;
 	box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 
 	border-right: 2px solid black;
+	color: #fff;
 }
 
 .sidebar h1 {
@@ -36,8 +37,20 @@ body {
 }
 
 .sidebar ul li a {
+	color: #fff;
 	text-decoration: none;
-	color: #007BFF;
+}
+
+.sidebar div {
+	font-size: 0.8em;
+}
+
+.sidebar a {
+	color: #aaf;
+}
+
+.sidebar div a {
+	color: #aaf;
 }
 
 .content {
