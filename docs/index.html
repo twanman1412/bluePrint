@@ -66,6 +66,8 @@
 		</div>
 		<div class="content">
 			<h2 id="section1">Conventions</h2>
+			<p>Conventions are standard ways of doing things in bluePrint. There are very basic principles need to write
+				and understand bluePrint files</p>
 
 			<h3 id="section1.1">File names</h3>
 			<p>A bluePrint file has the file extention <inline-code>.bp</inline-code>. Files without the
@@ -94,8 +96,8 @@
 			<h3 id="section1.3">Line endings</h3>
 			<p>Every line in a bluePrint file, except for comments, must end with an
 				<inline-code>;</inline-code> to indicate the
-				line ending. The only exception to this rule are <a href="">attributes</a> of <a
-					href="">classes</a>, which are explained in their respective sections.
+				line ending. The only exception to this rule are <a href="">attributes</a> of <a href="">classes</a>,
+				which are explained in their respective sections.
 			</p>
 			<code-block>
 				<bp-comment># Line ended with ';'</bp-comment><br>
@@ -103,8 +105,7 @@
 				<br>
 				<bp-comment># Line not ended with ';'</bp-comment><br>
 				<bp-keyword>int</bp-keyword> myInt = <bp-number>10</bp-number><br>
-				<bp-error>Syntax Error MyBluePrintFile.bp: <br>
-					4:15 -> ';' expected
+				<bp-error>Syntax Error: ';' expected
 				</bp-error>
 			</code-block>
 
@@ -140,8 +141,14 @@
 			</code-block>
 
 			<h2 id="section2">Variables</h2>
+			<p>Variables are objects that have a name and a value. Variable can store any value that is the same type as
+				their type, and can be changed at any time. When using a variable you can use the name of the variable,
+				and the program will know to use the value stored in the variable.</p>
 
 			<h3 id="section2.1">Numbers</h3>
+			<p>The number type variables are variables that hold numbers. Since there are many types and ways to store
+				numbers in a computer, the number types have been split up into several different number types, each
+				having their own usage.</p>
 
 			<h4 id="section2.1.1">Integers</h4>
 			<p>An integer in BluePrint is a 32-bit integer. This means that an integer can
@@ -162,8 +169,7 @@
 				<bp-class>Integer</bp-class> myInt = <bp-number>10</bp-number>;<br>
 			</code-block>
 			<p>The difference between using <inline-code><bp-keyword>int</bp-keyword></inline-code> and
-				<inline-code><bp-class>Integer</bp-class></inline-code> is explained in <a
-					href=""><strong>primitive
+				<inline-code><bp-class>Integer</bp-class></inline-code> is explained in <a href=""><strong>primitive
 						and non-primitive types (tba)</strong></a>.
 
 			<h4 id="section2.1.2">Floating point numbers</h4>
@@ -189,8 +195,7 @@
 				<bp-class>Float</bp-class> myFloat = <bp-number>10.124356</bp-number>;<br>
 			</code-block>
 			<p>The difference between using <inline-code><bp-keyword>float</bp-keyword></inline-code> and
-				<inline-code><bp-class>Float</bp-class></inline-code> is explained in <a
-					href=""><strong>primitive
+				<inline-code><bp-class>Float</bp-class></inline-code> is explained in <a href=""><strong>primitive
 						and non-primitive types (tba)</strong></a>.
 
 			<h4 id="section2.1.3">Double precision numbers</h4>
@@ -217,8 +222,7 @@
 				<bp-class>Double</bp-class> myDouble = <bp-number>10.1234567890</bp-number>;<br>
 			</code-block>
 			<p>The difference between using <inline-code><bp-keyword>double</bp-keyword></inline-code> and
-				<inline-code><bp-class>Double</bp-class></inline-code> is explained in <a
-					href=""><strong>primitive
+				<inline-code><bp-class>Double</bp-class></inline-code> is explained in <a href=""><strong>primitive
 						and non-primitive types (tba)</strong></a>.
 
 			<h4 id="section2.1.4">Long integers</h4>
@@ -239,16 +243,15 @@
 				<bp-class>Long</bp-class> myLong = <bp-number>12345678901234567890</bp-number>;<br>
 			</code-block>
 			<p>The difference between using <inline-code><bp-keyword>long</bp-keyword></inline-code> and
-				<inline-code><bp-class>Long</bp-class></inline-code> is explained in <a
-					href=""><strong>primitive
+				<inline-code><bp-class>Long</bp-class></inline-code> is explained in <a href=""><strong>primitive
 						and non-primitive types (tba)</strong></a>.
 
 			<h3 id="section2.2">Characters</h3>
 			<p>A character is a 8-bit integer. This means that a char can be a whole number between
 				<inline-code>-128</inline-code> and
 				<inline-code>127</inline-code>. The numbers <inline-code>0</inline-code> to
-				<inline-code>127</inline-code> directly map to the <a
-					href="https://www.ascii-code.com/ASCII">ASCII characters</a>. Characters within
+				<inline-code>127</inline-code> directly map to the <a href="https://www.ascii-code.com/ASCII">ASCII
+					characters</a>. Characters within
 				that range will be used as their ASCII character, and can be assigned as their ASCII
 				character.
 			</p>
@@ -273,8 +276,7 @@
 				<bp-class>Char</bp-class> myChar = <bp-character>'a'</bp-character>;<br>
 			</code-block>
 			<p>The difference between using <inline-code><bp-keyword>char</bp-keyword></inline-code> and
-				<inline-code><bp-class>Char</bp-class></inline-code> is explained in <a
-					href=""><strong>primitive
+				<inline-code><bp-class>Char</bp-class></inline-code> is explained in <a href=""><strong>primitive
 						and non-primitive types (tba)</strong></a>.
 
 			<h3 id="section2.3">Booleans</h3>
