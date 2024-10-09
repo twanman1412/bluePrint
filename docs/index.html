@@ -28,6 +28,13 @@
 						<li><a href="#section1.2">Comments</a></li>
 						<li><a href="#section1.3">Line endings</a></li>
 						<li><a href="#section1.4">Declaration and definition</a></li>
+						<li><a href="#section1.5" class="collapsible">
+								Scope <span class="plus">+</span>
+							</a>
+							<ul class="nested">
+								<li><a href="#section1.5.1">Code blocks</a></li>
+							</ul>
+						</li>
 					</ul>
 				</li>
 				<li>
@@ -105,6 +112,32 @@
 			<p>In blueprint if an object is created is is declared, but not defined. An object is only
 				defined when a value is written to the object. When using an object that has not been
 				defined it will have a value of <inline-code>undefined</inline-code>.</p>
+
+			<h3 id="section1.5">Scope</h3>
+			<p>The scope of an object is the part of the current file in which the object can be used. If an object is
+				referenced outside its scope, it will not be defined ,since it is not part of the current scope, and the
+				program will throw an error.</p>
+
+			<h4 id="section1.5.1">Code blocks</h4>
+			<p>The current scope can be decreased by declaring a code block using curcly-braces,
+				<inline-code>{}</inline-code>. The scope of objects within the code block is the code block, and the
+				code block is no longer part of the global scope.
+			</p>
+			<code-block>
+				<bp-comment># Declaring a code block</bp-comment><br>
+				{<br>
+				<bp-indent></bp-indent><bp-keyword>int</bp-keyword> number;<br>
+				<br>
+				<bp-indent></bp-indent><bp-comment># Using the object within scope</bp-comment><br>
+				<bp-indent></bp-indent><bp-keyword>int</bp-keyword> doubled_number = <bp-number>2</bp-number> *
+				number;<br>
+				}<br>
+				<br>
+				<bp-comment># Using the object outside scope</bp-comment><br>
+				<bp-keyword>int</bp-keyword> doubled_number = <bp-number>2</bp-number> *
+				number;<br>
+				<bp-error>Error: variable number is not defined</bp-error>
+			</code-block>
 
 			<h2 id="section2">Variables</h2>
 
