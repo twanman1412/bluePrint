@@ -82,16 +82,20 @@ body {
 	margin-left: 20px;
 }
 
-.collapsible {
+a.collapsible {
+	display: flex;
 	cursor: pointer;
-	/* Change cursor to pointer for collapsible links */
+	justify-content: space-between;
+
 }
 
-.triangle {
-	margin-right: 5px;
-	/* Space between triangle and text */
-	transition: transform 0.3s;
-	/* Smooth transition for rotation */
+span.plus {
+	right: 0px;
+
+	height: 0.5em;
+	font-size: 2em;
+
+	translate: 0 -0.25em;
 }
 
 /* Rotate the triangle when the nested list is visible */
