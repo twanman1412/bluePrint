@@ -59,6 +59,7 @@
 						<li><a href="#section2.3">Booleans</a></li>
 					</ul>
 				</li>
+				<li><a href="#section3">Functions and methods</a></li>
 			</ul>
 			<div class="credits">
 				<p>By: <a href="https://github.com/twanman1412" target="_blank">Twanman1412</a></p>
@@ -292,6 +293,52 @@
 				<bp-comment># Declaring and defining a bool</bp-comment><br>
 				<bp-keyword>bool</bp-keyword> myBool = <bp-boolean>true</bp-boolean>;<br>
 			</code-block>
+
+
+			<h2 id="section3">Functions and methods</h2>
+
+			<h3 id="section3.1">Functions</h3>
+			<p>A function is a block of code that has a name, a return type and parameters. A function can be called
+				from anywhere within the current file, and can use other functions and variables within scope.</p>
+			<p>A function can be declared as <inline-code>returnType name(arguments);</inline-code>. A function is
+				defined by creating a code block surrounded with curly-braces (<inline-code>{}</inline-code>).
+				Declaration and definiton can also be combined together and done in one go.</p>
+			<code-block>
+				<bp-comment>-#<br>
+					The declaration of a function with return type 'int', <br>
+					name 'double_number' and parameter 'num' of type 'int'.<br>
+					#-</bp-comment><br>
+				<bp-keyword>void</bp-keyword> <bp-function>double_number</bp-function>(<bp-keyword>int</bp-keyword>
+				num);<br>
+				<br>
+				<bp-comment>-#<br>
+					The definition of a function with return type 'int', <br>
+					name 'double_number' and parameter 'num' of type 'int'.<br>
+					#-</bp-comment><br>
+				<bp-keyword>void</bp-keyword> <bp-function>double_number</bp-function>(<bp-keyword>int</bp-keyword>
+				num) {<br>
+				<br>
+				<bp-indent></bp-indent><bp-keyword>int</bp-keyword> doubled = <bp-number>2</bp-number> * num;<br>
+				<bp-indent></bp-indent><bp-keyword>return</bp-keyword> doubled;<br>
+				}
+			</code-block>
+
+			<p>A function can then be called from anywhere within scope by its name and by adding the required
+				parameters. A function can also be used to define a variable with the return value.</p>
+			<code-block>
+				<bp-comment># Function from previous example</bp-comment><br>
+				<bp-keyword>void</bp-keyword> <bp-function>double_number</bp-function>(<bp-keyword>int</bp-keyword>
+				num) {<br>
+				<br>
+				<bp-indent></bp-indent><bp-keyword>int</bp-keyword> doubled = <bp-number>2</bp-number> * num;<br>
+				<bp-indent></bp-indent><bp-keyword>return</bp-keyword> doubled;<br>
+				}<br>
+				<br>
+				<bp-keyword>int</bp-keyword> number = <bp-number>5</bp-number>;<br>
+				<bp-comment># Defining a variable with the return value of a function</bp-comment><br>
+				<bp-keyword>int</bp-keyword> doubled_number = double_number(number);
+			</code-block>
+			<h3 id="section3.2">Methods</h3>
 		</div>
 	</div>
 </body>
