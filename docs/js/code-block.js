@@ -14,19 +14,26 @@ class Static extends HTMLElement { }
 class Comment extends HTMLElement { }
 class Error extends HTMLElement { }
 class Character extends HTMLElement { }
+class Function extends HTMLElement { }
 
 class InlineCode extends HTMLElement { }
 
+class Indent extends HTMLElement { }
+
+
 customElements.define('code-block', CodeBlock);
-customElements.define('pb-keyword', Keyword);
-customElements.define('pb-string', StringElement);
-customElements.define('pb-number', NumberElement);
-customElements.define('pb-boolean', BooleanElement);
-customElements.define('pb-class', Class);
-customElements.define('pb-attribute', Attribute);
-customElements.define('pb-static', Static);
-customElements.define('pb-comment', Comment);
-customElements.define('pb-error', Error);
-customElements.define('pb-character', Character);
+customElements.define('bp-keyword', Keyword);
+customElements.define('bp-string', StringElement);
+customElements.define('bp-number', NumberElement);
+customElements.define('bp-boolean', BooleanElement);
+customElements.define('bp-class', Class);
+customElements.define('bp-attribute', Attribute);
+customElements.define('bp-static', Static);
+customElements.define('bp-comment', Comment);
+customElements.define('bp-error', Error);
+customElements.define('bp-character', Character);
+customElements.define('bp-function', Function);
 
 customElements.define('inline-code', InlineCode);
+
+customElements.define('bp-indent', Indent);
