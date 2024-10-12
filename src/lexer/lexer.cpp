@@ -104,22 +104,47 @@ int getToken() {
 				isFloat = true;
 			}
 		} while (isdigit(firstChar) || firstChar == '.');
-		std::cout << "Token parsed: " << str << std::endl;
 
 		if (isFloat) {
 			std::cout << "Token is a float value" << std::endl;
-			floatNum = strtod(str.c_str(), 0);
-			return 0;
+			floatNum = strtof(str.c_str(), 0);
+			return bp_lexer::bp_tok_float_value;
 		} else {
 			std::cout << "Token is a int value" << std::endl;
 			num = stoi(str);
-			return 0;
+			return bp_lexer::bp_tok_int_value;
 		}
 
 		std::cerr << "Token is neither float nor integer" << std::endl;
 		return 0;
 	}
 
+	if (firstChar == '#') {
+
+		std::cout << "Comment, skipping line" << std::endl;
+		do {
+			firstChar = getchar();
+		} while (firstChar != EOF && firstChar != '\n' && firstChar != '\r');
+	}
+
+	if (firstChar == '-') {
+
+		firstChar = getchar();
+		if (firstChar == '#') {
+
+			std::cout << "Multi-line comment, skipping" << std::endl;
+			do {
+				firstChar = getchar();
+				if (firstChar == '#') {
+
+					firstChar = getchar();
+					if (firstChar == '-') {
+						return 0;
+					}
+				}
+			} while (firstChar != EOF);
+		}
+	}
 	std::cout << "Token starts with special character" << std::endl;
 	return 0;
 }
