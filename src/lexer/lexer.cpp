@@ -1,3 +1,5 @@
+#include <cctype>
+#include <cstdio>
 #include <iostream>
 #include <stdlib.h>
 
@@ -27,11 +29,18 @@ int getToken() {
 
 	if (isalpha(firstChar)) {
 
+		bool isClassName = isupper(firstChar);
+
+
 		do {
 			str += firstChar;
 			firstChar = getchar();
 		} while (isalnum(firstChar));
-		std::cout << "Token parsed: " << str << std::endl;
+
+		if (isClassName) {
+			std::cout << "Token is token for classname" << std::endl;
+			return bp_lexer::bp_tok_class_name;
+		}
 
 		if (str == "int") {
 			std::cout << "Token is token for 'int'" << std::endl;
@@ -41,6 +50,36 @@ int getToken() {
 		if (str == "float") {
 			std::cout << "Token is token for 'float'" << std::endl;
 			return bp_lexer::bp_tok_float;
+		}
+
+		if (str == "double") {
+			std::cout << "Token is token for 'double'" << std::endl;
+			return bp_lexer::bp_tok_double;
+		}
+
+		if (str == "char") {
+			std::cout << "Token is token for 'char'" << std::endl;
+			return bp_lexer::bp_tok_char;
+		}
+
+		if (str == "bool") {
+			std::cout << "Token is token for 'bool'" << std::endl;
+			return bp_lexer::bp_tok_bool;
+		}
+
+		if (str == "void") {
+			std::cout << "Token is token for 'void'" << std::endl;
+			return bp_lexer::bp_tok_void;
+		}
+
+		if (str == "class") {
+			std::cout << "Token is token for 'class'" << std::endl;
+			return bp_lexer::bp_tok_class;
+		}
+
+		if (str == "true" || str == "false") {
+			std::cout << "Token is boolean value" << std::endl;
+			return bp_lexer::bp_tok_bool_value;
 		}
 
 		std::cout << "Token is a variable name" << std::endl;
