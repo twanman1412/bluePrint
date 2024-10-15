@@ -308,14 +308,14 @@
 					The declaration of a function with return type 'int', <br>
 					name 'double_number' and parameter 'num' of type 'int'.<br>
 					#-</bp-comment><br>
-				<bp-keyword>void</bp-keyword> <bp-function>double_number</bp-function>(<bp-keyword>int</bp-keyword>
+				<bp-keyword>int</bp-keyword> <bp-function>double_number</bp-function>(<bp-keyword>int</bp-keyword>
 				num);<br>
 				<br>
 				<bp-comment>-#<br>
 					The definition of a function with return type 'int', <br>
 					name 'double_number' and parameter 'num' of type 'int'.<br>
 					#-</bp-comment><br>
-				<bp-keyword>void</bp-keyword> <bp-function>double_number</bp-function>(<bp-keyword>int</bp-keyword>
+				<bp-keyword>int</bp-keyword> <bp-function>double_number</bp-function>(<bp-keyword>int</bp-keyword>
 				num) {<br>
 				<br>
 				<bp-indent></bp-indent><bp-keyword>int</bp-keyword> doubled = <bp-number>2</bp-number> * num;<br>
@@ -327,17 +327,17 @@
 				parameters. A function can also be used to define a variable with the return value.</p>
 			<code-block>
 				<bp-comment># Function from previous example</bp-comment><br>
-				<bp-keyword>void</bp-keyword> <bp-function>double_number</bp-function>(<bp-keyword>int</bp-keyword>
+				<bp-keyword>int</bp-keyword> <bp-function>double_number</bp-function>(<bp-keyword>int</bp-keyword>
 				num) {<br>
 				<br>
 				<bp-indent></bp-indent><bp-keyword>int</bp-keyword> doubled = <bp-number>2</bp-number> * num;<br>
 				<bp-indent></bp-indent><bp-keyword>return</bp-keyword> doubled;<br>
 				}<br>
 				<br>
-				<bp-keyword>int</bp-keyword> number = <bp-number>5</bp-number>;<br>
 				<bp-comment># Defining a variable with the return value of a function</bp-comment><br>
-				<bp-keyword>int</bp-keyword> doubled_number = double_number(number);
+				<bp-keyword>int</bp-keyword> doubled_number = double_number(<bp-number>5</bp-number>);
 			</code-block>
+
 			<h3 id="section3.2">Methods</h3>
 		</div>
 	</div>
