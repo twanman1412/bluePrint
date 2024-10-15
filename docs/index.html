@@ -339,6 +339,28 @@
 			</code-block>
 
 			<h3 id="section3.2">Methods</h3>
+			<p>A method is a function that is a member of a <a href=""><strong>class (tba)</strong></a>. It must be defined
+				and called either from within the class, or with the class reference.</p>
+			<code-block>
+				<bp-keyword>class</bp-keyword> <bp-class>MyClass</bp-class> {<br>
+				<bp-indent></bp-indent><bp-comment># Declaring a method</bp-comment><br>
+				<bp-indent></bp-indent><bp-keyword>void</bp-keyword> <bp-function>myFunction</bp-function>();<br>
+				<br>
+				<bp-indent></bp-indent><bp-comment># Defining a method within the class</bp-comment><br>
+				<bp-indent></bp-indent><bp-keyword>void</bp-keyword> <bp-function>myFunction</bp-function>() {<br>
+				<bp-indent></bp-indent><bp-indent></bp-indent><bp-comment># Do something</bp-comment><br>
+				<bp-indent></bp-indent>}<br>
+				}<br>
+				<br>
+				<bp-comment># Defining a method with a class reference</bp-comment><br>
+				<bp-class>MyClass</bp-class>::<bp-function>myFunction</bp-function>() {</br>
+				<bp-indent></bp-indent><bp-comment># Do something</bp-comment><br>
+				}
+			</code-block>
+			<p>When defining a method using its class reference its footprint will be taken from the class definition, thus
+				the return type does not have to explicitly be stated. Arguments do have to be explicitely stated in order
+				to allow use within the function definition.</p>
+
 		</div>
 	</div>
 </body>
