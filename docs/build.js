@@ -101,7 +101,7 @@ let sections = [];
 let sidebarData = [];
 
 docStructure.forEach((doc, index) => {
-  const filePath = path.join(__dirname, doc.file);
+  const filePath = path.join(__dirname, 'docs', doc.file);
   
   if (fs.existsSync(filePath)) {
     const content = fs.readFileSync(filePath, 'utf8');

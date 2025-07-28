@@ -36,8 +36,8 @@ var message = "Hello"; // inferred as str
 ### Constants
 
 ```blueprint
-final int MAX_SIZE = 100;
-final String APP_NAME = "Blueprint Compiler";
+final i32 MAX_SIZE = 100;
+final str APP_NAME = "Blueprint Compiler";
 ```
 
 ## Class Declarations

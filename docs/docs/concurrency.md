@@ -232,9 +232,9 @@ Channels provide type-safe communication between concurrent contexts and integra
 blueprint Channel<T> {
     public async sendAsync(item) {
         input: item: T;
-        output: Future<void>
-        requires: !isClosed();
-        ensures: itemSent(item);
+        output: Future<void>;
+        requires: !this.isClosed();
+        ensures: this.itemSent(item);
     }
     
     public async receiveAsync() {
@@ -253,16 +253,16 @@ blueprint Channel<T> {
     public receive() {
         output: T?
         ensures: (receive != null) ==> itemAvailable();
-        ensures: (receive == null) ==> (isClosed() || isEmpty());
+        ensures: (receive == null) ==> (this.isClosed() || this.isEmpty());
     }
     
     public close() {
-        output: void
-        ensures: isClosed();
+        output: void;
+        ensures: this.isClosed();
     }
     
     public isClosed() {
-        output: bool
+        output: bool;
     }
     
     public isEmpty() {
@@ -410,19 +410,19 @@ blueprint BankAccount {
     
     public synchronized deposit(amount) {
         input: amount: fractional;
-        output: void
+        output: void;
         requires: amount > 0;
         ensures: balance == old(balance) + amount;
-        ensures: threadSafeAccess();
+        ensures: this.threadSafeAccess();
     }
     
     public synchronized withdraw(amount) {
         input: amount: fractional;
-        output: bool
+        output: bool;
         requires: amount > 0;
         ensures: withdraw ==> (balance == old(balance) - amount);
         ensures: !withdraw ==> (balance == old(balance));
-        ensures: threadSafeAccess();
+        ensures: this.threadSafeAccess();
     }
     
     public getBalance() {
@@ -438,10 +438,10 @@ blueprint ConcurrentCache<K, V> {
     
     public synchronized put(key, value) {
         input: key: K, value: V;
-        output: V?
+        output: V?;
         requires: key != null;
-        ensures: get(key) == value;
-        ensures: threadSafeWrite();
+        ensures: this.get(key) == value;
+        ensures: this.threadSafeWrite();
     }
     
     public get(key) {
@@ -452,9 +452,9 @@ blueprint ConcurrentCache<K, V> {
     }
     
     public synchronized clear() {
-        output: void
-        ensures: isEmpty();
-        ensures: threadSafeWrite();
+        output: void;
+        ensures: this.isEmpty();
+        ensures: this.threadSafeWrite();
     }
 }
 ```
@@ -640,23 +640,23 @@ blueprint ThreadSafeCollection<T> {
     
     public synchronized add(item) {
         input: item: T;
-        output: void
-        ensures: contains(item);
-        ensures: size() == old(size()) + 1;
+        output: void;
+        ensures: this.contains(item);
+        ensures: this.size() == old(this.size()) + 1;
     }
     
     public synchronized remove(item) {
         input: item: T;
-        output: bool
-        ensures: (remove == true) ==> (!contains(item));
-        ensures: (remove == true) ==> (size() == old(size()) - 1);
-        ensures: (remove == false) ==> (size() == old(size()));
+        output: bool;
+        ensures: (remove == true) ==> (!this.contains(item));
+        ensures: (remove == true) ==> (this.size() == old(this.size()) - 1);
+        ensures: (remove == false) ==> (this.size() == old(this.size()));
     }
     
     public get(index) {
         input: index: u32;
-        output: T
-        requires: index < size();
+        output: T;
+        requires: index < this.size();
         // Note: not synchronized - may be inconsistent in multi-threaded context
     }
 }
@@ -670,15 +670,15 @@ blueprint AtomicOperations<T> {
         input:
             expected: T,
             newValue: T;
-        output: bool
-        ensures: (compareAndSwap == true) ==> (get() == newValue);
-        ensures: (compareAndSwap == false) ==> (get() != expected);
+        output: bool;
+        ensures: (compareAndSwap == true) ==> (this.get() == newValue);
+        ensures: (compareAndSwap == false) ==> (this.get() != expected);
     }
     
     public getAndSet(newValue) {
         input: newValue: T;
-        output: T
-        ensures: get() == newValue;
+        output: T;
+        ensures: this.get() == newValue;
     }
 }
 

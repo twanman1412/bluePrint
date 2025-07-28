@@ -1,10 +1,10 @@
 # Memory Management
 
-BluePrint provides automatic memory management through garbage collection combined with RAII-style destructors for deterministic resource cleanup.
+BluePrint provides automatic memory management through reference-counted garbage collection combined with RAII-style destructors for deterministic resource cleanup.
 
-## Garbage Collection
+## Reference-Counted Garbage Collection
 
-BluePrint uses automatic garbage collection to manage memory allocation and deallocation. Objects are automatically freed when there are no more references to them.
+BluePrint uses reference counting as the primary garbage collection mechanism. The runtime automatically tracks how many references exist to each object and immediately frees objects when their reference count reaches zero.
 
 ### Reference Counting
 
@@ -37,8 +37,8 @@ Destructors are declared in blueprints using the `~name` syntax:
 blueprint FileHandler {
     public ~FileHandler() {
         // Destructor contract - cleanup specifications
-        ensures: !isOpen();
-        ensures: allResourcesReleased();
+        ensures: !this.isOpen();
+        ensures: this.allResourcesReleased();
     }
     
     public openFile(filename) {
@@ -151,12 +151,12 @@ class RAIIExample {
 ```blueprint
 blueprint AutoCloseable {
     public ~AutoCloseable() {
-        ensures: isClosed();
+        ensures: this.isClosed();
     }
     
     public close() {
         output: void;
-        ensures: isClosed();
+        ensures: this.isClosed();
     }
 }
 

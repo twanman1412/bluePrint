@@ -101,7 +101,7 @@ u32 length = name.length;       // Get array length
 String message = new String("Hello");
 String result = message.concat(" World");
 bool isEqual = message.equals("Hello");
-u32 length = message.length();
+u32 stringLength = message.length();
 
 // Type conversion rules
 String richString = String.from("Hello");  // Convert str to String
@@ -226,19 +226,19 @@ blueprint Stack<T> {
     public push(item) {
         input: item: T;
         output: void;
-        ensures: size() == old(size()) + 1;
-        ensures: top() == item;
+        ensures: this.size() == old(this.size()) + 1;
+        ensures: this.top() == item;
     }
     
     public pop() {
         output: T;
-        requires: size() > 0;
-        ensures: size() == old(size()) - 1;
+        requires: this.size() > 0;
+        ensures: this.size() == old(this.size()) - 1;
     }
     
     public top() {
         output: T;
-        requires: size() > 0;
+        requires: this.size() > 0;
     }
     
     public size() {
@@ -319,7 +319,7 @@ Generics can be constrained to implement specific blueprints using comma-separat
 blueprint Comparable<T> {
     public compareTo(other) {
         input: other: T;
-        output: i32
+        output: i32;
         ensures: (compareTo == 0) <==> (this.equals(other));
         ensures: (compareTo > 0) <==> (other.compareTo(this) < 0);
     }
@@ -327,14 +327,14 @@ blueprint Comparable<T> {
 
 blueprint Serializable {
     public serialize() {
-        output: str
+        output: str;
         ensures: serialize != null;
     }
 }
 
 blueprint Cloneable<T> {
     public clone() {
-        output: T
+        output: T;
         ensures: clone != null;
         ensures: !clone.equals(this); // Different reference
     }
@@ -346,14 +346,13 @@ blueprint SortedContainer<T : Comparable<T>, Serializable, Cloneable<T>> {
         input: item: T;
         output: void
         requires: item != null;
-        ensures: contains(item);
-        ensures: forall i: 0 <= i < size() - 1 ==> get(i).compareTo(get(i + 1)) <= 0;
+        ensures: this.contains(item);
+        ensures: forall i: 0 <= i < this.size() - 1 ==> this.get(i).compareTo(this.get(i + 1)) <= 0;
     }
     
     public serialize() {
-        output: str
+        output: str;
         ensures: serialize != null;
-        ensures: /* serialized representation of sorted container */;
     }
 }
 
@@ -411,11 +410,11 @@ blueprint Movable {
         input:
             x: f64,
             y: f64;
-        output: void
+        output: void;
     }
     
     public getPosition() {
-        output: Point
+        output: Point;
         ensures: getPosition != null;
     }
 }
@@ -423,13 +422,13 @@ blueprint Movable {
 blueprint Resizable {
     public resize(factor) {
         input: factor: f64;
-        output: void
+        output: void;
         requires: factor > 0.0;
-        ensures: getArea() == old(getArea()) * factor * factor;
+        ensures: this.getArea() == old(this.getArea()) * factor * factor;
     }
     
     public getArea() {
-        output: f64
+        output: f64;
         ensures: getArea >= 0.0;
     }
 }
@@ -469,7 +468,7 @@ BluePrint uses virtual inheritance (similar to C++) to resolve diamond inheritan
 ```blueprint
 blueprint A {
     public method() {
-        output: String
+        output: String;
         ensures: method != null;
     }
 }

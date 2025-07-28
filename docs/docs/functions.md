@@ -1,6 +1,6 @@
-# Functions and Methods
+# Methods
 
-In BluePrint, functions and methods can be declared in three ways:
+In BluePrint, methods can be declared in three ways:
 1. **Blueprint-specified methods**: Declared in blueprints with contracts, implemented in classes
 2. **Blueprintless methods**: Directly implemented in classes without prior specification
 3. **Built-in system methods**: Using standard library blueprints
@@ -13,7 +13,7 @@ In BluePrint, functions and methods can be declared in three ways:
 blueprint Calculator {
     public add(a, b) {
         input: a: f64, b: f64;
-        output: f64
+        output: f64;
         ensures: add == a + b;
     }
     
@@ -21,7 +21,7 @@ blueprint Calculator {
         input:
             numerator: f64,
             denominator: f64;
-        output: f64
+        output: f64;
         requires: denominator != 0.0;
         ensures: divide * denominator == numerator;
     }
@@ -135,7 +135,7 @@ class FileProcessor : System.AutoCloseable {
 }
 ```
 
-## Function Implementation in Classes
+## Method Implementation in Classes
 
 ### Method Implementation
 
@@ -171,7 +171,7 @@ class Calculator : MathUtils {
 }
 ```
 
-## Generic Functions
+## Generic Methods
 
 ### Generic Blueprint Methods
 
@@ -179,14 +179,14 @@ class Calculator : MathUtils {
 blueprint Collection<T> {
     public map<U>(transform) {
         input: transform: Function<T, U>;
-        output: Collection<U>
-        ensures: map.size() == size();
+        output: Collection<U>;
+        ensures: map.size() == this.size();
     }
     
     public filter(predicate) {
         input: predicate: Function<T, bool>;
-        output: Collection<T>
-        ensures: filter.size() <= size();
+        output: Collection<T>;
+        ensures: filter.size() <= this.size();
         ensures: forall item in filter ==> predicate(item);
     }
 }
@@ -219,9 +219,9 @@ class ArrayList<T> : Collection<T> {
 }
 ```
 
-## Function Types and Higher-Order Functions
+## Method Types and Higher-Order Methods
 
-### Function Type Declarations
+### Method Type Declarations
 
 ```blueprint
 // Function type aliases
@@ -336,7 +336,7 @@ blueprint DataParser {
 }
 ```
 
-## Async Functions
+## Async Methods
 
 ### Async Blueprint Declaration
 
