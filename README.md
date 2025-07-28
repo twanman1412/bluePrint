@@ -2,6 +2,10 @@
 
 BluePrint is a modern, object oriented programming language designed to be simple, efficient, and expressive. It features a clean syntax, strong static typing, and a powerful standard library. The language's key feature is the blueprint system, which allows developers to define all preconditions, postconditions, and invariants for classes and methods, ensuring robust and reliable code wihtout the fluff of each method having a separate base case, error catching, etc.
 
+## Why BluePrint
+
+BluePrint was created to enable writing clean, expressive code without repetitive boilerplate or tedious parameter checks. Inspired by the Java Modeling Language (JML), BluePrint aims to make intent and correctness explicit, letting developers focus on core logic rather than defensive programming.
+
 ## Project Structure
 
 ```
@@ -27,8 +31,10 @@ or alternatively, you can serve the documentation locally using `npm run serve`,
 - `docs/concurrency.md` - Concurrency model
 - `docs/control-flow.md` - Control flow constructs
 - `docs/examples.md` - Code examples
+- `docs/exceptions.md` - Exception handling and error management
 - `docs/functions.md` - Functions
 - `docs/index.md` - Introduction and getting started
+- `docs/memory.md` - Memory management, garbage collection, and RAII
 - `docs/modules.md` - Module system
 - `docs/stdlib.md` - Standard library
 - `docs/syntax.md` - Language syntax

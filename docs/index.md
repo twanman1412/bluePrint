@@ -8,7 +8,7 @@ BluePrint combines the familiar syntax of C-style languages with powerful built-
 
 ### Key Features
 
-- **Built-in Blueprints**: First-class behavioral specifications (inspired by JML)
+- **Built-in Blueprints**: First-class behavioral specifications
 - **Strong Type System**: Compile-time type safety with inference
 - **Object-Oriented**: Classes, inheritance, and polymorphism
 - **Concurrency Support**: Built-in threading and synchronization primitives
@@ -20,43 +20,7 @@ BluePrint combines the familiar syntax of C-style languages with powerful built-
 - **Clarity**: Code is self-documenting through blueprints
 - **Performance**: Compile to efficient native code via LLVM
 - **Safety**: Strong typing and contracts prevent common bugs
-- **Memory Safety**: Garbage collection with RAII-style destructors
-
-## Exception System
-
-BluePrint has a two-tier exception hierarchy:
-
-- **Exception**: Base exception type for all general exceptions
-- **BluePrintException**: Child of Exception, thrown only when blueprint contracts are violated
-
-### Exception Handling
-
-```blueprint
-blueprint FileProcessor {
-    public readFile(filename) {
-        input: filename: str;
-        output: str
-        throws: IOException;
-        requires: filename != null;
-        ensures: readFile != null;
-    }
-}
-
-class SafeFileProcessor : FileProcessor {
-    public str readFile(str filename) {
-        try {
-            // File reading logic that may throw IOException
-            return FileSystem.read(filename);
-        } catch (IOException e) {
-            System.err.println("Failed to read file: " + e.getMessage());
-            throw e; // Re-throw or handle as needed
-        }
-        // If contract violation occurs, BluePrintException is thrown automatically
-    }
-}
-```
-
-Uncaught exceptions terminate program execution with an error message.
+- **Memory Safety**: Automatic garbage collection with RAII-style destructors (see [Memory Management](memory.md))
 
 ## Getting Started
 
@@ -110,3 +74,22 @@ class Calculator : Calculator {
 ### Basic Syntax Overview
 
 BluePrint separates interface specifications (blueprints) from implementations (classes). Blueprints define behavioral contracts using `requires` (preconditions) and `ensures` (postconditions), while classes provide the actual implementation.
+
+## Documentation Structure
+
+This documentation is organized in the following order:
+
+1. **[Introduction](index.md)** - Overview, goals, and getting started
+2. **[Syntax](syntax.md)** - Basic language syntax, keywords, and operators
+3. **[Type System](types.md)** - Primitive types, generics, and inheritance
+4. **[Control Flow](control-flow.md)** - Conditionals, loops, and pattern matching
+5. **[Functions](functions.md)** - Method declarations, overloading, and async functions
+6. **[Blueprint Specifications](blueprints.md)** - Core feature: contracts and verification
+7. **[Memory Management](memory.md)** - Garbage collection, destructors, and RAII
+8. **[Concurrency](concurrency.md)** - Async/await, threading, and synchronization
+9. **[Exception Handling](exceptions.md)** - Error handling and contract violations
+10. **[Modules](modules.md)** - Import system, bundles, and code organization
+11. **[Standard Library](stdlib.md)** - Built-in functionality and system blueprints
+12. **[Examples](examples.md)** - Practical applications and code samples
+
+Each section builds upon previous concepts, so it's recommended to read them in order when learning the language.

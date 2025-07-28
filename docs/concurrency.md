@@ -501,13 +501,15 @@ class ThreadSafeBankAccount : BankAccount {
     }
 }
 
-// Lock-free implementation with synchronized contract
+// Blueprint contracts don't dictate implementation details
+// Lock-free implementation can still satisfy synchronized contracts
 class LockFreeConcurrentCache<K, V> : ConcurrentCache<K, V> {
     private AtomicReference<Node<K, V>[]> table;
     private AtomicInteger size = new AtomicInteger(0);
     
     public synchronized V? put(K key, V value) {
-        // Even though blueprint is synchronized, implementation uses lock-free
+        // Blueprint says synchronized, but implementation can be lock-free
+        // Blueprint only cares about thread-safety guarantees, not how they're achieved
         return putLockFree(key, value);
     }
     
@@ -516,7 +518,7 @@ class LockFreeConcurrentCache<K, V> : ConcurrentCache<K, V> {
     }
     
     public synchronized void clear() {
-        // Atomic operation
+        // Atomic operation satisfies synchronization contract
         table.set(new Node[16]);
         size.set(0);
     }
