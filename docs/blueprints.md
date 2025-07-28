@@ -8,69 +8,9 @@ Blueprints are BluePrint's core feature - they define behavioral contracts for c
 Some classes, particularly system entry points and simple utilities, may not need behavioral contracts:
 
 ```blueprint
-// Simple class without blueprint specificati## Blueprint Declaration
-
-### Basic Structure
-
-```blueprint
-blueprint BlueprintName {
-    public methodName(param1, param2) {
-        input:
-            param1: Type1,
-            param2: Type2;
-        output: ReturnType;
-        default: condition ==> value;
-        requires: precondition_expression;
-        ensures: postcondition_expression;
-        throws: ExceptionType;
-    }
-}
-```
-
-### Contract Ordering Best Practices
-
-Always order contracts in this sequence for consistency and readability:
-
-1. **input:** - Method parameters and their types
-2. **output:** - Return type specification  
-3. **default:** - Default return values for specific conditions
-4. **requires:** - Preconditions (what must be true when method is called)
-5. **ensures:** - Postconditions (what must be true when method returns normally)
-6. **throws:** - Exception specifications
-
-#### Contract Grouping Guidelines
-
-- **Combine related conditions** using `&&` or `||`:
-  ```blueprint
-  requires: x >= 0 && x <= width && y >= 0 && y <= height; // Related range checks
-  ```
-
-- **Separate unrelated conditions** for better error messages:
-  ```blueprint
-  requires: filename != null;        // Null validation
-  requires: hasPermission(filename); // Permission check  
-  requires: fileExists(filename);    // Existence validation
-  ```
-
-#### Complete Example
-
-```blueprint
-blueprint FileProcessor {
-    public processFile(filename, options) {
-        input: 
-            filename: str,
-            options: ProcessingOptions;
-        output: ProcessedFile;
-        default: filename.isEmpty() ==> emptyFile();
-        requires: filename != null;
-        requires: options != null;
-        requires: hasReadPermission(filename) && fileExists(filename);
-        ensures: processFile != null;
-        ensures: processFile.isValid();
-        throws: IOException, SecurityException;
-    }
-}rld {
-    public static void main(String[] args) {
+// Simple class without blueprint specification
+class HelloWorld {
+   public static void main(String[] args) {
         System.out.println("Hello, World!");
     }
 }
