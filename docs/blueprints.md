@@ -8,8 +8,68 @@ Blueprints are BluePrint's core feature - they define behavioral contracts for c
 Some classes, particularly system entry points and simple utilities, may not need behavioral contracts:
 
 ```blueprint
-// Simple class without blueprint specification
-class HelloWorld {
+// Simple class without blueprint specificati## Blueprint Declaration
+
+### Basic Structure
+
+```blueprint
+blueprint BlueprintName {
+    public methodName(param1, param2) {
+        input:
+            param1: Type1,
+            param2: Type2;
+        output: ReturnType;
+        default: condition ==> value;
+        requires: precondition_expression;
+        ensures: postcondition_expression;
+        throws: ExceptionType;
+    }
+}
+```
+
+### Contract Ordering Best Practices
+
+Always order contracts in this sequence for consistency and readability:
+
+1. **input:** - Method parameters and their types
+2. **output:** - Return type specification  
+3. **default:** - Default return values for specific conditions
+4. **requires:** - Preconditions (what must be true when method is called)
+5. **ensures:** - Postconditions (what must be true when method returns normally)
+6. **throws:** - Exception specifications
+
+#### Contract Grouping Guidelines
+
+- **Combine related conditions** using `&&` or `||`:
+  ```blueprint
+  requires: x >= 0 && x <= width && y >= 0 && y <= height; // Related range checks
+  ```
+
+- **Separate unrelated conditions** for better error messages:
+  ```blueprint
+  requires: filename != null;        // Null validation
+  requires: hasPermission(filename); // Permission check  
+  requires: fileExists(filename);    // Existence validation
+  ```
+
+#### Complete Example
+
+```blueprint
+blueprint FileProcessor {
+    public processFile(filename, options) {
+        input: 
+            filename: str,
+            options: ProcessingOptions;
+        output: ProcessedFile;
+        default: filename.isEmpty() ==> emptyFile();
+        requires: filename != null;
+        requires: options != null;
+        requires: hasReadPermission(filename) && fileExists(filename);
+        ensures: processFile != null;
+        ensures: processFile.isValid();
+        throws: IOException, SecurityException;
+    }
+}rld {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
     }
@@ -794,7 +854,7 @@ blueprint Container<T> {
 ## Contract Checking
 
 ### Compile-time Verification
-The BluePrint compiler attempts to verify contracts at compile time when possible:
+The BluePrint compiler attempts to verify contracts at compile time when possible. It can provide warnings for potential violations and errors for definite violations:
 
 ```blueprint
 blueprint BadMath {
@@ -810,6 +870,16 @@ blueprint BadMath {
 class IncorrectMath : BadMath {
     public i32 badMax(i32 a, i32 b) {
         return a - b;  // COMPILE ERROR: Can't guarantee result >= a && result >= b
+    }
+}
+
+class MaybeBadMath : BadMath {
+    public i32 badMax(i32 a, i32 b) {
+        if (someComplexCondition()) {
+            return a > b ? a : b;  // Correct implementation
+        } else {
+            return a - b;  // COMPILE WARNING: Might violate contract
+        }
     }
 }
 
@@ -832,21 +902,54 @@ class ProperMath : CorrectMath {
 ```
 
 ### Runtime Verification
-When compile-time verification isn't possible, contracts are checked at runtime:
+When compile-time verification isn't possible, contracts are checked at runtime with exact values:
 
 ```blueprint
 blueprint FileReader {
     public readFile(filename) {
-        input: filename: String;
-        output: String
+        input: filename: str;
+        output: str
         requires: filename != null;
-        requires: fileExists(filename);  // Runtime check
+        requires: fileExists(filename);  // Runtime check with actual filename
         ensures: readFile != null;
+    }
+}
+
+class SafeFileReader : FileReader {
+    public str readFile(str filename) {
+        // Runtime contract checking:
+        // 1. Check filename != null (precondition)
+        // 2. Check fileExists(filename) (precondition)
+        // 3. Execute method
+        // 4. Check readFile != null (postcondition)
+        // 5. If any check fails, throw BluePrintException
+        
+        return FileSystem.readAllText(filename);
+    }
+}
+```
+
+### Contract Violation Handling
+
+When a contract is violated at runtime, a `BluePrintException` is thrown:
+
+```blueprint
+class Example {
+    public void demonstrateContractViolation() {
+        SafeFileReader reader = new SafeFileReader();
+        
+        try {
+            str content = reader.readFile(null); // Violates precondition
+        } catch (BluePrintException e) {
+            System.err.println("Contract violation: " + e.getMessage());
+            // Message might be: "Precondition violated: filename != null"
+        } catch (IOException e) {
+            System.err.println("IO error: " + e.getMessage());
+        }
     }
 }
 ```
 
 ### Assertion Modes
-- `--contracts=strict`: All contracts checked, program terminates on violation
-- `--contracts=warn`: Contract violations logged but execution continues  
-- `--contracts=off`: No runtime contract checking (production builds)
+- `--contracts=on`: All contracts checked, program terminates on violation (default for debug builds)
+- `--contracts=off`: No runtime contract checking (production builds for performance)

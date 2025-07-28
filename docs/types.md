@@ -37,7 +37,7 @@ BluePrint features a strong static type system with generics, multiple inheritan
 
 | Type | Description |
 |------|-------------|
-| `fractional` | Arbitrary precision fraction (numerator/denominator) |
+| `fractional` | Arbitrary precision fraction (two i32: numerator/denominator) |
 
 ```blueprint
 // Fractional arithmetic maintains exact precision
@@ -45,66 +45,125 @@ fractional half = 1/2;
 fractional third = 1/3;
 fractional result = half + third;  // Exactly 5/6, not 0.833333...
 
-// Only loses precision when converting to floating point
-f64 approximate = result.toF64();  // 0.8333333333333334
-
-// Operations with integers and other fractionals remain exact
-fractional doubled = result * 2;   // Exactly 5/3
+// Fractional operations with integers (exact arithmetic)
 fractional withInt = result + 1;   // Exactly 11/6
+fractional doubled = result * 2;   // Exactly 5/3
+i32 wholeNumber = 5;
+fractional mixed = half + wholeNumber; // Exactly 11/2
+
+// Operations remain exact as long as no floating point is involved
+fractional complex = (1/3) * 6 + (2/5); // Exactly 12/5
+
+// Once a floating point is involved, converts to floating point
+f64 floatValue = 3.14;
+f64 converted = result + floatValue;  // Becomes floating point: ~4.9733333...
+
+// Overflow protection - throws exception if numerator or denominator exceeds i32 range
+try {
+    fractional huge = (i32.MAX_VALUE / 2) * (i32.MAX_VALUE / 2); // May throw OverflowException
+} catch (OverflowException e) {
+    System.err.println("Fractional overflow: " + e.getMessage());
+}
+
+// Explicit conversion when needed
+f64 approximate = result.toF64();     // 0.8333333333333334
+i32 truncated = result.toI32();       // 0 (truncates towards zero)
+String display = result.toString();   // "5/6"
 ```
 
 ## Reference Types
 
-### Strings
+### Strings and Character Arrays
+
+BluePrint distinguishes between basic character arrays and rich string objects:
 
 ```blueprint
 // Basic string type (character array)
-str name = "Hello, World!";
-str empty = "";
-str nullStr = null;
+str name = "Hello, World!";     // Equivalent to char[]
+str empty = "";                 // Empty character array
+str nullStr = null;             // Null reference
 
-// Compound String type with methods
+// Character array operations
+char firstChar = name[0];       // Access individual characters
+u32 length = name.length;       // Get array length
+
+// Rich String type with methods
 String message = new String("Hello");
 String result = message.concat(" World");
 bool isEqual = message.equals("Hello");
 u32 length = message.length();
+str charArray = message.toCharArray(); // Convert to str
 
 // String operations in blueprints
 blueprint StringUtils {
-    public concat(a, b) {
+    public concatenate(a, b) {
         input:
             a: str,
             b: str;
-        output: str
+        output: str;
         requires: a != null && b != null;
-        ensures: concat.length == a.length + b.length;
+        ensures: concatenate.length == a.length + b.length;
+    }
+    
+    public toUpperCase(input) {
+        input: input: str;
+        output: str;
+        requires: input != null;
+        ensures: toUpperCase.length == input.length;
     }
 }
 ```
 
-### Arrays and Pointers
+### Arrays (Fixed-Size)
+
+All arrays in BluePrint are fixed-size upon declaration. The type definition specifies it's an array but not the size - the size is determined at instantiation:
 
 ```blueprint
-// Fixed-size arrays
-i32[5] numbers = {1, 2, 3, 4, 5};
-str[3] names = {"Alice", "Bob", "Charlie"};
+// Fixed-size array declarations - size determined at instantiation
+i32[] numbers = {1, 2, 3, 4, 5};        // Array of 5 integers (fixed)
+str[] names = {"Alice", "Bob", "Charlie"}; // Array of 3 strings (fixed)
+f64[] measurements = new f64[10];        // Uninitialized array of 10 floats (fixed)
 
-// Dynamic arrays
-i32[] dynamicNumbers = new i32[10];
-str[] dynamicNames = new str[]{};
+// Array access and manipulation
+numbers[0] = 42;                         // Set first element
+i32 first = numbers[0];                  // Get first element
+u32 size = numbers.length;               // Get array size (always 5 for this array)
 
-// Pointers
-i32* numberPtr = &someInteger;  // & gets address
-str* stringPtr = &someString;   // & gets address  
-void* genericPtr = null;
+// Multi-dimensional fixed arrays
+i32[][] matrix = new i32[3][4];          // 3x4 matrix (fixed dimensions)
+matrix[0][0] = 1;                        // Set element
 
-// Pointer arithmetic and dereferencing
-i32 value = *numberPtr;        // * dereferences pointer
-numberPtr++;                   // Pointer arithmetic
-i32* nextPtr = numberPtr + 1;  // Pointer offset
+// Arrays cannot change size after creation
+// numbers[5] = 6; // COMPILE ERROR - index out of bounds, array only has 5 elements
+// Use dynamic collections for resizable data
 ```
 
-### Array and Pointer Operations
+### Dynamic Collections
+
+For dynamic sizing, use collection classes:
+
+```blueprint
+// Dynamic collections from standard library
+List<i32> dynamicNumbers = new ArrayList<i32>();
+dynamicNumbers.add(42);
+dynamicNumbers.add(24);
+u32 count = dynamicNumbers.size();       // Dynamic size
+
+Set<str> uniqueNames = new HashSet<str>();
+Map<str, i32> nameToAge = new HashMap<str, i32>();
+
+// Collection operations in blueprints
+blueprint DynamicProcessor<T> {
+    public processItems(items) {
+        input: items: List<T>;
+        output: List<T>;
+        requires: items != null;
+        ensures: processItems.size() <= items.size();
+    }
+}
+```
+
+### Array and Reference Operations
 
 ```blueprint
 blueprint ArrayUtils<T> {
@@ -112,7 +171,7 @@ blueprint ArrayUtils<T> {
         input:
             array: T[],
             index: u32;
-        output: T
+        output: T;
         requires: array != null && index < array.length;
     }
     
@@ -121,24 +180,24 @@ blueprint ArrayUtils<T> {
             array: T[],
             index: u32,
             value: T;
-        output: void
+        output: void;
         requires: array != null && index < array.length;
         ensures: array[index] == value;
     }
 }
 
-blueprint PointerUtils<T> {
-    public dereference(ptr) {
-        input: ptr: T*;
-        output: T
-        requires: ptr != null;
+blueprint ReferenceUtils<T> {
+    public dereference(ref) {
+        input: ref: T*;
+        output: T;
+        requires: ref != null;
     }
     
     public addressOf(value) {
         input: value: T;
-        output: T*
+        output: T*;
         ensures: addressOf != null;
-        ensures: *addressOf == value;  // * dereferences, & would get address
+        ensures: *addressOf == value;
     }
 }
 ```
@@ -151,24 +210,24 @@ blueprint PointerUtils<T> {
 blueprint Stack<T> {
     public push(item) {
         input: item: T;
-        output: void
+        output: void;
         ensures: size() == old(size()) + 1;
         ensures: top() == item;
     }
     
     public pop() {
-        output: T
+        output: T;
         requires: size() > 0;
         ensures: size() == old(size()) - 1;
     }
     
     public top() {
-        output: T
+        output: T;
         requires: size() > 0;
     }
     
     public size() {
-        output: u32
+        output: u32;
         ensures: size >= 0;
     }
 }
@@ -220,7 +279,7 @@ blueprint Utilities {
             array: T[],
             i: u32,
             j: u32;
-        output: void
+        output: void;
         requires: array != null && i < array.length && j < array.length;
         ensures: array[i] == old(array[j]) && array[j] == old(array[i]);
     }
@@ -230,7 +289,7 @@ blueprint Utilities {
             a: T,
             b: T,
             comparator: Function<T, T, i32>;
-        output: T
+        output: T;
         requires: comparator != null;
         ensures: comparator(max, a) >= 0 && comparator(max, b) >= 0;
     }
@@ -238,6 +297,8 @@ blueprint Utilities {
 ```
 
 ### Bounded Generics
+
+Generics can be constrained to implement specific blueprints using comma-separated lists. Generics are invariant in BluePrint:
 
 ```blueprint
 blueprint Comparable<T> {
@@ -249,12 +310,61 @@ blueprint Comparable<T> {
     }
 }
 
-blueprint SortedContainer<T : Comparable<T>> {
+blueprint Serializable {
+    public serialize() {
+        output: str
+        ensures: serialize != null;
+    }
+}
+
+blueprint Cloneable<T> {
+    public clone() {
+        output: T
+        ensures: clone != null;
+        ensures: !clone.equals(this); // Different reference
+    }
+}
+
+// Multiple bounds using comma separation
+blueprint SortedContainer<T : Comparable<T>, Serializable, Cloneable<T>> {
     public add(item) {
         input: item: T;
         output: void
+        requires: item != null;
         ensures: contains(item);
         ensures: forall i: 0 <= i < size() - 1 ==> get(i).compareTo(get(i + 1)) <= 0;
+    }
+    
+    public serialize() {
+        output: str
+        ensures: serialize != null;
+        ensures: /* serialized representation of sorted container */;
+    }
+}
+
+// Invariant generics - no covariance/contravariance
+class StringList : SortedContainer<String, Serializable, Cloneable<String>> {
+    // String must implement Comparable<String>, Serializable, and Cloneable<String>
+    
+    public void add(String item) {
+        // Implementation
+    }
+    
+    public str serialize() {
+        // Implementation
+        return "SerializedStringList";
+    }
+}
+
+// Generic variance examples showing invariance
+class Example {
+    public void demonstrateInvariance() {
+        SortedContainer<String, Serializable, Cloneable<String>> stringContainer;
+        SortedContainer<Object, Serializable, Cloneable<Object>> objectContainer;
+        
+        // This would be invalid - generics are invariant
+        // objectContainer = stringContainer; // COMPILE ERROR
+        // stringContainer = objectContainer; // COMPILE ERROR
     }
 }
 ```

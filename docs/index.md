@@ -20,6 +20,43 @@ BluePrint combines the familiar syntax of C-style languages with powerful built-
 - **Clarity**: Code is self-documenting through blueprints
 - **Performance**: Compile to efficient native code via LLVM
 - **Safety**: Strong typing and contracts prevent common bugs
+- **Memory Safety**: Garbage collection with RAII-style destructors
+
+## Exception System
+
+BluePrint has a two-tier exception hierarchy:
+
+- **Exception**: Base exception type for all general exceptions
+- **BluePrintException**: Child of Exception, thrown only when blueprint contracts are violated
+
+### Exception Handling
+
+```blueprint
+blueprint FileProcessor {
+    public readFile(filename) {
+        input: filename: str;
+        output: str
+        throws: IOException;
+        requires: filename != null;
+        ensures: readFile != null;
+    }
+}
+
+class SafeFileProcessor : FileProcessor {
+    public str readFile(str filename) {
+        try {
+            // File reading logic that may throw IOException
+            return FileSystem.read(filename);
+        } catch (IOException e) {
+            System.err.println("Failed to read file: " + e.getMessage());
+            throw e; // Re-throw or handle as needed
+        }
+        // If contract violation occurs, BluePrintException is thrown automatically
+    }
+}
+```
+
+Uncaught exceptions terminate program execution with an error message.
 
 ## Getting Started
 

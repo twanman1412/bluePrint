@@ -1,6 +1,6 @@
 # Concurrency
 
-BluePrint provides a comprehensive concurrency system that prioritizes async/await as the primary concurrency method while offering actors as an alternative choice. The system integrates channels and blueprint contracts for safe concurrent programming.
+BluePrint provides a comprehensive concurrency system built around async/await with channels as the primary concurrency method. The system integrates channels and blueprint contracts for safe concurrent programming.
 
 ## Overview
 
@@ -8,9 +8,8 @@ The concurrency system in BluePrint is built around these key components:
 
 1. **Async/await** - Primary method for asynchronous programming with channels and futures
 2. **Channels** - Type-safe message passing between concurrent contexts (integrated with async/await)
-3. **Actor model** - Alternative approach for message-passing concurrency with isolated state
-4. **Threading** - Both green threads and OS threads available as different base classes
-5. **Synchronized methods** - Built into both method signatures and blueprint contracts
+3. **Threading** - Both green threads and OS threads available as different base classes
+4. **Synchronized methods** - Built into both method signatures and blueprint contracts
 
 All concurrency constructs integrate seamlessly with BluePrint's blueprint system, allowing for compile-time verification of thread safety and concurrency contracts.
 
@@ -81,85 +80,7 @@ class ConcurrentProcessor : AsyncProcessor {
 }
 ```
 
-### 2. Actor Model (Alternative Concurrency Choice)
-
-For developers who prefer message-passing with isolated state, BluePrint offers a full actor model as an alternative to async/await:
-
-```blueprint
-blueprint Actor<MessageType> {
-    public send(message) {
-        input: message: MessageType;
-        output: void
-        requires: message != null;
-        ensures: messageQueued(message);
-    }
-    
-    protected abstract receive(message) {
-        input: message: MessageType;
-        output: void
-        requires: message != null;
-    }
-    
-    public start() {
-        output: void
-        ensures: isRunning();
-    }
-    
-    public stop() {
-        output: void
-        ensures: !isRunning();
-    }
-}
-
-// Actors can also be synchronized in their blueprints
-blueprint SynchronizedActor<MessageType> : Actor<MessageType> {
-    invariant: messageQueueThreadSafe();
-    
-    public synchronized send(message) {
-        input: message: MessageType;
-        output: void
-        requires: message != null;
-        ensures: messageQueued(message) && threadSafeAccess();
-    }
-}
-
-// Message types
-class CounterMessage {
-    public enum Type { INCREMENT, DECREMENT, GET_VALUE }
-    public Type type;
-    public i32 value;
-    public Actor<CounterResponse>? replyTo;
-}
-
-class CounterResponse {
-    public i32 currentValue;
-}
-
-// Actor implementation
-class CounterActor : SynchronizedActor<CounterMessage> {
-    private i32 count = 0;
-    
-    protected synchronized void receive(CounterMessage message) {
-        switch (message.type) {
-            case INCREMENT:
-                count += message.value;
-                break;
-            case DECREMENT:
-                count -= message.value;
-                break;
-            case GET_VALUE:
-                if (message.replyTo != null) {
-                    CounterResponse response = new CounterResponse();
-                    response.currentValue = count;
-                    message.replyTo.send(response);
-                }
-                break;
-        }
-    }
-}
-```
-
-### 3. Threading: Green Threads vs OS Threads
+### 2. Threading: Green Threads vs OS Threads
 
 BluePrint provides both green threads and OS threads as different base classes, allowing developers to choose the appropriate threading model:
 
@@ -303,7 +224,7 @@ class OSThreadCounter : OSThread, ThreadSafeCounter {
 }
 ```
 
-### 4. Channels (Integrated with Async/Await)
+### 3. Channels (Integrated with Async/Await)
 
 Channels provide type-safe communication between concurrent contexts and integrate seamlessly with async/await:
 
@@ -831,29 +752,25 @@ class DatabaseConnection : AsyncDatabase {
 - **Green Threads**: Use for lightweight concurrency with thousands of concurrent tasks
 - **OS Threads**: Use for CPU-intensive parallel processing that benefits from true parallelism
 
-### 2. Alternative Approaches
-- **Actors**: Choose when you need isolated state management (game entities, distributed systems, fault-tolerant services)
-- **Mixed Approaches**: Combine async/await with actors for complex systems
-
-### 3. Threading Choice Guidelines
+### 2. Threading Choice Guidelines
 - **Green Threads** (`GreenThread` base class): High concurrency, cooperative scheduling, lower memory overhead
 - **OS Threads** (`OSThread` base class): True parallelism, preemptive scheduling, higher memory overhead
 
-### 4. Synchronization in Blueprints
+### 3. Synchronization in Blueprints
 - Use `synchronized` in both blueprint contracts AND method implementations for clarity
 - Specify thread-safety invariants in blueprints (`invariant: isThreadSafe()`)
 - Document blocking vs non-blocking operations in contracts
 - Use `volatile` for simple shared variables
 - Mixed synchronization: synchronized blueprints can have lock-free implementations
 
-### 5. Channel Best Practices
+### 4. Channel Best Practices
 - Use buffered channels for producer-consumer scenarios
 - Prefer `sendAsync()`/`receiveAsync()` with await for primary concurrency
 - Use synchronous `send()`/`receive()` only for performance-critical sections
 - Always close channels when done to prevent resource leaks
 - Handle channel closure gracefully in receivers
 
-### 6. Error Handling
+### 5. Error Handling
 - Always handle `InterruptedException` in blocking operations
 - Use timeouts for network operations with async methods
 - Provide cancellation mechanisms for long-running async tasks
