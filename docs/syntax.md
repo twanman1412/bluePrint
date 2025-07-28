@@ -92,9 +92,57 @@ class ClassName : BlueprintName1, BlueprintName2 {
     // Field declarations
     private Type fieldName;
     
+    // Constructor
+    public ClassName(Type param) {
+        this.fieldName = param;
+    }
+    
+    // Destructor (called automatically by garbage collector)
+    ~ClassName() {
+        // Cleanup code - called before garbage collection
+        // Destructors of fields are called automatically after this
+    }
+    
     // Method implementations
     public ReturnType methodName(Type param) {
         // implementation
+    }
+}
+```
+
+### RAII and Destructors
+
+BluePrint follows RAII (Resource Acquisition Is Initialization) principles with automatic destructor chaining:
+
+```blueprint
+class FileManager {
+    private InputStream inputStream;
+    private OutputStream outputStream;
+    private str filename;
+    
+    public FileManager(str filename) {
+        this.filename = filename;
+        this.inputStream = new FileInputStream(filename);
+        this.outputStream = new FileOutputStream(filename + ".out");
+    }
+    
+    // Destructor automatically called during garbage collection
+    ~FileManager() {
+        System.out.println("Cleaning up FileManager for: " + filename);
+        
+        // Manual cleanup of resources
+        if (inputStream != null) {
+            inputStream.close();
+        }
+        if (outputStream != null) {
+            outputStream.close();
+        }
+        
+        // Destructors of inputStream and outputStream called automatically after this
+    }
+    
+    public void processFile() {
+        // Use streams...
     }
 }
 ```
@@ -162,29 +210,30 @@ char letter = 'A';     // Character type
 str text = "Hello";    // Basic string (char array)
 ```
 
-### Reference Types and Pointers
+### Reference Types and Collections
 ```blueprint
-// Strings
-str basicText = "Hello World";
-String richText = new String("Hello").concat(" World");
+// Strings and character arrays
+str basicText = "Hello World";          // Character array (str == char[])
+String richText = new String("Hello").concat(" World"); // Rich string object
 
-// Arrays
-i32[] numbers = {1, 2, 3, 4, 5};
-str[] names = {"Alice", "Bob", "Charlie"};
+// Fixed-size arrays (size determined at instantiation)
+i32[] numbers = {1, 2, 3, 4, 5};        // Array of 5 integers (fixed)
+str[] names = new str[10];              // Uninitialized array of 10 strings (fixed)
+f64[] coordinates = {1.0, 2.0, 3.0};    // Array of 3 floats (fixed)
 
-// Pointers
-i32* numberPtr = &someInteger;  // & gets address of variable
-str* stringPtr = &someString;   // & gets address of variable
-void* genericPtr = null;
+// References (for passing by reference, no arithmetic)
+i32* numberRef = &someInteger;          // Reference to an integer
+str* stringRef = &someString;           // Reference to a string
+void* genericRef = null;                // Generic reference
 
-// Pointer operations
-i32 value = *numberPtr;        // * dereferences pointer
-numberPtr++;                   // Pointer arithmetic
-i32* offsetPtr = numberPtr + 5; // Pointer offset
+// Reference operations (no arithmetic allowed)
+i32 value = *numberRef;                 // Dereference to get value
+*numberRef = 42;                        // Set value through reference
 
-// Generic collections
-List<i32> intList = new List<i32>();
-Map<str, i32> nameToAge = new Map<str, i32>();
+// Dynamic collections (use standard library classes)
+List<i32> intList = new ArrayList<i32>();
+Map<str, i32> nameToAge = new HashMap<str, i32>();
+Set<String> uniqueWords = new HashSet<String>();
 ```
 
 ### Generics
@@ -192,17 +241,17 @@ Map<str, i32> nameToAge = new Map<str, i32>();
 blueprint Container<T> {
     public add(item) {
         input: item: T;
-        output: void
+        output: void;
     }
     
     public get(index) {
         input: index: u32;
-        output: T
+        output: T;
         requires: index < size();
     }
     
     public size() {
-        output: u32
+        output: u32;
         ensures: size >= 0;
     }
 }
@@ -298,6 +347,12 @@ for (int i = 0; i < 10; i++) {
 // Enhanced for loop
 for (int item : array) {
     // iterate over array
+}
+
+// Example with proper array types
+i32[] values = {1, 2, 3, 4, 5};
+for (i32 value : values) {
+    System.out.println(value);
 }
 ```
 
