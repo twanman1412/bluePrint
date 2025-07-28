@@ -2,6 +2,49 @@
 
 Blueprints are BluePrint's core feature - they define behavioral contracts for classes and methods, similar to JML but as a first-class language construct.
 
+## Basic Blueprint Syntax
+
+### Blueprint Declaration Structure
+
+```blueprint
+blueprint BlueprintName {
+    public methodName(param1, param2) {
+        input:
+            param1: Type1,
+            param2: Type2;
+        output: ReturnType
+        requires: precondition_expression;
+        ensures: postcondition_expression;
+    }
+}
+```
+
+### Simple Blueprint Example
+
+```blueprint
+blueprint BankAccount {
+    public deposit(amount) {
+        input: amount: f64;
+        output: void
+        requires: amount > 0.0;
+        ensures: balance == old(balance) + amount;
+    }
+    
+    public withdraw(amount) {
+        input: amount: f64;
+        output: bool
+        requires: amount > 0.0 && amount <= balance;
+        ensures: (withdraw == true) ==> (balance == old(balance) - amount);
+        ensures: (withdraw == false) ==> (balance == old(balance));
+    }
+    
+    public getBalance() {
+        output: f64
+        ensures: getBalance == balance && getBalance >= 0.0;
+    }
+}
+```
+
 ## Blueprint vs Blueprintless Classes
 
 ### Blueprintless Classes
@@ -121,296 +164,6 @@ class BasicCalculator : Calculator {
 }
 ```
 
-## Built-in System Blueprints
-
-The BluePrint standard library provides comprehensive blueprints for common patterns and system interactions:
-
-### Core System Blueprints
-
-```blueprint
-// Application entry point
-blueprint System.Application {
-    public static main(args) {
-        input: args: str[];
-        output: void
-        requires: args != null;
-    }
-}
-
-// Comparable interface for ordering
-blueprint System.Comparable<T> {
-    public compareTo(other) {
-        input: other: T;
-        output: i32
-        requires: other != null;
-        ensures: (compareTo == 0) <==> this.equals(other);
-        ensures: (compareTo > 0) <==> other.compareTo(this) < 0;
-        ensures: (compareTo < 0) <==> other.compareTo(this) > 0;
-    }
-}
-
-// Object equality and hashing
-blueprint System.Object {
-    public equals(other) {
-        input: other: Object;
-        output: bool
-        ensures: equals(this) == true;  // Reflexive
-        ensures: equals(other) == other.equals(this);  // Symmetric
-    }
-    
-    public hashCode() {
-        output: i32
-        ensures: this.equals(other) ==> (hashCode() == other.hashCode());
-    }
-    
-    public toString() {
-        output: String
-        ensures: toString != null;
-    }
-}
-```
-
-### Collection Blueprints
-
-```blueprint
-// Basic iterable collection
-blueprint System.Collection<T> {
-    public size() {
-        output: u32
-        ensures: size >= 0;
-    }
-    
-    public isEmpty() {
-        output: bool
-        ensures: isEmpty <==> (size() == 0);
-    }
-    
-    public contains(item) {
-        input: item: T;
-        output: bool
-    }
-    
-    public iterator() {
-        output: Iterator<T>
-        ensures: iterator != null;
-    }
-}
-
-// List with indexed access
-blueprint System.List<T> : System.Collection<T> {
-    public get(index) {
-        input: index: u32;
-        output: T
-        throws: IndexOutOfBoundsException;
-        requires: index < size();
-        ensures: (throws IndexOutOfBoundsException) ==> (index >= size());
-    }
-    
-    public set(index, item) {
-        input:
-            index: u32,
-            item: T;
-        output: void
-        throws: IndexOutOfBoundsException;
-        requires: index < size();
-        ensures: get(index) == item;
-    }
-    
-    public add(item) {
-        input: item: T;
-        output: void
-        ensures: size() == old(size()) + 1;
-        ensures: contains(item);
-    }
-    
-    public remove(index) {
-        input: index: u32;
-        output: T
-        throws: IndexOutOfBoundsException;
-        requires: index < size();
-        ensures: size() == old(size()) - 1;
-    }
-}
-
-// Map/dictionary interface
-blueprint System.Map<K, V> {
-    public put(key, value) {
-        input:
-            key: K,
-            value: V;
-        output: V?  // Previous value or null
-        requires: key != null;
-        ensures: get(key) == value;
-        ensures: containsKey(key);
-    }
-    
-    public get(key) {
-        input: key: K;
-        output: V?
-        requires: key != null;
-        ensures: (get != null) <==> containsKey(key);
-    }
-    
-    public containsKey(key) {
-        input: key: K;
-        output: bool
-        requires: key != null;
-    }
-    
-    public size() {
-        output: u32
-        ensures: size >= 0;
-    }
-}
-```
-
-### I/O and Resource Management
-
-```blueprint
-// File operations
-blueprint System.File {
-    public exists() {
-        output: bool
-    }
-    
-    public isFile() {
-        output: bool
-        ensures: isFile() ==> exists();
-    }
-    
-    public isDirectory() {
-        output: bool
-        ensures: isDirectory() ==> exists();
-        ensures: !(isFile() && isDirectory());
-    }
-    
-    public canRead() {
-        output: bool
-        ensures: canRead() ==> exists();
-    }
-    
-    public canWrite() {
-        output: bool
-        ensures: canWrite() ==> exists();
-    }
-}
-
-// Input stream operations
-blueprint System.InputStream {
-    public read() {
-        output: i32  // -1 for end of stream
-        throws: IOException;
-        ensures: (read >= 0 && read <= 255) || read == -1;
-    }
-    
-    public read(buffer) {
-        input: buffer: byte[];
-        output: i32  // bytes read, -1 for end
-        throws: IOException;
-        requires: buffer != null;
-        ensures: read >= -1 && read <= buffer.length;
-    }
-    
-    public close() {
-        output: void
-        throws: IOException;
-        ensures: isClosed();
-    }
-    
-    public isClosed() {
-        output: bool
-    }
-}
-
-// Auto-closeable resources
-blueprint System.AutoCloseable {
-    public close() {
-        output: void
-        throws: Exception;
-        ensures: isClosed();
-    }
-    
-    public isClosed() {
-        output: bool
-    }
-}
-```
-
-### Threading and Concurrency
-
-```blueprint
-// Thread-safe operations
-blueprint System.Concurrent.Lock {
-    public lock() {
-        output: void
-        ensures: isHeldByCurrentThread();
-    }
-    
-    public unlock() {
-        output: void
-        requires: isHeldByCurrentThread();
-        ensures: !isHeldByCurrentThread();
-    }
-    
-    public tryLock() {
-        output: bool
-        ensures: tryLock ==> isHeldByCurrentThread();
-    }
-    
-    public isHeldByCurrentThread() {
-        output: bool
-    }
-}
-
-// Future pattern for async operations
-blueprint System.Concurrent.Future<T> {
-    public get() {
-        output: T
-        throws: InterruptedException, ExecutionException;
-        requires: isDone();
-        ensures: get != null || T is nullable;
-    }
-    
-    public isDone() {
-        output: bool
-    }
-    
-    public isCancelled() {
-        output: bool
-        ensures: isCancelled() ==> isDone();
-    }
-    
-    public cancel(mayInterruptIfRunning) {
-        input: mayInterruptIfRunning: bool;
-        output: bool
-        ensures: cancel ==> isCancelled();
-    }
-}
-```
-
-Usage with built-in blueprints:
-
-```blueprint
-class HelloWorld : System.Application {
-    public static void main(str[] args) {
-        System.out.println("Hello, World!");
-    }
-}
-
-class Person : System.Comparable<Person> {
-    private String name;
-    private i32 age;
-    
-    public i32 compareTo(Person other) {
-        i32 nameComparison = this.name.compareTo(other.name);
-        if (nameComparison != 0) {
-            return nameComparison;
-        }
-        return this.age - other.age;
-    }
-}
-```
-
 ## Blueprint Declaration
 
 ### Basic Structure
@@ -489,87 +242,158 @@ ensures: (throws IllegalArgumentException) ==> (state == old(state));
 
 ### Default Values and Base Cases
 
-Default values eliminate redundant base case checking in implementations:
+Default values completely eliminate the need for base case checking in implementations. When a default condition is met, that value is returned automatically:
 
 ```blueprint
 blueprint MathUtils {
     public fibonacci(n) {
         input: n: u32;
         output: u32
-        default: n <= 0 ==> 0;
-        default: n == 1 ==> 1;
-        default: n == 2 ==> 1;
+        default: n == 0 ==> 0;      // If n == 0, return 0
+        default: n == 1 ==> 1;      // If n == 1, return 1
+        default: n == 2 ==> 1;      // If n == 2, return 1
         ensures: (n > 2) ==> (fibonacci == fibonacci(n-1) + fibonacci(n-2));
-    }
-    
-    public factorial(n) {
-        input: n: u32;
-        output: u64
-        default: n == 0 ==> 1;
-        default: n == 1 ==> 1;
-        requires: n <= 20;  // Prevent overflow
-        ensures: (n > 1) ==> (factorial == n * factorial(n-1));
-    }
-    
-    public power(base, exponent) {
-        input:
-            base: f64,
-            exponent: i32;
-        output: f64
-        default: exponent == 0 ==> 1.0;
-        default: exponent == 1 ==> base;
-        default: base == 0.0 && exponent > 0 ==> 0.0;
-        ensures: (exponent > 1) ==> (power == base * power(base, exponent - 1));
     }
 }
 
 class MathCalculator : MathUtils {
     public u32 fibonacci(u32 n) {
-        // Base cases handled automatically by defaults
+        // No base case checking needed - defaults handle it automatically
+        // This code only executes when n > 2
         return fibonacci(n - 1) + fibonacci(n - 2);
-    }
-    
-    public u64 factorial(u32 n) {
-        // Base cases handled automatically by defaults  
-        return n * factorial(n - 1);
-    }
-    
-    public f64 power(f64 base, i32 exponent) {
-        // Base cases handled automatically by defaults
-        if (exponent < 0) {
-            return 1.0 / power(base, -exponent);
-        }
-        return base * power(base, exponent - 1);
     }
 }
 ```
 
-### Default Values with Complex Conditions
+#### Multiple Default Priority Rules
+
+When multiple defaults could apply, the **first matching default** is used (top-to-bottom order):
 
 ```blueprint
 blueprint StringProcessor {
     public processString(input) {
         input: input: str;
         output: str
-        default: input == null ==> "";
-        default: input.length == 0 ==> "empty";
-        default: input.length == 1 ==> input.toUpperCase();
+        default: input == null ==> "";          // Priority 1: null check first
+        default: input.length == 0 ==> "empty"; // Priority 2: empty check second
+        default: input.length == 1 ==> input.toUpperCase(); // Priority 3: single char
         requires: input != null;
         ensures: processString.length > 0;
     }
-    
-    public findIndex(array, target) {
-        input:
-            array: i32[],
-            target: i32;
-        output: i32
-        default: array == null ==> -1;
-        default: array.length == 0 ==> -1;
-        default: array[0] == target ==> 0;
-        ensures: (findIndex >= 0) ==> (array[findIndex] == target);
-        ensures: (findIndex == -1) ==> (forall i: 0 <= i < array.length ==> array[i] != target);
+}
+
+// Usage examples:
+// processString(null) → ""           (matches first default)
+// processString("") → "empty"        (matches second default)  
+// processString("a") → "A"           (matches third default)
+// processString("hello") → [implementation code runs]
+```
+
+**Important**: If the desired behavior requires different ordering, the programmer must adjust the default order accordingly.
+
+## Compilation Model
+
+### Blueprint Processing
+
+Blueprints are not compiled as separate units. Instead, they function like C++ header files:
+
+1. **Blueprint Parsing**: Blueprint files are parsed to extract contract information
+2. **Contract Injection**: Relevant contract parts are injected into implementing classes during compilation
+3. **Verification**: The compiler verifies that class implementations satisfy blueprint contracts
+4. **Code Generation**: Final executable code includes both implementation and contract checking code
+
+```blueprint
+// fibonacci.blueprint - Not compiled separately
+blueprint MathUtils {
+    public fibonacci(n) {
+        input: n: u32;
+        output: u32
+        default: n == 0 ==> 0;
+        default: n == 1 ==> 1;
+        requires: n >= 0;
+        ensures: fibonacci >= 0;
     }
 }
+
+// calculator.bp - Compiled with injected contracts
+class Calculator : MathUtils {
+    public u32 fibonacci(u32 n) {
+        // Compiler injects:
+        // 1. Precondition checks: assert(n >= 0)
+        // 2. Default value handling: if (n == 0) return 0; if (n == 1) return 1;
+        // 3. Implementation code (only runs if no defaults match):
+        return fibonacci(n - 1) + fibonacci(n - 2);
+        // 4. Postcondition checks: assert(result >= 0)
+    }
+}
+```
+
+### Contract Verification Phases
+
+#### 1. Compile-Time Verification
+The compiler attempts to verify contracts statically when possible:
+
+```blueprint
+class BadImplementation : MathUtils {
+    public u32 fibonacci(u32 n) {
+        return -1;  // COMPILE ERROR: Cannot guarantee "ensures: fibonacci >= 0"
+    }
+}
+
+class GoodImplementation : MathUtils {
+    public u32 fibonacci(u32 n) {
+        return fibonacci(n - 1) + fibonacci(n - 2);  // COMPILE SUCCESS: Can verify contract
+    }
+}
+```
+
+#### 2. Runtime Verification
+When compile-time verification isn't possible, contracts are checked at runtime:
+
+```blueprint
+class RuntimeChecked : MathUtils {
+    public u32 fibonacci(u32 n) {
+        u32 result = complexCalculation(n);  // Can't verify statically
+        return result;  // Runtime check: assert(result >= 0)
+    }
+}
+```
+
+### Error Reporting
+
+#### Compile-Time Contract Violations
+```
+Error: Contract violation in Calculator.fibonacci()
+  Contract: ensures: fibonacci >= 0
+  Violation: Method can return negative value (-1)
+  Location: calculator.bp:15:16
+  Suggestion: Ensure all return paths satisfy the postcondition
+```
+
+#### Runtime Contract Violations  
+```
+BluePrintException: Precondition violated in Calculator.fibonacci()
+  Contract: requires: n >= 0
+  Violation: n = -5
+  Call Stack:
+    at Calculator.fibonacci(calculator.bp:12)
+    at Application.main(app.bp:8)
+```
+
+### Debug Mode
+
+Enable detailed contract checking information:
+
+```bash
+# Compile with contract debugging
+blueprintc --debug-contracts calculator.bp
+
+# Output shows all contract checks:
+# Checking precondition: n >= 0 ✓
+# Checking default: n == 0 ✗  
+# Checking default: n == 1 ✗
+# Executing implementation code
+# Checking postcondition: fibonacci >= 0 ✓
 ```
 
 ### Fractional Type Support in Blueprints

@@ -7,6 +7,7 @@ const hljs = require('highlight.js');
 marked.setOptions({
   highlight: function(code, lang) {
     // Use Java syntax highlighting for blueprint code with custom enhancements
+    // Supports both .bp (implementation) and .bpf (blueprint-only) files
     if (lang === 'blueprint') {
       lang = 'java';
       
@@ -83,11 +84,13 @@ if (fs.existsSync(imgSourceDir)) {
 const docStructure = [
   { file: 'index.md', title: 'Introduction' },
   { file: 'syntax.md', title: 'Syntax' },
-  { file: 'blueprints.md', title: 'Blueprint Specifications' },
   { file: 'types.md', title: 'Type System' },
-  { file: 'functions.md', title: 'Functions' },
   { file: 'control-flow.md', title: 'Control Flow' },
+  { file: 'functions.md', title: 'Functions' },
+  { file: 'blueprints.md', title: 'Blueprint Specifications' },
+  { file: 'memory.md', title: 'Memory Management' },
   { file: 'concurrency.md', title: 'Concurrency' },
+  { file: 'exceptions.md', title: 'Exception Handling' },
   { file: 'modules.md', title: 'Modules' },
   { file: 'stdlib.md', title: 'Standard Library' },
   { file: 'examples.md', title: 'Examples' }

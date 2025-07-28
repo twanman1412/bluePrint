@@ -2,6 +2,10 @@
 
 BluePrint is a modern programming language designed for [your specific use case/goals].
 
+## Why BluePrint
+
+BluePrint was created to enable writing clean, expressive code without repetitive boilerplate or tedious parameter checks. Inspired by the Java Modeling Language (JML), BluePrint aims to make intent and correctness explicit, letting developers focus on core logic rather than defensive programming.
+
 ## Project Structure
 
 ```
@@ -32,13 +36,17 @@ The generated documentation will be available in `docs/build/index.html`.
 ### Documentation Files
 
 - `docs/index.md` - Introduction and getting started
-- `docs/syntax.md` - Language syntax
-- `docs/types.md` - Type system
-- `docs/functions.md` - Functions
-- `docs/control-flow.md` - Control flow constructs
-- `docs/modules.md` - Module system
-- `docs/stdlib.md` - Standard library
-- `docs/examples.md` - Code examples
+- `docs/syntax.md` - Basic language syntax and keywords
+- `docs/types.md` - Type system, generics, and inheritance
+- `docs/control-flow.md` - Control flow constructs and pattern matching
+- `docs/functions.md` - Functions, methods, and async programming
+- `docs/blueprints.md` - Blueprint specifications and contracts
+- `docs/memory.md` - Memory management, garbage collection, and RAII
+- `docs/concurrency.md` - Async/await, threading, and synchronization
+- `docs/exceptions.md` - Exception handling and error management
+- `docs/modules.md` - Module system, imports, and .bpf files
+- `docs/stdlib.md` - Standard library (to be completed)
+- `docs/examples.md` - Practical code examples and applications
 
 ## Compiler Development
 

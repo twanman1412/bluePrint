@@ -54,9 +54,19 @@ fractional mixed = half + wholeNumber; // Exactly 11/2
 // Operations remain exact as long as no floating point is involved
 fractional complex = (1/3) * 6 + (2/5); // Exactly 12/5
 
-// Once a floating point is involved, converts to floating point
+// Type promotion rules:
+// fractional + integer = fractional (exact arithmetic)
+// fractional + fractional = fractional (exact arithmetic)  
+// fractional + float = float (converts to floating point)
 f64 floatValue = 3.14;
 f64 converted = result + floatValue;  // Becomes floating point: ~4.9733333...
+
+// Examples of type promotion
+fractional half = 1/2;
+i32 wholeNumber = 5;
+fractional exactSum = half + wholeNumber;    // Exactly 11/2 (fractional)
+f32 floatNum = 2.5f;
+f32 floatResult = half + floatNum;           // 3.0f (float)
 
 // Overflow protection - throws exception if numerator or denominator exceeds i32 range
 try {
@@ -79,7 +89,7 @@ BluePrint distinguishes between basic character arrays and rich string objects:
 
 ```blueprint
 // Basic string type (character array)
-str name = "Hello, World!";     // Equivalent to char[]
+str name = "Hello, World!";     // Character array (str == char[])
 str empty = "";                 // Empty character array
 str nullStr = null;             // Null reference
 
@@ -92,8 +102,13 @@ String message = new String("Hello");
 String result = message.concat(" World");
 bool isEqual = message.equals("Hello");
 u32 length = message.length();
-str charArray = message.toCharArray(); // Convert to str
 
+// Type conversion rules
+String richString = String.from("Hello");  // Convert str to String
+str basicString = richString.toCharArray(); // Convert String to str
+```
+
+```blueprint
 // String operations in blueprints
 blueprint StringUtils {
     public concatenate(a, b) {
@@ -325,7 +340,7 @@ blueprint Cloneable<T> {
     }
 }
 
-// Multiple bounds using comma separation
+// Multiple bounds using comma separation - type must satisfy ALL constraints
 blueprint SortedContainer<T : Comparable<T>, Serializable, Cloneable<T>> {
     public add(item) {
         input: item: T;
@@ -342,18 +357,29 @@ blueprint SortedContainer<T : Comparable<T>, Serializable, Cloneable<T>> {
     }
 }
 
-// Invariant generics - no covariance/contravariance
+// Implementation must satisfy ALL bounds
 class StringList : SortedContainer<String, Serializable, Cloneable<String>> {
-    // String must implement Comparable<String>, Serializable, and Cloneable<String>
+    // String must implement:
+    // 1. Comparable<String> (for sorting)
+    // 2. Serializable (for serialization)  
+    // 3. Cloneable<String> (for cloning)
     
     public void add(String item) {
-        // Implementation
+        // Implementation must maintain sorted order
+        // Can use item.compareTo() because String : Comparable<String>
     }
     
     public str serialize() {
-        // Implementation
+        // Implementation must serialize container
+        // Can use item.serialize() because String : Serializable
         return "SerializedStringList";
     }
+}
+
+// Example of constraint verification
+class InvalidList : SortedContainer<i32, Serializable, Cloneable<i32>> {
+    // COMPILE ERROR: i32 does not implement Serializable
+    // All bounds must be satisfied by the type argument
 }
 
 // Generic variance examples showing invariance
@@ -438,10 +464,13 @@ class Shape : Drawable, Movable, Resizable {
 
 ### Diamond Problem Resolution
 
+BluePrint uses virtual inheritance (similar to C++) to resolve diamond inheritance problems:
+
 ```blueprint
 blueprint A {
     public method() {
         output: String
+        ensures: method != null;
     }
 }
 
@@ -449,6 +478,7 @@ blueprint B : A {
     public method() {
         output: String
         ensures: method == "B";
+        ensures: method != null;  // Inherited from A
     }
 }
 
@@ -456,17 +486,96 @@ blueprint C : A {
     public method() {
         output: String
         ensures: method == "C";
+        ensures: method != null;  // Inherited from A
     }
 }
 
-// Explicit resolution required
+// Virtual inheritance - explicit casting required for access
 class D : B, C {
     // Must explicitly override to resolve ambiguity
     public String method() {
-        return "D: " + B.method() + " + " + C.method();
+        return "D";
+    }
+}
+
+// Usage requires explicit casting to resolve ambiguity
+class DiamondExample {
+    public void demonstrateVirtualInheritance() {
+        D obj = new D();
+        
+        // Direct access to D's method
+        String directResult = obj.method();  // "D"
+        
+        // Explicit casting required for blueprint access
+        A asA_fromB = (B) obj;  // Cast to A via B path
+        A asA_fromC = (C) obj;  // Cast to A via C path
+        
+        // This would be ambiguous - compile error
+        // A asA = obj;  // COMPILE ERROR: Ambiguous conversion from D to A
+        
+        // Use specific paths
+        String viaB = asA_fromB.method();  // Uses B's contract path
+        String viaC = asA_fromC.method();  // Uses C's contract path
     }
 }
 ```
+
+#### Contract Conflicts in Diamond Inheritance
+
+When multiple inheritance paths create conflicting contract requirements, this is a **compile-time error by design**:
+
+```blueprint
+blueprint BaseCalculator {
+    public calculate(value) {
+        input: value: f64;
+        output: f64
+        ensures: calculate >= 0.0;  // Must be non-negative
+    }
+}
+
+blueprint PositiveCalculator : BaseCalculator {
+    public calculate(value) {
+        input: value: f64;
+        output: f64
+        ensures: calculate > 0.0;   // Must be positive (compatible with base)
+        ensures: calculate >= 0.0;  // Inherited from BaseCalculator
+    }
+}
+
+blueprint NegativeCalculator : BaseCalculator {
+    public calculate(value) {
+        input: value: f64;
+        output: f64
+        ensures: calculate < 0.0;   // Must be negative (CONFLICTS with PositiveCalculator)
+        ensures: calculate >= 0.0;  // Inherited from BaseCalculator
+    }
+}
+
+// This will cause a compile-time error due to conflicting ensures clauses
+class ConflictingCalculator : PositiveCalculator, NegativeCalculator {
+    // COMPILE ERROR: Conflicting contracts
+    // - PositiveCalculator.calculate ensures: calculate > 0.0
+    // - NegativeCalculator.calculate ensures: calculate < 0.0
+    // These cannot both be satisfied simultaneously
+    
+    public f64 calculate(f64 value) {
+        // No implementation can satisfy both contracts
+        return value;
+    }
+}
+```
+
+**Error Message:**
+```
+Error: Conflicting blueprint contracts in ConflictingCalculator.calculate()
+  Conflict 1: PositiveCalculator ensures: calculate > 0.0
+  Conflict 2: NegativeCalculator ensures: calculate < 0.0
+  Location: ConflictingCalculator.calculate()
+  Resolution: These contracts cannot be satisfied simultaneously.
+  Suggestion: Use composition instead of multiple inheritance for conflicting behaviors.
+```
+
+This design choice ensures that contract violations are caught at compile time rather than causing runtime inconsistencies.
 
 ## Type Inference
 
