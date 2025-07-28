@@ -4,10 +4,10 @@ This section contains practical examples of BluePrint programs demonstrating the
 
 ## Basic Examples
 
-### Calculator
+### Mathematical Calculator
 
 ```blueprint
-blueprint Calculator {
+blueprint MathCalculator {
     public add(a, b) {
         input: a: f64, b: f64;
         output: f64;
@@ -21,7 +21,7 @@ blueprint Calculator {
     }
 }
 
-class SimpleCalculator : Calculator {
+class BasicMathCalculator : MathCalculator {
     public f64 add(f64 a, f64 b) {
         return a + b;
     }
@@ -31,19 +31,19 @@ class SimpleCalculator : Calculator {
     }
 }
 
-class CalculatorApp : System.Application {
+class MathCalculatorApp : System.Application {
     public static void main(str[] args) {
-        SimpleCalculator calc = new SimpleCalculator();
+        BasicMathCalculator calc = new BasicMathCalculator();
         f64 result = calc.add(5.0, 3.0);
         System.out.println("5 + 3 = " + result);
     }
 }
 ```
 
-### Fibonacci Sequence
+### Fibonacci Number Generator
 
 ```blueprint
-blueprint FibonacciGenerator {
+blueprint FibonacciSequence {
     public fibonacci(n) {
         input: n: u32;
         output: u32;
@@ -53,27 +53,27 @@ blueprint FibonacciGenerator {
     }
 }
 
-class RecursiveFibonacci : FibonacciGenerator {
+class RecursiveFibonacciCalculator : FibonacciSequence {
     public u32 fibonacci(u32 n) {
         // Base cases handled by blueprint defaults
         return fibonacci(n - 1) + fibonacci(n - 2);
     }
 }
 
-class FibonacciApp : System.Application {
+class FibonacciDemoApp : System.Application {
     public static void main(str[] args) {
-        RecursiveFibonacci fib = new RecursiveFibonacci();
+        RecursiveFibonacciCalculator fibCalc = new RecursiveFibonacciCalculator();
         for (u32 i = 0; i < 10; i++) {
-            System.out.println("fib(" + i + ") = " + fib.fibonacci(i));
+            System.out.println("fib(" + i + ") = " + fibCalc.fibonacci(i));
         }
     }
 }
 ```
 
-## String Processing Example
+## Text Processing Example
 
 ```blueprint
-blueprint StringProcessor {
+blueprint TextProcessor {
     public processText(input) {
         input: input: str;
         output: str;
@@ -91,7 +91,7 @@ blueprint StringProcessor {
     }
 }
 
-class TextAnalyzer : StringProcessor {
+class StringTextAnalyzer : TextProcessor {
     public str processText(str input) {
         // Base case handled by blueprint default
         // Convert str (char array) to String for processing
@@ -115,7 +115,7 @@ class TextAnalyzer : StringProcessor {
 ## Array Processing Example
 
 ```blueprint
-blueprint ArrayProcessor {
+blueprint NumericArrayProcessor {
     public findMax(numbers) {
         input: numbers: i32[]; // Fixed-size array
         output: i32;
@@ -131,7 +131,7 @@ blueprint ArrayProcessor {
     }
 }
 
-class NumberProcessor : ArrayProcessor {
+class IntegerArrayProcessor : NumericArrayProcessor {
     public i32 findMax(i32[] numbers) {
         i32 max = numbers[0];
         for (u32 i = 1; i < numbers.length; i++) {
@@ -152,10 +152,10 @@ class NumberProcessor : ArrayProcessor {
 }
 ```
 
-## Dynamic Collections Example
+## Student Management System Example
 
 ```blueprint
-blueprint StudentManager {
+blueprint StudentRegistry {
     public addStudent(students, newStudent) {
         input: 
             students: List<Student>,
@@ -175,25 +175,25 @@ blueprint StudentManager {
     }
 }
 
-class Student {
-    private str name;
-    private u32 age;
+class StudentRecord {
+    private str studentName;
+    private u32 studentAge;
     
-    public Student(str name, u32 age) {
-        this.name = name;
-        this.age = age;
+    public StudentRecord(str name, u32 age) {
+        this.studentName = name;
+        this.studentAge = age;
     }
     
     public str getName() {
-        return name;
+        return studentName;
     }
     
     public u32 getAge() {
-        return age;
+        return studentAge;
     }
 }
 
-class UniversityRegistry : StudentManager {
+class UniversityStudentRegistry : StudentRegistry {
     public void addStudent(List<Student> students, Student newStudent) {
         students.add(newStudent);
     }
@@ -209,22 +209,40 @@ class UniversityRegistry : StudentManager {
 }
 ```
 
-### Usage Example
+### Complete Application Demo
 
 ```blueprint
-class ArrayDemo : System.Application {
+class ArrayAndStudentDemoApp : System.Application {
     public static void main(str[] args) {
         // Create fixed-size arrays
         i32[] numbers = {1, 5, 3, 9, 2}; // Fixed at 5 elements
         i32[] positiveValues = {10, 20, 30}; // Fixed at 3 elements
         
-        NumberProcessor processor = new NumberProcessor();
+        IntegerArrayProcessor processor = new IntegerArrayProcessor();
         
         i32 maxNumber = processor.findMax(numbers);
         i32 totalSum = processor.sum(positiveValues);
         
         System.out.println("Max: " + maxNumber);
         System.out.println("Sum: " + totalSum);
+        
+        // Demonstrate student management
+        List<StudentRecord> students = new ArrayList<StudentRecord>();
+        UniversityStudentRegistry registry = new UniversityStudentRegistry();
+        
+        StudentRecord alice = new StudentRecord("Alice", 20);
+        StudentRecord bob = new StudentRecord("Bob", 22);
+        
+        registry.addStudent(students, alice);
+        registry.addStudent(students, bob);
+        
+        StudentRecord? found = registry.findStudent(students, "Alice");
+        if (found != null) {
+            System.out.println("Found student: " + found.getName() + 
+                             ", age " + found.getAge());
+        }
+        
+        System.out.println("Total students: " + students.size());
     }
 }
 ```

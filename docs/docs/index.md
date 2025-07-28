@@ -59,7 +59,7 @@ blueprint Calculator {
     }
 }
 
-class Calculator : Calculator {
+class BasicCalculator : Calculator {
     public i32 max(i32 a, i32 b) {
         return a > b ? a : b;
     }

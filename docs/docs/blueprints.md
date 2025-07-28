@@ -25,21 +25,21 @@ blueprint BlueprintName {
 blueprint BankAccount {
     public deposit(amount) {
         input: amount: f64;
-        output: void
+        output: void;
         requires: amount > 0.0;
         ensures: balance == old(balance) + amount;
     }
     
     public withdraw(amount) {
         input: amount: f64;
-        output: bool
+        output: bool;
         requires: amount > 0.0 && amount <= balance;
         ensures: (withdraw == true) ==> (balance == old(balance) - amount);
         ensures: (withdraw == false) ==> (balance == old(balance));
     }
     
     public getBalance() {
-        output: f64
+        output: f64;
         ensures: getBalance == balance && getBalance >= 0.0;
     }
 }
@@ -195,8 +195,8 @@ input:
 #### Output Specification
 Defines the return type:
 ```blueprint
-output: f64        // Single return value
-output: void       // No return value
+output: f64;        // Single return value
+output: void;       // No return value
 ```
 
 #### Throws Specification
@@ -211,15 +211,15 @@ throws: /* no exceptions - can be omitted */;
 Specifies what must be true when the method is called:
 ```blueprint
 requires: x > 0.0 && y > 0.0;
-requires: name != null && name.length() > 0;
-requires: index >= 0 && index < size();
+requires: name != null && name != "";
+requires: index >= 0 && index < this.size();
 ```
 
 #### Ensures Clause (Postconditions)
 Specifies what must be true when the method returns normally (no exception):
 ```blueprint
 ensures: result >= 0.0;
-ensures: size() == old(size()) + 1;
+ensures: this.size() == old(this.size()) + 1;
 ensures: balance == old(balance) - amount;
 ```
 
@@ -307,7 +307,7 @@ Blueprints are not compiled as separate units. Instead, they function like C++ h
 blueprint MathUtils {
     public fibonacci(n) {
         input: n: u32;
-        output: u32
+        output: u32;
         default: n == 0 ==> 0;
         default: n == 1 ==> 1;
         requires: n >= 0;
@@ -496,15 +496,15 @@ Reference previous values in postconditions:
 blueprint Stack<T> {
     public push(item) {
         input: item: T;
-        output: void
-        ensures: size() == old(size()) + 1;
-        ensures: top() == item;
+        output: void;
+        ensures: this.size() == old(this.size()) + 1;
+        ensures: this.top() == item;
     }
     
     public pop() {
         output: T
-        requires: size() > 0;
-        ensures: size() == old(size()) - 1;
+        requires: this.size() > 0;
+        ensures: this.size() == old(this.size()) - 1;
         ensures: pop == old(top());
     }
 }
@@ -591,16 +591,16 @@ blueprint Container<T> {
     public add(item) {
         input: item: T;
         output: void
-        ensures: contains(item);
-        ensures: size() == old(size()) + 1;
+        ensures: this.contains(item);
+        ensures: this.size() == old(this.size()) + 1;
     }
     
     public remove(item) {
         input: item: T;
         output: bool
-        ensures: (remove == true) ==> (!contains(item));
-        ensures: (remove == true) ==> (size() == old(size()) - 1);
-        ensures: (remove == false) ==> (size() == old(size()));
+        ensures: (remove == true) ==> (!this.contains(item));
+        ensures: (remove == true) ==> (this.size() == old(this.size()) - 1);
+        ensures: (remove == false) ==> (this.size() == old(this.size()));
     }
     
     public contains(item) {
@@ -609,7 +609,7 @@ blueprint Container<T> {
     }
     
     public size() {
-        output: u32
+        output: u32;
         ensures: size >= 0;
     }
 }
@@ -672,7 +672,7 @@ When compile-time verification isn't possible, contracts are checked at runtime 
 blueprint FileReader {
     public readFile(filename) {
         input: filename: str;
-        output: str
+        output: str;
         requires: filename != null;
         requires: fileExists(filename);  // Runtime check with actual filename
         ensures: readFile != null;

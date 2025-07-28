@@ -1,9 +1,5 @@
 # BluePrint Compiler Source
 
-## Why BluePrint
-
-BluePrint was created to enable writing clean, expressive code without repetitive boilerplate or tedious parameter checks. Inspired by the Java Modeling Language (JML), BluePrint aims to make intent and correctness explicit, letting developers focus on core logic rather than defensive programming.
-
 ## Planned Structure
 
 This directory will contain the C++ source code for the BluePrint compiler.

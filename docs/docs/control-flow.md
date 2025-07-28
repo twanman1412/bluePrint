@@ -71,22 +71,66 @@ switch (value) {
 
 ## Pattern Matching
 
-BluePrint supports advanced pattern matching for complex data structures:
+BluePrint supports pattern matching for complex data structures and result types:
 
 ```blueprint
+// Result type for error handling
 class Result<T, E> {
-    // Implementation details
+    // Success case
+    public static Result<T, E> ok(T value) {
+        return new OkResult<T, E>(value);
+    }
+    
+    // Error case  
+    public static Result<T, E> error(E error) {
+        return new ErrorResult<T, E>(error);
+    }
 }
 
-class Example {
-    public void handleResult(Result<String, Error> result) {
+class OkResult<T, E> : Result<T, E> {
+    private T value;
+    
+    public OkResult(T value) {
+        this.value = value;
+    }
+    
+    public T getValue() {
+        return value;
+    }
+}
+
+class ErrorResult<T, E> : Result<T, E> {
+    private E error;
+    
+    public ErrorResult(E error) {
+        this.error = error;
+    }
+    
+    public E getError() {
+        return error;
+    }
+}
+
+class FileProcessor {
+    public void handleFileResult(Result<String, IOException> result) {
         match (result) {
-            case Ok(value) -> {
-                System.out.println("Success: " + value);
+            case OkResult(value) -> {
+                System.out.println("File content: " + value);
             }
-            case Error(message) -> {
-                System.err.println("Error: " + message);
+            case ErrorResult(error) -> {
+                System.err.println("File error: " + error.getMessage());
             }
+        }
+    }
+    
+    // Alternative using instanceof for simpler cases
+    public void handleFileResultAlt(Result<String, IOException> result) {
+        if (result instanceof OkResult) {
+            OkResult<String, IOException> ok = (OkResult<String, IOException>) result;
+            System.out.println("Success: " + ok.getValue());
+        } else if (result instanceof ErrorResult) {
+            ErrorResult<String, IOException> err = (ErrorResult<String, IOException>) result;
+            System.err.println("Error: " + err.getError().getMessage());
         }
     }
 }
