@@ -395,6 +395,8 @@ class BufferedChannel<T> : Channel<T> {
         }
     }
 }
+```
+
 ## Thread Safety and Synchronized Methods
 
 BluePrint supports synchronized methods at both the blueprint contract level and implementation level for clarity and safety:

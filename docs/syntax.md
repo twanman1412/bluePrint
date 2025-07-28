@@ -276,12 +276,12 @@ class ArrayList<T> : Container<T> {
 
 ### Arithmetic Operators
 ```blueprint
-int a = 10, b = 3;
-int sum = a + b;        // Addition: 13
-int diff = a - b;       // Subtraction: 7
-int product = a * b;    // Multiplication: 30
-int quotient = a / b;   // Division: 3
-int remainder = a % b;  // Modulo: 1
+i32 a = 10, b = 3;
+i32 sum = a + b;        // Addition: 13
+i32 diff = a - b;       // Subtraction: 7
+i32 product = a * b;    // Multiplication: 30
+i32 quotient = a / b;   // Division: 3
+i32 remainder = a % b;  // Modulo: 1
 ```
 
 ### Comparison Operators
@@ -340,12 +340,12 @@ while (condition) {
 
 #### For Loop
 ```blueprint
-for (int i = 0; i < 10; i++) {
+for (i32 i = 0; i < 10; i++) {
     // loop body
 }
 
 // Enhanced for loop
-for (int item : array) {
+for (i32 item : array) {
     // iterate over array
 }
 
