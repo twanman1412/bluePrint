@@ -96,31 +96,109 @@ const docStructure = [
   { file: 'examples.md', title: 'Examples' }
 ];
 
-// Read and combine all markdown files
-let combinedContent = '';
-let tableOfContents = '## Table of Contents\n\n';
+// Read all markdown files and prepare content structure
+let sections = [];
+let sidebarData = [];
 
 docStructure.forEach((doc, index) => {
   const filePath = path.join(__dirname, doc.file);
   
   if (fs.existsSync(filePath)) {
     const content = fs.readFileSync(filePath, 'utf8');
-    combinedContent += `\n\n<!-- Section ${index + 1}: ${doc.title} -->\n`;
-    combinedContent += content;
-    
-    // Add to table of contents
+    const htmlContent = marked(content);
     const anchor = doc.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-    tableOfContents += `${index + 1}. [${doc.title}](#${anchor})\n`;
+    
+    // Extract headings from markdown content
+    const headings = extractHeadings(content);
+    
+    sections.push({
+      id: `section-${index}`,
+      title: doc.title,
+      content: htmlContent,
+      anchor: anchor,
+      index: index,
+      headings: headings
+    });
+    
+    sidebarData.push({
+      index: index,
+      title: doc.title,
+      headings: headings
+    });
   } else {
     console.warn(`Warning: ${doc.file} not found, skipping...`);
   }
 });
 
-// Add table of contents at the beginning
-const fullContent = tableOfContents + '\n' + combinedContent;
+// Function to extract headings from markdown content
+function extractHeadings(content) {
+  const headings = [];
+  const lines = content.split('\n');
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    // Match markdown headings (## or ###)
+    const match = line.match(/^(#{2,4})\s+(.+)$/);
+    if (match) {
+      const level = match[1].length; // Number of # characters
+      const text = match[2].trim();
+      const id = text.toLowerCase()
+        .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
+        .replace(/\s+/g, '-')     // Replace spaces with hyphens
+        .replace(/-+/g, '-')      // Replace multiple hyphens with single
+        .replace(/^-|-$/g, '');   // Remove leading/trailing hyphens
+      
+      headings.push({
+        level: level,
+        text: text,
+        id: id,
+        line: i + 1
+      });
+    }
+  }
+  
+  return headings;
+}
 
-// Convert markdown to HTML
-const htmlContent = marked(fullContent);
+// Generate sidebar HTML
+function generateSidebarHTML() {
+  return sidebarData.map(section => {
+    const hasSubheadings = section.headings.length > 0;
+    
+    return `
+      <li class="toc-section" data-section="${section.index}">
+        <div class="toc-section-header" onclick="toggleSection(${section.index})" data-section="${section.index}">
+          <span class="toc-number">${section.index + 1}</span>
+          <span class="toc-title">${section.title}</span>
+          ${hasSubheadings ? '<span class="toc-toggle">▶</span>' : ''}
+        </div>
+        ${hasSubheadings ? `
+          <ul class="toc-subsections">
+            ${section.headings.map(heading => `
+              <li class="toc-subitem level-${heading.level}" data-section="${section.index}" data-heading="${heading.id}">
+                <a href="#" onclick="showSectionAndHeading(${section.index}, '${heading.id}'); return false;">
+                  ${heading.text}
+                </a>
+              </li>
+            `).join('')}
+          </ul>
+        ` : ''}
+      </li>
+    `;
+  }).join('');
+}
+
+const tableOfContentsHtml = generateSidebarHTML();
+
+// Generate JavaScript sections data
+const sectionsData = JSON.stringify(sections.map(s => ({
+  id: s.id,
+  title: s.title,
+  content: s.content,
+  index: s.index,
+  headings: s.headings
+})));
 
 // Create the complete HTML page
 const htmlPage = `<!DOCTYPE html>
@@ -166,6 +244,8 @@ const htmlPage = `<!DOCTYPE html>
             --toc-bg-end: #f0f9ff;
             --blockquote-bg: #fffbeb;
             --table-hover: #f9fafb;
+            --sidebar-bg: #f8fafc;
+            --sidebar-border: #e5e7eb;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -187,6 +267,8 @@ const htmlPage = `<!DOCTYPE html>
                 --toc-bg-end: #1e40af;
                 --blockquote-bg: #451a03;
                 --table-hover: #334155;
+                --sidebar-bg: #0f172a;
+                --sidebar-border: #334155;
                 
                 /* Adjust other colors for dark theme */
                 --primary-blue: #3b82f6;
@@ -216,19 +298,22 @@ const htmlPage = `<!DOCTYPE html>
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
             line-height: 1.7;
             color: var(--text-primary);
-            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            background: var(--bg-secondary);
             min-height: 100vh;
             transition: background-color 0.3s ease, color 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
 
         .header {
             background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
             color: white;
-            padding: 2rem 0;
+            padding: 1rem 0;
             text-align: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             position: relative;
             overflow: hidden;
+            z-index: 1000;
         }
 
         .header::before {
@@ -249,35 +334,33 @@ const htmlPage = `<!DOCTYPE html>
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
         .logo {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 1rem;
-            display: block;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+            width: 48px;
+            height: 48px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
         }
 
         .header h1 {
-            font-size: 3rem;
+            font-size: 1.75rem;
             font-weight: 800;
-            margin-bottom: 0.5rem;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            margin: 0;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
             border: none;
             color: white;
         }
 
-        .header .subtitle {
-            font-size: 1.25rem;
-            opacity: 0.9;
-            font-weight: 300;
-        }
-
         .theme-toggle {
-            position: absolute;
-            top: 1rem;
-            right: 2rem;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
@@ -294,82 +377,259 @@ const htmlPage = `<!DOCTYPE html>
             transform: translateY(-1px);
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-            background: var(--bg-primary);
-            min-height: calc(100vh - 200px);
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            border-radius: 12px;
-            margin-top: -2rem;
-            position: relative;
-            z-index: 2;
-            transition: background-color 0.3s ease;
+        .main-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 100px);
+            overflow: hidden;
         }
 
-        .toc {
-            background: linear-gradient(135deg, var(--toc-bg-start) 0%, var(--toc-bg-end) 100%);
-            padding: 2rem;
-            border-radius: 12px;
-            margin: 2rem 0;
-            border-left: 4px solid var(--primary-blue);
-            box-shadow: 0 2px 10px rgba(37, 99, 235, 0.1);
-            transition: background 0.3s ease;
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+            position: fixed;
+            left: 0;
+            top: 100px;
+            height: calc(100vh - 100px);
+            z-index: 100;
         }
 
-        .toc h2 {
+        .sidebar h2 {
             color: var(--dark-blue);
             margin-bottom: 1rem;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             display: flex;
             align-items: center;
+            border: none;
+            padding: 0;
         }
 
-        .toc h2::before {
+        .sidebar h2::before {
             content: '📋';
             margin-right: 0.5rem;
         }
 
-        .toc ol {
-            counter-reset: section;
+        .toc-list {
             list-style: none;
-            padding-left: 0;
+            padding: 0;
+            margin: 0;
         }
 
-        .toc li {
-            counter-increment: section;
-            margin: 0.5rem 0;
-            padding-left: 2rem;
-            position: relative;
-        }
-
-        .toc li::before {
-            content: counter(section) ".";
-            position: absolute;
-            left: 0;
-            color: var(--primary-blue);
-            font-weight: 600;
-        }
-
-        .toc a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            padding: 0.25rem 0.5rem;
-            border-radius: 6px;
+        .toc-section {
+            margin: 0.25rem 0;
+            border-radius: 8px;
             transition: all 0.2s ease;
-            display: inline-block;
         }
 
-        .toc a:hover {
+        .toc-section.active {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        }
+
+        .toc-section.expanded .toc-toggle {
+            transform: rotate(90deg);
+        }
+
+        .toc-section-header {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .toc-section.active .toc-section-header {
+            color: white;
+        }
+
+        .toc-section:not(.active):hover .toc-section-header {
+            background: var(--bg-primary);
+            transform: translateX(4px);
+            color: var(--primary-blue);
+        }
+
+        .toc-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: var(--primary-blue);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .toc-section.active .toc-number {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .toc-title {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .toc-toggle {
+            font-size: 0.8rem;
+            transition: transform 0.2s ease;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .toc-section.active .toc-toggle {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .toc-subsections {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 0 0 8px 8px;
+        }
+
+        .toc-section.expanded .toc-subsections {
+            max-height: 500px;
+            padding: 0.5rem 0;
+        }
+
+        .toc-section.active .toc-subsections {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .toc-subitem {
+            margin: 0;
+            transition: all 0.2s ease;
+        }
+
+        .toc-subitem a {
+            display: block;
+            padding: 0.4rem 1rem 0.4rem 2.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+            margin: 0 0.5rem;
+        }
+
+        .toc-subitem.level-3 a {
+            padding-left: 3rem;
+            font-size: 0.825rem;
+        }
+
+        .toc-subitem.level-4 a {
+            padding-left: 3.5rem;
+            font-size: 0.8rem;
+        }
+
+        .toc-section.active .toc-subitem a {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .toc-subitem:hover a,
+        .toc-subitem.active a {
             background: var(--bg-primary);
             color: var(--primary-blue);
             transform: translateX(4px);
         }
 
+        .toc-section.active .toc-subitem:hover a,
+        .toc-section.active .toc-subitem.active a {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .content-area {
+            flex: 1;
+            background: var(--bg-primary);
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            transition: background-color 0.3s ease;
+            margin-left: 280px;
+            height: calc(100vh - 100px);
+        }
+
+        .content-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .section-content.active {
+            display: block;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .pagination-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .pagination-btn:hover {
+            background: var(--secondary-blue);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+        }
+
+        .pagination-btn:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .pagination-btn:disabled:hover {
+            background: var(--gray-300);
+        }
+
+        .pagination-info {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
         h1, h2, h3, h4, h5, h6 {
             color: var(--text-primary);
-            margin-top: 3rem;
+            margin-top: 2rem;
             margin-bottom: 1rem;
             font-weight: 700;
             line-height: 1.3;
@@ -380,6 +640,7 @@ const htmlPage = `<!DOCTYPE html>
             border-bottom: 3px solid var(--primary-blue);
             padding-bottom: 1rem;
             position: relative;
+            margin-top: 0;
         }
 
         h1::after {
@@ -538,7 +799,6 @@ const htmlPage = `<!DOCTYPE html>
             padding: 2rem;
             color: var(--text-muted);
             border-top: 1px solid var(--border-color);
-            margin-top: 3rem;
         }
 
         /* Enhanced syntax highlighting for better visibility */
@@ -697,29 +957,54 @@ const htmlPage = `<!DOCTYPE html>
 
         /* Responsive design */
         @media (max-width: 768px) {
-            .container {
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+                max-height: 200px;
                 padding: 1rem;
-                margin-top: -1rem;
+                border-right: none;
+                border-bottom: 1px solid var(--sidebar-border);
+                top: auto;
+                left: auto;
             }
             
-            .header h1 {
+            .main-container {
+                flex-direction: column;
+                height: auto;
+                overflow: visible;
+            }
+            
+            .content-area {
+                margin-left: 0;
+                height: auto;
+                overflow-y: visible;
+            }
+            
+            .content-wrapper {
+                padding: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .logo-section {
+                justify-content: center;
+            }
+            
+            .theme-toggle {
+                width: fit-content;
+            }
+
+            h1 {
                 font-size: 2rem;
-            }
-            
-            .toc {
-                padding: 1rem;
             }
             
             pre {
                 padding: 1rem;
                 font-size: 0.8rem;
-            }
-
-            .theme-toggle {
-                position: static;
-                margin: 1rem auto 0;
-                display: block;
-                width: fit-content;
             }
         }
 
@@ -732,10 +1017,6 @@ const htmlPage = `<!DOCTYPE html>
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-
-        .container > * {
-            animation: fadeIn 0.6s ease-out;
         }
 
         /* Manual theme toggle styles */
@@ -756,6 +1037,8 @@ const htmlPage = `<!DOCTYPE html>
             --toc-bg-end: #1e40af;
             --blockquote-bg: #451a03;
             --table-hover: #334155;
+            --sidebar-bg: #0f172a;
+            --sidebar-border: #334155;
             --primary-blue: #3b82f6;
             --secondary-blue: #2563eb;
             --light-blue: #1e3a8a;
@@ -781,6 +1064,8 @@ const htmlPage = `<!DOCTYPE html>
             --toc-bg-end: #f0f9ff;
             --blockquote-bg: #fffbeb;
             --table-hover: #f9fafb;
+            --sidebar-bg: #f8fafc;
+            --sidebar-border: #e5e7eb;
             --primary-blue: #2563eb;
             --secondary-blue: #1e40af;
             --light-blue: #dbeafe;
@@ -793,25 +1078,244 @@ const htmlPage = `<!DOCTYPE html>
 <body>
     <header class="header">
         <div class="header-content">
+            <div class="logo-section">
+                <img src="img/bluePrint_logo/BluePrint_logo_128px.png" alt="BluePrint Logo" class="logo">
+                <h1>BluePrint Documentation</h1>
+            </div>
             <button class="theme-toggle" onclick="toggleTheme()">🌓 Toggle Theme</button>
-            <img src="img/bluePrint_logo/BluePrint_logo_128px.png" alt="BluePrint Logo" class="logo">
-            <h1>BluePrint</h1>
-            <p class="subtitle">Programming Language Documentation</p>
         </div>
     </header>
     
-    <div class="container">
-        ${htmlContent}
+    <div class="main-container">
+        <aside class="sidebar">
+            <h2>Table of Contents</h2>
+            <ul class="toc-list">
+                ${tableOfContentsHtml}
+            </ul>
+        </aside>
         
-        <footer class="footer">
-            <p>BluePrint Programming Language Documentation</p>
-            <p>Built with ❤️ using the BluePrint documentation build system</p>
-        </footer>
+        <main class="content-area">
+            <div class="content-wrapper">
+                <div id="content-sections">
+                    <!-- Sections will be populated by JavaScript -->
+                </div>
+                
+                <div class="pagination">
+                    <button class="pagination-btn" id="prev-btn" onclick="previousSection()" disabled>
+                        ← Previous
+                    </button>
+                    <div class="pagination-info">
+                        <span id="current-section">1</span> of <span id="total-sections">${sections.length}</span>
+                    </div>
+                    <button class="pagination-btn" id="next-btn" onclick="nextSection()">
+                        Next →
+                    </button>
+                </div>
+            </div>
+            
+            <footer class="footer">
+                <p>BluePrint Programming Language Documentation</p>
+                <p>Built with ❤️ using the BluePrint documentation build system</p>
+            </footer>
+        </main>
     </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
     <script>
-        hljs.highlightAll();
+        // Documentation sections data
+        const sections = ${sectionsData};
+        let currentSectionIndex = 0;
+        let currentHeadingId = null;
+        
+        // Initialize the documentation
+        function initDocumentation() {
+            renderSections();
+            showSection(0);
+            updatePagination();
+            addHeadingIds();
+            hljs.highlightAll();
+        }
+        
+        // Add IDs to all headings in the content for navigation
+        function addHeadingIds() {
+            sections.forEach((section, sectionIndex) => {
+                const sectionElement = document.getElementById(\`section-\${sectionIndex}\`);
+                if (sectionElement) {
+                    const headings = sectionElement.querySelectorAll('h2, h3, h4');
+                    
+                    section.headings.forEach(headingData => {
+                        const heading = Array.from(headings).find(h => 
+                            h.textContent.trim() === headingData.text
+                        );
+                        if (heading) {
+                            heading.id = \`section-\${sectionIndex}-\${headingData.id}\`;
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Render all sections into the content area
+        function renderSections() {
+            const contentContainer = document.getElementById('content-sections');
+            contentContainer.innerHTML = sections.map((section, index) => \`
+                <div class="section-content" id="section-\${index}" data-section="\${index}">
+                    \${section.content}
+                </div>
+            \`).join('');
+        }
+        
+        // Show a specific section
+        function showSection(index) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Update TOC active state
+            document.querySelectorAll('.toc-section').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Clear subitem active states
+            document.querySelectorAll('.toc-subitem').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show the selected section
+            const targetSection = document.getElementById(\`section-\${index}\`);
+            const targetTocSection = document.querySelector(\`.toc-section[data-section="\${index}"]\`);
+            
+            if (targetSection && targetTocSection) {
+                targetSection.classList.add('active');
+                targetTocSection.classList.add('active');
+                currentSectionIndex = index;
+                currentHeadingId = null;
+                updatePagination();
+                
+                // Auto-expand the current section in TOC
+                targetTocSection.classList.add('expanded');
+                
+                // Scroll to top of content area
+                document.querySelector('.content-area').scrollTop = 0;
+                
+                // Re-highlight code blocks in the new section
+                targetSection.querySelectorAll('pre code').forEach(block => {
+                    hljs.highlightElement(block);
+                });
+            }
+        }
+        
+        // Show a specific section and scroll to a heading
+        function showSectionAndHeading(sectionIndex, headingId) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Update TOC active state
+            document.querySelectorAll('.toc-section').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Clear subitem active states
+            document.querySelectorAll('.toc-subitem').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show the selected section
+            const targetSection = document.getElementById(\`section-\${sectionIndex}\`);
+            const targetTocSection = document.querySelector(\`.toc-section[data-section="\${sectionIndex}"]\`);
+            
+            if (targetSection && targetTocSection) {
+                targetSection.classList.add('active');
+                targetTocSection.classList.add('active');
+                currentSectionIndex = sectionIndex;
+                currentHeadingId = headingId;
+                updatePagination();
+                
+                // Auto-expand the current section in TOC
+                targetTocSection.classList.add('expanded');
+                
+                // Re-highlight code blocks in the new section
+                targetSection.querySelectorAll('pre code').forEach(block => {
+                    hljs.highlightElement(block);
+                });
+                
+                // Wait for the section to be rendered, then scroll to heading
+                setTimeout(() => {
+                    const headingElement = document.getElementById(\`section-\${sectionIndex}-\${headingId}\`);
+                    if (headingElement) {
+                        const contentArea = document.querySelector('.content-area');
+                        const elementTop = headingElement.offsetTop - 20; // 20px offset for better visibility
+                        contentArea.scrollTo({
+                            top: elementTop,
+                            behavior: 'smooth'
+                        });
+                        
+                        // Highlight the current subitem
+                        const activeSubitem = document.querySelector(\`.toc-subitem[data-section="\${sectionIndex}"][data-heading="\${headingId}"]\`);
+                        if (activeSubitem) {
+                            activeSubitem.classList.add('active');
+                        }
+                    }
+                }, 50); // Reduced timeout for faster response
+            }
+        }
+        
+        // Toggle section expansion in TOC
+        function toggleSection(sectionIndex) {
+            const tocSection = document.querySelector(\`.toc-section[data-section="\${sectionIndex}"]\`);
+            if (tocSection) {
+                if (tocSection.classList.contains('expanded')) {
+                    tocSection.classList.remove('expanded');
+                } else {
+                    tocSection.classList.add('expanded');
+                }
+            }
+            
+            // If this section is not active, show it
+            if (currentSectionIndex !== sectionIndex) {
+                showSection(sectionIndex);
+            }
+        }
+        
+        // Navigate to previous section
+        function previousSection() {
+            if (currentSectionIndex > 0) {
+                showSection(currentSectionIndex - 1);
+            }
+        }
+        
+        // Navigate to next section
+        function nextSection() {
+            if (currentSectionIndex < sections.length - 1) {
+                showSection(currentSectionIndex + 1);
+            }
+        }
+        
+        // Update pagination buttons and info
+        function updatePagination() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const currentSpan = document.getElementById('current-section');
+            const totalSpan = document.getElementById('total-sections');
+            
+            prevBtn.disabled = currentSectionIndex === 0;
+            nextBtn.disabled = currentSectionIndex === sections.length - 1;
+            
+            currentSpan.textContent = currentSectionIndex + 1;
+            totalSpan.textContent = sections.length;
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && currentSectionIndex > 0) {
+                previousSection();
+            } else if (e.key === 'ArrowRight' && currentSectionIndex < sections.length - 1) {
+                nextSection();
+            }
+        });
         
         // Theme management
         function toggleTheme() {
@@ -862,8 +1366,11 @@ const htmlPage = `<!DOCTYPE html>
             updateThemeButton();
         }
         
-        // Initialize theme when DOM is loaded
-        document.addEventListener('DOMContentLoaded', initTheme);
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+            initDocumentation();
+        });
     </script>
 </body>
 </html>`;
