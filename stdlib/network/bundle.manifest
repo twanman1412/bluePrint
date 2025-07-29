@@ -1,0 +1,18 @@
+# bundle.manifest for std/network
+bundle: std.network
+version: 1.0.0
+exports:
+  - HttpServer
+  - HttpClient
+  - HttpRequest
+  - HttpResponse
+  - TcpServer
+  - TcpClient
+  - UdpSocket
+  - WebSocket
+  - NetworkInterface
+
+dependencies:
+  - std.core >= 1.0.0
+  - std.io >= 1.0.0
+  - std.concurrent >= 1.0.0

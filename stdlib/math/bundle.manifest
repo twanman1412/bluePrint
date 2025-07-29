@@ -1,0 +1,14 @@
+# bundle.manifest for std/math
+bundle: std.math
+version: 1.0.0
+exports:
+  - Math
+  - Calculator
+  - MathUtils
+  - Random
+  - BigInteger
+  - BigDecimal
+  - Complex
+
+dependencies:
+  - std.core >= 1.0.0
