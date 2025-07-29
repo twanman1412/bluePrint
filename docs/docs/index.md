@@ -4,7 +4,7 @@ Welcome to the BluePrint programming language documentation. BluePrint is a stro
 
 ## Overview
 
-BluePrint combines the familiar syntax of C-style languages with powerful built-in specification capabilities. The language's defining feature is **blueprints** - behavioral specifications that describe what functions expect, what they guarantee, and how they behave.
+BluePrint combines the familiar syntax of C-style languages with powerful built-in specification capabilities. The language's defining feature is **blueprints** - behavioral specifications that describe what methods expect, what they guarantee, and how they behave.
 
 ### Key Features
 
@@ -21,6 +21,9 @@ BluePrint combines the familiar syntax of C-style languages with powerful built-
 - **Performance**: Compile to efficient native code via LLVM
 - **Safety**: Strong typing and contracts prevent common bugs
 - **Memory Safety**: Automatic garbage collection with RAII-style destructors (see [Memory Management](memory.md))
+- **Developer Experience**: Prioritizes ease of development and code readability over raw execution speed
+
+> **Note on Performance**: Performance characteristics will be determined after the language implementation is complete. BluePrint prioritizes development ease and code readability over maximum execution speed, though it aims for reasonable performance through LLVM compilation.
 
 ## Getting Started
 
@@ -33,7 +36,7 @@ BluePrint combines the familiar syntax of C-style languages with powerful built-
 ```blueprint
 class HelloWorld {
     public static void main(str[] args) {
-        System.out.println("Hello, World!");
+        DefaultLogger.log("Hello, World!");
     }
 }
 ```
@@ -83,7 +86,7 @@ This documentation is organized in the following order:
 2. **[Syntax](syntax.md)** - Basic language syntax, keywords, and operators
 3. **[Type System](types.md)** - Primitive types, generics, and inheritance
 4. **[Control Flow](control-flow.md)** - Conditionals, loops, and pattern matching
-5. **[Functions](functions.md)** - Method declarations, overloading, and async functions
+5. **[Functions](functions.md)** - Method declarations, overloading, and async methods
 6. **[Blueprint Specifications](blueprints.md)** - Core feature: contracts and verification
 7. **[Memory Management](memory.md)** - Garbage collection, destructors, and RAII
 8. **[Concurrency](concurrency.md)** - Async/await, threading, and synchronization
@@ -93,3 +96,5 @@ This documentation is organized in the following order:
 12. **[Examples](examples.md)** - Practical applications and code samples
 
 Each section builds upon previous concepts, so it's recommended to read them in order when learning the language.
+
+> **Quick Start**: For hands-on examples, see the [Comprehensive Web Service Example](examples.md#comprehensive-web-service-example) which demonstrates most language features in a practical application.

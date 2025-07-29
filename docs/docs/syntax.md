@@ -28,56 +28,25 @@ i32 x = 10;
 str name = "Blueprint";
 bool isActive = true;
 
-// Type inference (optional)
+// Type inference (optional) - use sparingly
 var count = 42;        // inferred as i32
 var message = "Hello"; // inferred as str
 ```
+
+> **Best Practice**: The `var` keyword is provided as a backup for complex generic types like `Mutex<Lock<Array<List<Map<String, List<Lock<Set<String>>>>>>>>` where explicit typing becomes unwieldy. Avoid using `var` for simple types like `List<String>` where the type is clear and concise.
 
 ### Constants
 
 ```blueprint
 final i32 MAX_SIZE = 100;
 final str APP_NAME = "Blueprint Compiler";
+
+// Best practice: final variables should use FULL_CAPS_SNAKE_CASE
+final i32 DEFAULT_BUFFER_SIZE = 4096;
+final str DATABASE_CONNECTION_STRING = "jdbc:postgresql://localhost:5432/mydb";
 ```
 
-## Class Declarations
-
-### Basic Class Syntax
-
-```blueprint
-class ClassName : BlueprintName1, BlueprintName2 {
-    // Field declarations
-    private Type fieldName;
-    
-    // Constructor
-    public ClassName(Type param) {
-        this.fieldName = param;
-    }
-    
-    // Method implementations
-    public ReturnType methodName(Type param) {
-        // implementation
-        return value;
-    }
-}
-```
-
-### Class with Multiple Inheritance
-
-```blueprint
-class Shape : Drawable, Movable {
-    private f64 posX, posY;
-    
-    public void draw() {
-        // Drawing implementation
-    }
-    
-    public void move(f64 x, f64 y) {
-        this.posX = x;
-        this.posY = y;
-    }
-}
-```
+> **Best Practice**: While not required by the compiler, final variables should be named using FULL_CAPS_SNAKE_CASE for better readability and consistency.
 
 ## Basic Types and Literals
 
@@ -119,6 +88,11 @@ i32 diff = a - b;       // Subtraction: 7
 i32 product = a * b;    // Multiplication: 30
 i32 quotient = a / b;   // Division: 3
 i32 remainder = a % b;  // Modulo: 1
+
+a++;                    // Get and increment
+++a;                    // Increment and get
+sum--;                  // Get and decrement
+--sum;                  // Decrement and get
 ```
 
 ### Comparison Operators
@@ -184,6 +158,45 @@ switch (value) {
 }
 ```
 
+## Class Declarations
+
+### Basic Class Syntax
+
+```blueprint
+class ClassName : BlueprintName1, BlueprintName2 {
+    // Field declarations
+    private Type fieldName;
+    
+    // Constructor
+    public ClassName(Type param) {
+        this.fieldName = param;
+    }
+    
+    // Method implementations
+    public ReturnType methodName(Type param) {
+        // implementation
+        return value;
+    }
+}
+```
+
+### Class with Multiple Inheritance
+
+```blueprint
+class Shape : Drawable, Movable {
+    private f64 posX, posY;
+    
+    public void draw() {
+        // Drawing implementation
+    }
+    
+    public void move(f64 x, f64 y) {
+        this.posX = x;
+        this.posY = y;
+    }
+}
+```
+
 ## Reserved Keywords
 
 Core language keywords include:
@@ -198,4 +211,4 @@ Core language keywords include:
 **Object operations**: `new`, `this`, `super`  
 **Concurrency**: `async`, `await`, `synchronized`, `volatile`
 
-For detailed information on types, see [Type System](types.md). For blueprint contracts, see [Blueprint Specifications](blueprints.md).
+For detailed information on types, see [Type System](types.md). For blueprint contracts, see [Blueprint Specifications](blueprints.md). For concurrency features, see [Concurrency](concurrency.md). For exception handling, see [Exception Handling](exceptions.md).

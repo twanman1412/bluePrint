@@ -4,7 +4,17 @@ BluePrint provides automatic memory management through reference-counted garbage
 
 ## Reference-Counted Garbage Collection
 
-BluePrint uses reference counting as the primary garbage collection mechanism. The runtime automatically tracks how many references exist to each object and immediately frees objects when their reference count reaches zero.
+BluePrint uses reference counting as the primary garbage collection mechanism. The runtime automatically tracks how many references exist to each object. When the reference count reaches zero, the object is immediately scheduled for destruction.
+
+### Destruction Process
+
+When an object's reference count reaches zero, BluePrint follows this destruction sequence:
+
+1. **Execute the object's destructor body** (if defined)
+2. **Call destructors of all object fields** (in reverse declaration order)
+3. **Deallocate the object's memory**
+
+This ensures proper cleanup order and prevents resource leaks.
 
 ### Reference Counting
 
@@ -20,7 +30,11 @@ class Example {
         Example obj1 = new Example("Hello");    // Reference count: 1
         Example obj2 = obj1;                    // Reference count: 2
         obj1 = null;                           // Reference count: 1
-        obj2 = null;                           // Reference count: 0, object eligible for GC
+        obj2 = null;                           // Reference count: 0
+        // Object destruction sequence begins immediately:
+        // 1. Execute ~Example() destructor body
+        // 2. Call data.~String()
+        // 3. Deallocate Example object memory
     }
 }
 ```
@@ -69,25 +83,25 @@ class FileManager : FileHandler {
     
     public ~FileManager() {
         // Destructor implementation
-        if (isOpen) {
-            closeFile();
+        if (this.isOpen) {
+            this.closeFile();
         }
-        if (fileStream != null) {
-            fileStream.dispose();
-            fileStream = null;
+        if (this.fileStream != null) {
+            this.fileStream.dispose();
+            this.fileStream = null;
         }
     }
     
     public bool openFile(str filename) {
-        isOpen = fileStream.open(filename);
-        return isOpen;
+        this.isOpen = this.fileStream.open(filename);
+        return this.isOpen;
     }
     
     public void closeFile() {
-        if (fileStream != null) {
-            fileStream.close();
+        if (this.fileStream != null) {
+            this.fileStream.close();
         }
-        isOpen = false;
+        this.isOpen = false;
     }
 }
 ```
@@ -185,7 +199,7 @@ class DatabaseConnection : AutoCloseable {
 
 ### Weak References
 
-For breaking reference cycles and cache-like scenarios:
+For breaking reference cycles and cache-like scenarios - see [Concurrency](concurrency.md) for thread-safe weak reference patterns:
 
 ```blueprint
 class Parent {
@@ -265,6 +279,9 @@ class LeakDetection {
 - Use local variables when possible to limit object lifetime
 
 ### 3. Performance Considerations
+
+> **Note**: Performance characteristics are conceptual, as the language implementation does not exist yet. Actual memory management performance will be determined during implementation.
+
 - Object pooling for frequently created/destroyed objects
 - Lazy initialization for expensive objects
 - Avoid large object graphs that delay GC

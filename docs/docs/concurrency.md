@@ -151,29 +151,29 @@ class GreenThreadCounter : GreenThread, ThreadSafeCounter {
     private GreenMutex mutex = new GreenMutex();
     
     public synchronized void increment() {
-        mutex.lock();
+        this.mutex.lock();
         try {
-            count++;
-            yield(); // Cooperative yielding
+            this.count++;
+            this.yield(); // Cooperative yielding
         } finally {
-            mutex.unlock();
+            this.mutex.unlock();
         }
     }
     
     public synchronized void decrement() {
-        mutex.lock();
+        this.mutex.lock();
         try {
-            if (count > 0) {
-                count--;
-                yield(); // Cooperative yielding
+            if (this.count > 0) {
+                this.count--;
+                this.yield(); // Cooperative yielding
             }
         } finally {
-            mutex.unlock();
+            this.mutex.unlock();
         }
     }
     
     public i32 get() {
-        return count;
+        return this.count;
     }
     
     protected void run() {
@@ -191,27 +191,27 @@ class OSThreadCounter : OSThread, ThreadSafeCounter {
     private Mutex mutex = new Mutex();
     
     public synchronized void increment() {
-        mutex.lock();
+        this.mutex.lock();
         try {
-            count++;
+            this.count++;
         } finally {
-            mutex.unlock();
+            this.mutex.unlock();
         }
     }
     
     public synchronized void decrement() {
-        mutex.lock();
+        this.mutex.lock();
         try {
-            if (count > 0) {
-                count--;
+            if (this.count > 0) {
+                this.count--;
             }
         } finally {
-            mutex.unlock();
+            this.mutex.unlock();
         }
     }
     
     public i32 get() {
-        return count;
+        return this.count;
     }
     
     protected void run() {
@@ -289,21 +289,21 @@ class BufferedChannel<T> : Channel<T> {
     
     public async Future<void> sendAsync(T item) {
         while (true) {
-            mutex.lock();
+            this.mutex.lock();
             try {
-                if (closed) {
+                if (this.closed) {
                     throw new ChannelClosedException();
                 }
                 
-                if (size < capacity) {
-                    buffer[tail] = item;
-                    tail = (tail + 1) % capacity;
-                    size++;
-                    notEmpty.signalAll();
+                if (this.size < this.capacity) {
+                    this.buffer[this.tail] = item;
+                    this.tail = (this.tail + 1) % this.capacity;
+                    this.size++;
+                    this.notEmpty.signalAll();
                     return;
                 }
             } finally {
-                mutex.unlock();
+                this.mutex.unlock();
             }
             
             // Channel is full, yield and try again
@@ -313,22 +313,22 @@ class BufferedChannel<T> : Channel<T> {
     
     public async Future<T?> receiveAsync() {
         while (true) {
-            mutex.lock();
+            this.mutex.lock();
             try {
-                if (size > 0) {
-                    T item = buffer[head];
-                    buffer[head] = null;
-                    head = (head + 1) % capacity;
-                    size--;
-                    notFull.signalAll();
+                if (this.size > 0) {
+                    T item = this.buffer[this.head];
+                    this.buffer[this.head] = null;
+                    this.head = (this.head + 1) % this.capacity;
+                    this.size--;
+                    this.notFull.signalAll();
                     return item;
                 }
                 
-                if (closed) {
+                if (this.closed) {
                     return null;
                 }
             } finally {
-                mutex.unlock();
+                this.mutex.unlock();
             }
             
             // Channel is empty, yield and try again
@@ -337,61 +337,61 @@ class BufferedChannel<T> : Channel<T> {
     }
     
     public bool send(T item) {
-        mutex.lock();
+        this.mutex.lock();
         try {
-            if (closed || size >= capacity) {
+            if (this.closed || this.size >= this.capacity) {
                 return false;
             }
             
-            buffer[tail] = item;
-            tail = (tail + 1) % capacity;
-            size++;
-            notEmpty.signalAll();
+            this.buffer[this.tail] = item;
+            this.tail = (this.tail + 1) % this.capacity;
+            this.size++;
+            this.notEmpty.signalAll();
             return true;
         } finally {
-            mutex.unlock();
+            this.mutex.unlock();
         }
     }
     
     public T? receive() {
-        mutex.lock();
+        this.mutex.lock();
         try {
-            if (size == 0) {
+            if (this.size == 0) {
                 return null;
             }
             
-            T item = buffer[head];
-            buffer[head] = null;
-            head = (head + 1) % capacity;
-            size--;
-            notFull.signalAll();
+            T item = this.buffer[this.head];
+            this.buffer[this.head] = null;
+            this.head = (this.head + 1) % this.capacity;
+            this.size--;
+            this.notFull.signalAll();
             return item;
         } finally {
-            mutex.unlock();
+            this.mutex.unlock();
         }
     }
     
     public void close() {
-        mutex.lock();
+        this.mutex.lock();
         try {
-            closed = true;
-            notEmpty.signalAll();
-            notFull.signalAll();
+            this.closed = true;
+            this.notEmpty.signalAll();
+            this.notFull.signalAll();
         } finally {
-            mutex.unlock();
+            this.mutex.unlock();
         }
     }
     
     public bool isClosed() {
-        return closed;
+        return this.closed;
     }
     
     public bool isEmpty() {
-        mutex.lock();
+        this.mutex.lock();
         try {
-            return size == 0;
+            return this.size == 0;
         } finally {
-            mutex.unlock();
+            this.mutex.unlock();
         }
     }
 }
@@ -467,37 +467,37 @@ class ThreadSafeBankAccount : BankAccount {
     private Mutex accountMutex = new Mutex();
     
     public synchronized void deposit(fractional amount) {
-        accountMutex.lock();
+        this.accountMutex.lock();
         try {
-            balance += amount;
-            notifyBalanceChange();
+            this.balance += amount;
+            this.notifyBalanceChange();
         } finally {
-            accountMutex.unlock();
+            this.accountMutex.unlock();
         }
     }
     
     public synchronized bool withdraw(fractional amount) {
-        accountMutex.lock();
+        this.accountMutex.lock();
         try {
-            if (balance >= amount) {
-                balance -= amount;
-                notifyBalanceChange();
+            if (this.balance >= amount) {
+                this.balance -= amount;
+                this.notifyBalanceChange();
                 return true;
             }
             return false;
         } finally {
-            accountMutex.unlock();
+            this.accountMutex.unlock();
         }
     }
     
     public fractional getBalance() {
         // Atomic read of volatile field - no lock needed
-        return balance;
+        return this.balance;
     }
     
     private void notifyBalanceChange() {
         // Internal method called within synchronized context
-        System.out.println("Balance changed to: " + balance);
+        System.out.println("Balance changed to: " + this.balance);
     }
 }
 
@@ -773,6 +773,8 @@ class DatabaseConnection : AsyncDatabase {
 - Use synchronous `send()`/`receive()` only for performance-critical sections
 - Always close channels when done to prevent resource leaks
 - Handle channel closure gracefully in receivers
+
+> **Note**: Performance characteristics of channel operations are conceptual, as the language implementation does not exist yet. Actual concurrency performance will be determined during implementation.
 
 ### 5. Error Handling
 - Always handle `InterruptedException` in blocking operations

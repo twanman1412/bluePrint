@@ -17,7 +17,7 @@ blueprint System.Application {
 
 class MyApp : System.Application {
     public static void main(str[] args) {
-        System.out.println("Hello, BluePrint!");
+        DefaultLogger.log("Hello, BluePrint!");
     }
 }
 ```
@@ -44,61 +44,161 @@ blueprint System.Object {
 }
 ```
 
+### Logger
+Logging functionality for applications:
+
+```blueprint
+blueprint Logger: Object {
+    log {
+        overload(message) {
+            input: str;
+            output: void;
+            requires: message != null;
+        }
+
+        overload(message) {
+            input: String;
+            output: void;
+            requires: message != null;
+        }
+    }
+
+    debug {
+        overload(message) {
+            input: str;
+            output: void;
+            requires: message != null;
+        }
+
+        overload(message) {
+            input: String;
+            output: void;
+            requires: message != null;
+        }
+    }
+
+    warn {
+        overload(message) {
+            input: str;
+            output: void;
+            requires: message != null;
+        }
+
+        overload(message) {
+            input: String;
+            output: void;
+            requires: message != null;
+        }
+    }
+
+    error {
+        overload(message) {
+            input: str;
+            output: void;
+            requires: message != null;
+        }
+
+        overload(message) {
+            input: String;
+            output: void;
+            requires: message != null;
+        }
+    }
+}
+```
+
+The default implementation is available as `DefaultLogger` which can be used directly:
+
+```blueprint
+class Application {
+    public static void main(str[] args) {
+        DefaultLogger.log("Application started");
+        DefaultLogger.debug("Debug information");
+        DefaultLogger.warn("Warning message");
+        DefaultLogger.error("Error occurred");
+    }
+}
+```
+
 ## Collections Framework
+
+### Collection<T>
+Base collection interface:
+
+```blueprint
+blueprint Collection<T>: Object {
+    length() {
+        output: i32;
+        ensures: length >= 0;
+    }
+}
+```
 
 ### List<T>
 Dynamic array interface:
 
 ```blueprint
-blueprint System.List<T> {
-    public add(item) {
+blueprint List<T>: Collection<T> {
+    getArray() {
+        output: T[];
+        ensures: getArray != null;
+    }
+
+    get(index) {
+        input: i32;
+        output: T;
+        default: index == -1 ==> this.get(this.length() - 1);
+        requires: index >= -1;
+        ensures: index >= 0 ==> get == this.getArray()[index];
+        ensures: index == -1 ==> get == this.getArray()[this.length() - 1];
+    }
+
+    concat(other) {
+        input: Collection<T>;
+        output: Collection<T>;
+        requires: other != null;
+        ensures: concat.length() == this.length() + other.length();
+    }
+    
+    add(item) {
         input: item: T;
         output: void;
         ensures: this.contains(item);
-        ensures: this.size() == old(this.size()) + 1;
+        ensures: this.length() == old(this.length()) + 1;
     }
     
-    public get(index) {
-        input: index: u32;
-        output: T;
-        requires: index < this.size();
-    }
-    
-    public size() {
-        output: u32;
-        ensures: size >= 0;
-    }
-    
-    public contains(item) {
+    contains(item) {
         input: item: T;
         output: bool;
     }
 }
 ```
 
+> **Note**: The `String` type is an imported type that implements the `List<char>` blueprint, providing standard string operations while maintaining collection-like behavior.
+
 ### Set<T>
 Unique element collection:
 
 ```blueprint
-blueprint System.Set<T> {
-    public add(item) {
+blueprint Set<T>: Collection<T> {
+    add(item) {
         input: item: T;
         output: bool;
         ensures: this.contains(item);
-        ensures: add ==> (this.size() == old(this.size()) + 1);
-        ensures: !add ==> (this.size() == old(this.size()));
+        ensures: add ==> (this.length() == old(this.length()) + 1);
+        ensures: !add ==> (this.length() == old(this.length()));
     }
     
-    public remove(item) {
+    remove(item) {
         input: item: T;
         output: bool;
         ensures: !this.contains(item);
-        ensures: remove ==> (this.size() == old(this.size()) - 1);
+        ensures: remove ==> (this.length() == old(this.length()) - 1);
     }
     
-    public size() {
-        output: u32;
-        ensures: size >= 0;
+    contains(item) {
+        input: item: T;
+        output: bool;
     }
 }
 ```
@@ -107,24 +207,29 @@ blueprint System.Set<T> {
 Key-value mapping:
 
 ```blueprint
-blueprint System.Map<K, V> {
-    public put(key, value) {
+blueprint Map<K, V>: Object {
+    put(key, value) {
         input: key: K, value: V;
         output: V?;
         requires: key != null;
         ensures: this.get(key) == value;
     }
     
-    public get(key) {
+    get(key) {
         input: key: K;
         output: V?;
         requires: key != null;
     }
     
-    public containsKey(key) {
+    containsKey(key) {
         input: key: K;
         output: bool;
         requires: key != null;
+    }
+    
+    length() {
+        output: i32;
+        ensures: length >= 0;
     }
 }
 ```
@@ -273,7 +378,7 @@ class DataProcessor : FileSystem {
             Map<str, i32> wordCount = countWords(lines);
             displayResults(wordCount);
         } catch (IOException e) {
-            System.err.println("Error processing file: " + e.getMessage());
+            DefaultLogger.error("Error processing file: " + e.getMessage());
         }
     }
     
