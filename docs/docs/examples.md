@@ -70,6 +70,196 @@ class FibonacciDemoApp : System.Application {
 }
 ```
 
+## User Interface Widget Example
+
+This example demonstrates multiple inheritance with UI components that must be both drawable and resizable:
+
+```blueprint
+blueprint Drawable {
+    public draw(context) {
+        input: context: GraphicsContext;
+        output: void;
+        requires: context != null;
+        ensures: this.isVisible();
+    }
+    
+    public isVisible() {
+        output: bool;
+    }
+}
+
+blueprint Resizable {
+    public resize(width, height) {
+        input: width: u32, height: u32;
+        output: void;
+        requires: width > 0 && height > 0;
+        ensures: this.getWidth() == width && this.getHeight() == height;
+    }
+    
+    public getWidth() {
+        output: u32;
+        ensures: getWidth > 0;
+    }
+    
+    public getHeight() {
+        output: u32;
+        ensures: getHeight > 0;
+    }
+}
+
+blueprint Clickable {
+    public onClick(event) {
+        input: event: MouseEvent;
+        output: void;
+        requires: event != null;
+    }
+}
+
+class Button : Drawable, Resizable, Clickable {
+    private u32 width, height;
+    private str text;
+    private bool visible;
+    
+    public Button(str text, u32 width, u32 height) {
+        this.text = text;
+        this.width = width;
+        this.height = height;
+        this.visible = true;
+    }
+    
+    public void draw(GraphicsContext context) {
+        context.fillRect(0, 0, this.width, this.height);
+        context.drawText(this.text, this.width / 2, this.height / 2);
+    }
+    
+    public bool isVisible() {
+        return this.visible;
+    }
+    
+    public void resize(u32 width, u32 height) {
+        this.width = width;
+        this.height = height;
+    }
+    
+    public u32 getWidth() {
+        return this.width;
+    }
+    
+    public u32 getHeight() {
+        return this.height;
+    }
+    
+    public void onClick(MouseEvent event) {
+        System.out.println("Button clicked: " + this.text);
+    }
+}
+```
+
+## User Interface Widget Example
+
+This example demonstrates multiple inheritance with UI components that must be both drawable and resizable:
+
+```blueprint
+blueprint Drawable {
+    public draw(context) {
+        input: context: GraphicsContext;
+        output: void;
+        requires: context != null;
+        ensures: this.isVisible();
+    }
+    
+    public isVisible() {
+        output: bool;
+    }
+}
+
+blueprint Resizable {
+    public resize(width, height) {
+        input: width: u32, height: u32;
+        output: void;
+        requires: width > 0 && height > 0;
+        ensures: this.getWidth() == width && this.getHeight() == height;
+    }
+    
+    public getWidth() {
+        output: u32;
+        ensures: getWidth > 0;
+    }
+    
+    public getHeight() {
+        output: u32;
+        ensures: getHeight > 0;
+    }
+}
+
+blueprint Clickable {
+    public onClick(event) {
+        input: event: MouseEvent;
+        output: void;
+        requires: event != null;
+    }
+}
+
+class Button : Drawable, Resizable, Clickable {
+    private u32 width, height;
+    private str text;
+    private bool visible = true;
+    
+    public Button(str text, u32 width, u32 height) {
+        this.text = text;
+        this.width = width;
+        this.height = height;
+    }
+    
+    public void draw(GraphicsContext context) {
+        if (visible) {
+            context.drawRectangle(0, 0, this.width, this.height);
+            context.drawText(text, this.width/2, this.height/2);
+        }
+    }
+    
+    public void resize(u32 width, u32 height) {
+        this.width = width;
+        this.height = height;
+    }
+    
+    public void onClick(MouseEvent event) {
+        System.out.println("Button '" + this.text + "' clicked!");
+    }
+    
+    public bool isVisible() {
+        return this.visible;
+    }
+    
+    public u32 getWidth() {
+        return this.width;
+    }
+    
+    public u32 getHeight() {
+        return this.height;
+    }
+}
+
+class UIApplication : System.Application {
+    public static void main(str[] args) {
+        Button submitButton = new Button("Submit", 100, 30);
+        Button cancelButton = new Button("Cancel", 80, 30);
+        
+        // All buttons are drawable, resizable, and clickable
+        GraphicsContext ctx = new GraphicsContext();
+        submitButton.draw(ctx);
+        cancelButton.resize(120, 35);
+        
+        // Simulate click events
+        MouseEvent clickEvent = new MouseEvent(50, 15);
+        submitButton.onClick(clickEvent);
+        
+        System.out.println("Submit button size: " + 
+                          submitButton.getWidth() + "x" + submitButton.getHeight());
+    }
+}
+```
+
 ## Text Processing Example
 
 ```blueprint
@@ -209,7 +399,472 @@ class UniversityStudentRegistry : StudentRegistry {
 }
 ```
 
-### Complete Application Demo
+## Comprehensive Web Service Example
+
+This example demonstrates a complete BluePrint application combining multiple language features:
+
+See [Modules](modules.md) for import system details.
+
+```blueprint
+// Import necessary modules
+import [List, Map] from bundle std/collections;
+import bundle std/io;
+import [HttpServer, HttpRequest, HttpResponse] from bundle network/http;
+
+// Blueprint specifications with contracts and default values
+blueprint UserService {
+    public createUser(userData) {
+        input: userData: UserData;
+        output: User;
+        throws: ValidationException, DatabaseException;
+        requires: userData != null && userData.isValid();
+        ensures: createUser.getId() > 0;
+        ensures: this.findUser(createUser.getId()) != null;
+    }
+    
+    public findUser(userId) {
+        input: userId: u32;
+        output: User?;
+        throws: DatabaseException;
+        requires: userId > 0;
+        default: userId == 0 ==> null;
+    }
+    
+    public updateUser(userId, updates) {
+        input: userId: u32, updates: UserData;
+        output: bool;
+        throws: ValidationException, DatabaseException;
+        requires: userId > 0 && updates != null && updates.isValid();
+        default: userId == 0 ==> false;
+        default: updates == null ==> false;
+        ensures: updateUser ==> (this.findUser(userId).getLastModified() > old(this.findUser(userId).getLastModified()));
+        ensures: !updateUser ==> (this.findUser(userId) == null);
+    }
+    
+    public getUserCount() {
+        output: u32;
+        ensures: getUserCount >= 0;
+    }
+}
+
+// Blueprint for HTTP server with async operations
+blueprint HttpServer {
+    public start(port) {
+        input: port: u32;
+        output: void;
+        throws: ServerException;
+        requires: port > 0 && port <= 65535;
+        default: port == 0 ==> throw new ServerException("Invalid port");
+        ensures: this.isRunning();
+    }
+    
+    public async handleRequest(request) {
+        input: request: HttpRequest;
+        output: Future<HttpResponse>;
+        throws: RequestException;
+        requires: request != null;
+        ensures: handleRequest != null;
+    }
+    
+    public isRunning() {
+        output: bool;
+    }
+    
+    public stop() {
+        output: void;
+        ensures: !this.isRunning();
+    }
+}
+
+// Blueprint for validatable data with constraints
+blueprint Validatable {
+    public isValid() {
+        output: bool;
+    }
+    
+    public validate() {
+        output: void;
+        throws: ValidationException;
+        ensures: this.isValid();
+    }
+}
+
+// Blueprint for resource management
+blueprint AutoCloseable {
+    public close() {
+        output: void;
+        ensures: this.isClosed();
+    }
+    
+    public isClosed() {
+        output: bool;
+    }
+}
+```
+
+See [Exception Handling](exceptions.md) for exception system details.
+
+```blueprint
+// Exception handling with blueprint contracts
+class ValidationException : Exception {
+    private str field;
+    
+    public ValidationException(str message, str field) {
+        super(message);
+        this.field = field;
+    }
+    
+    public str getField() {
+        return this.field;
+    }
+}
+
+class DatabaseException : Exception {
+    public DatabaseException(str message) {
+        super(message);
+    }
+}
+
+class ServerException : Exception {
+    public ServerException(str message) {
+        super(message);
+    }
+}
+
+class RequestException : Exception {
+    public RequestException(str message) {
+        super(message);
+    }
+}
+```
+
+See [Type System](types.md) for type system details.
+
+```blueprint
+// Data classes with blueprint constraints and validation
+class UserData : Validatable {
+    private str name;
+    private str email;
+    private u32 age;
+    
+    public UserData(str name, str email, u32 age) {
+        this.name = name;
+        this.email = email;
+        this.age = age;
+    }
+    
+    public bool isValid() {
+        return this.name != null && this.name.length > 0 && 
+               this.email != null && this.email.contains("@") && 
+               this.age >= 13 && this.age <= 150;
+    }
+    
+    public void validate() {
+        if (this.name == null || this.name.length == 0) {
+            throw new ValidationException("Name cannot be empty", "name");
+        }
+        if (this.email == null || !this.email.contains("@")) {
+            throw new ValidationException("Invalid email format", "email");
+        }
+        if (this.age < 13 || this.age > 150) {
+            throw new ValidationException("Age must be between 13 and 150", "age");
+        }
+    }
+    
+    // Getters
+    public str getName() { return this.name; }
+    public str getEmail() { return this.email; }
+    public u32 getAge() { return this.age; }
+}
+
+class User {
+    private u32 id;
+    private UserData data;
+    private u64 lastModified;
+    
+    public User(u32 id, UserData data) {
+        this.id = id;
+        this.data = data;
+        this.lastModified = System.currentTimeMillis();
+    }
+    
+    public u32 getId() { return this.id; }
+    public UserData getData() { return this.data; }
+    public u64 getLastModified() { return this.lastModified; }
+    
+    public void updateData(UserData newData) {
+        this.data = newData;
+        this.lastModified = System.currentTimeMillis();
+    }
+}
+```
+
+See [Memory Management](memory.md) for resource management details.
+
+```blueprint
+// Service implementation with comprehensive blueprint contracts
+class UserServiceImpl : UserService, AutoCloseable {
+    private Map<u32, User> users;
+    private u32 nextId = 1;
+    private bool closed = false;
+    
+    public UserServiceImpl() {
+        this.users = new HashMap<u32, User>();
+    }
+    
+    public User createUser(UserData userData) {
+        // Blueprint preconditions and defaults handle validation automatically
+        // This method only runs if userData != null && userData.isValid()
+        
+        User user = new User(this.nextId++, userData);
+        this.users.put(user.getId(), user);
+        return user;
+    }
+    
+    public User? findUser(u32 userId) {
+        // Blueprint default handles userId == 0 case automatically
+        // This method only runs if userId > 0
+        return this.users.get(userId);
+    }
+    
+    public bool updateUser(u32 userId, UserData updates) {
+        // Blueprint defaults handle invalid inputs automatically
+        // This method only runs if all preconditions are met
+        
+        User? user = this.findUser(userId);
+        if (user != null) {
+            user.updateData(updates);
+            return true;
+        }
+        return false;
+    }
+    
+    public u32 getUserCount() {
+        return (u32)this.users.size();
+    }
+    
+    // Resource cleanup with blueprint contracts
+    public void close() {
+        this.users.clear();
+        this.closed = true;
+    }
+    
+    public bool isClosed() {
+        return this.closed;
+    }
+}
+```
+
+See [Concurrency](concurrency.md) for async/await details.
+
+```blueprint
+// Async web server with comprehensive blueprint integration
+class UserWebService : HttpServer, AutoCloseable {
+    private UserService userService;
+    private bool running = false;
+    
+    public UserWebService() {
+        this.userService = new UserServiceImpl();
+    }
+    
+    public void start(u32 port) {
+        // Blueprint preconditions and defaults handle invalid ports automatically
+        // This method only runs if port is valid (1-65535)
+        
+        this.running = true;
+        System.out.println("Server starting on port " + port);
+    }
+    
+    public async Future<HttpResponse> handleRequest(HttpRequest request) {
+        // Blueprint preconditions ensure request != null
+        
+        try {
+            str path = request.getPath();
+            str method = request.getMethod();
+            
+            if (path.equals("/users") && method.equals("POST")) {
+                return await this.createUserEndpoint(request);
+            } else if (path.startsWith("/users/") && method.equals("GET")) {
+                u32 userId = this.parseUserId(path);
+                return await this.getUserEndpoint(userId);
+            } else if (path.startsWith("/users/") && method.equals("PUT")) {
+                u32 userId = this.parseUserId(path);
+                return await this.updateUserEndpoint(userId, request);
+            } else if (path.equals("/users/count") && method.equals("GET")) {
+                return await this.getUserCountEndpoint();
+            }
+            
+            return new HttpResponse(404, "Not Found");
+            
+        } catch (ValidationException e) {
+            return new HttpResponse(400, "Validation Error: " + e.getMessage());
+        } catch (DatabaseException e) {
+            return new HttpResponse(500, "Database Error: " + e.getMessage());
+        } catch (Exception e) {
+            return new HttpResponse(500, "Internal Server Error");
+        }
+    }
+    
+    public bool isRunning() {
+        return this.running;
+    }
+    
+    public void stop() {
+        this.running = false;
+    }
+    
+    private async Future<HttpResponse> createUserEndpoint(HttpRequest request) {
+        str body = request.getBody();
+        UserData userData = this.parseUserData(body);
+        
+        // Blueprint contracts in UserService ensure proper validation
+        userData.validate(); // Explicit validation call
+        User user = this.userService.createUser(userData);
+        str response = this.formatUserJson(user);
+        
+        return new HttpResponse(201, response);
+    }
+    
+    private async Future<HttpResponse> getUserEndpoint(u32 userId) {
+        // Blueprint contracts ensure userId validation
+        User? user = this.userService.findUser(userId);
+        if (user != null) {
+            str response = this.formatUserJson(user);
+            return new HttpResponse(200, response);
+        }
+        return new HttpResponse(404, "User not found");
+    }
+    
+    private async Future<HttpResponse> updateUserEndpoint(u32 userId, HttpRequest request) {
+        str body = request.getBody();
+        UserData updates = this.parseUserData(body);
+        
+        // Blueprint contracts handle validation automatically
+        updates.validate(); // Explicit validation
+        bool updated = this.userService.updateUser(userId, updates);
+        
+        if (updated) {
+            User? user = this.userService.findUser(userId);
+            str response = this.formatUserJson(user);
+            return new HttpResponse(200, response);
+        }
+        return new HttpResponse(404, "User not found");
+    }
+    
+    private async Future<HttpResponse> getUserCountEndpoint() {
+        u32 count = this.userService.getUserCount();
+        str response = "{\"count\":" + count + "}";
+        return new HttpResponse(200, response);
+    }
+    
+    private UserData parseUserData(str json) {
+        // Simplified JSON parsing - in reality, use proper JSON library
+        str name = this.extractJsonValue(json, "name");
+        str email = this.extractJsonValue(json, "email");
+        str ageStr = this.extractJsonValue(json, "age");
+        u32 age = this.parseInteger(ageStr);
+        
+        return new UserData(name, email, age);
+    }
+    
+    private str extractJsonValue(str json, str key) {
+        // Simplified extraction - blueprint default could handle malformed JSON
+        i32 keyIndex = json.indexOf("\"" + key + "\":");
+        if (keyIndex == -1) return "";
+        
+        i32 valueStart = json.indexOf("\"", keyIndex + key.length + 3) + 1;
+        i32 valueEnd = json.indexOf("\"", valueStart);
+        
+        return json.substring(valueStart, valueEnd);
+    }
+    
+    private u32 parseInteger(str value) {
+        // Blueprint default could handle invalid numbers
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+    
+    private u32 parseUserId(str path) {
+        // Extract user ID from path like "/users/123"
+        str[] parts = path.split("/");
+        if (parts.length >= 3) {
+            return this.parseInteger(parts[2]);
+        }
+        return 0;
+    }
+    
+    private str formatUserJson(User? user) {
+        if (user == null) return "{}";
+        
+        return "{\"id\":" + user.getId() + 
+               ",\"name\":\"" + user.getData().getName() + "\"" +
+               ",\"email\":\"" + user.getData().getEmail() + "\"" +
+               ",\"age\":" + user.getData().getAge() + "}";
+    }
+    
+    // Resource cleanup with blueprint contracts
+    public void close() {
+        this.stop();
+        if (this.userService instanceof AutoCloseable) {
+            ((AutoCloseable)this.userService).close();
+        }
+    }
+    
+    public bool isClosed() {
+        return !this.running;
+    }
+}
+```
+
+See [Standard Library](stdlib.md) for System.Application details.
+
+```blueprint
+// Main application with blueprint contracts
+class WebServiceApp : System.Application {
+    public static void main(str[] args) {
+        System.out.println("Starting BluePrint Web Service...");
+        
+        try (UserWebService server = new UserWebService()) {
+            server.start(8080);
+            System.out.println("Server started on port 8080");
+            
+            // Keep server running
+            while (server.isRunning()) {
+                Thread.sleep(1000);
+            }
+        } catch (Exception e) {
+            System.err.println("Server error: " + e.getMessage());
+        }
+        
+        System.out.println("Server shutdown complete");
+    }
+}
+```
+
+This comprehensive example demonstrates:
+- **Blueprint contracts** with preconditions, postconditions, default values, and exception specifications
+- **Default value handling** that eliminates base case checking in implementations  
+- **Multiple inheritance** and interface implementation with comprehensive contracts
+- **Strong typing** with custom classes and generic collections
+- **Exception handling** with custom exception types and blueprint integration
+- **Memory management** with RAII pattern (try-with-resources) and AutoCloseable
+- **Async/await** for web service handling with blueprint contracts
+- **Module imports** from standard library bundles
+- **Validation patterns** using blueprint contracts to ensure data integrity
+- **Practical application structure** with separation of concerns and comprehensive error handling
+
+> **Note on Error Messages**: The error messages shown in this example are not finalized, as the language implementation does not exist yet.
+
+The blueprint system ensures that:
+1. Invalid user IDs (0 or negative) are handled by defaults before method execution
+2. Null or invalid data is caught by preconditions
+3. Database consistency is maintained through postconditions
+4. Resource cleanup is guaranteed through AutoCloseable contracts
+5. Server state is properly managed through blueprint contracts
+## Complete Application Demo
 
 ```blueprint
 class ArrayAndStudentDemoApp : System.Application {

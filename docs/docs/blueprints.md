@@ -13,170 +13,9 @@ blueprint BlueprintName {
             param1: Type1,
             param2: Type2;
         output: ReturnType
+        default: condition ==> value;
         requires: precondition_expression;
         ensures: postcondition_expression;
-    }
-}
-```
-
-### Simple Blueprint Example
-
-```blueprint
-blueprint BankAccount {
-    public deposit(amount) {
-        input: amount: f64;
-        output: void;
-        requires: amount > 0.0;
-        ensures: balance == old(balance) + amount;
-    }
-    
-    public withdraw(amount) {
-        input: amount: f64;
-        output: bool;
-        requires: amount > 0.0 && amount <= balance;
-        ensures: (withdraw == true) ==> (balance == old(balance) - amount);
-        ensures: (withdraw == false) ==> (balance == old(balance));
-    }
-    
-    public getBalance() {
-        output: f64;
-        ensures: getBalance == balance && getBalance >= 0.0;
-    }
-}
-```
-
-## Blueprint vs Blueprintless Classes
-
-### Blueprintless Classes
-Some classes, particularly system entry points and simple utilities, may not need behavioral contracts:
-
-```blueprint
-// Simple class without blueprint specification
-class HelloWorld {
-   public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}
-
-class Utilities {
-    public static String getCurrentTime() {
-        return new Date().toString();
-    }
-}
-```
-
-### Classes with Blueprint Contracts
-Most classes should implement blueprints for reliability and documentation:
-
-```blueprint
-blueprint Calculator {
-    public add(a, b) {
-        input: a: f64, b: f64;
-        output: f64
-        ensures: add == a + b;
-    }
-}
-
-class SimpleCalculator : Calculator {
-    public f64 add(f64 a, f64 b) {
-        return a + b;
-    }
-}
-```
-
-## Method Overloading in Blueprints
-
-Since blueprints define behavioral contracts separately from implementation signatures, method overloading uses explicit overload syntax.
-
-### Explicit Overload Sets
-
-Define multiple signatures for the same logical operation using explicit overload syntax:
-
-```blueprint
-blueprint Printer {
-    public print {
-        overload (value: i32) {
-            output: void
-        }
-        
-        overload (text: String) {
-            output: void
-            requires: text != null;
-        }
-        
-        overload (value: f64, precision: u32) {
-            output: void
-            requires: precision <= 10;
-            ensures: /* formatted with specified precision */;
-        }
-    }
-}
-
-class ConsolePrinter : Printer {
-    public void print(i32 value) {
-        System.out.println(value);
-    }
-    
-    public void print(String text) {
-        System.out.println(text);
-    }
-    
-    public void print(f64 value, u32 precision) {
-        System.out.printf("%.*f", precision, value);
-    }
-}
-```
-
-### Implicit Signature Mapping
-
-The compiler automatically maps implementation methods to blueprint overloads based on exact signature matching - no naming tricks required:
-
-```blueprint
-blueprint Calculator {
-    public compute {
-        overload (a: f64, b: f64) {
-            output: f64
-            ensures: compute == a + b;
-        }
-        
-        overload (values: f64[]) {
-            output: f64
-            requires: values.length > 0;
-            ensures: /* sum of all values */;
-        }
-    }
-}
-
-class BasicCalculator : Calculator {
-    // Automatically maps to first overload
-    public f64 compute(f64 a, f64 b) {
-        return a + b;
-    }
-    
-    // Automatically maps to second overload  
-    public f64 compute(f64[] values) {
-        f64 sum = 0.0;
-        for (f64 value : values) {
-            sum += value;
-        }
-        return sum;
-    }
-}
-```
-
-## Blueprint Declaration
-
-### Basic Structure
-
-```blueprint
-blueprint BlueprintName {
-    public methodName(param1, param2) {
-        input:
-            param1: Type1,
-            param2: Type2;
-        output: ReturnType
-        requires: precondition;
-        ensures: postcondition;
     }
 }
 ```
@@ -238,32 +77,186 @@ ensures: (throws IOException) ==> (file remains unchanged);
 ensures: (throws IllegalArgumentException) ==> (state == old(state));
 ```
 
+### Simple Blueprint Example
+
+```blueprint
+blueprint BankAccount {
+    public deposit(amount) {
+        input: amount: f64;
+        output: void;
+        requires: amount > 0.0;
+        ensures: balance == old(balance) + amount;
+    }
+    
+    public withdraw(amount) {
+        input: amount: f64;
+        output: bool;
+        requires: amount > 0.0 && amount <= balance;
+        ensures: (withdraw == true) ==> (balance == old(balance) - amount);
+        ensures: (withdraw == false) ==> (balance == old(balance));
+    }
+    
+    public getBalance() {
+        output: f64;
+        ensures: getBalance == balance && getBalance >= 0.0;
+    }
+}
+```
+
+## Blueprint vs Blueprintless Classes
+
+### Blueprintless Classes
+Some classes, particularly system entry points and simple utilities, may not need behavioral contracts:
+
+```blueprint
+// Simple class without blueprint specification
+class HelloWorld {
+   public static void main(String[] args) {
+        DefaultLogger.log("Hello, World!");
+    }
+}
+
+class Utilities {
+    public static String getCurrentTime() {
+        return new Date().toString();
+    }
+}
+```
+
+### Classes with Blueprint Contracts
+Most classes should implement blueprints for reliability and documentation:
+
+```blueprint
+blueprint Calculator {
+    public add(a, b) {
+        input: a: f64, b: f64;
+        output: f64
+        ensures: add == a + b;
+    }
+}
+
+class SimpleCalculator : Calculator {
+    public f64 add(f64 a, f64 b) {
+        return a + b;
+    }
+}
+```
+
+## Method Overloading in Blueprints
+
+Since blueprints define behavioral contracts separately from implementation signatures, method overloading uses explicit overload syntax.
+
+### Explicit Overload Sets
+
+Define multiple signatures for the same logical operation using explicit overload syntax:
+
+```blueprint
+blueprint Printer {
+    public print {
+        overload (value: i32) {
+            output: void
+        }
+        
+        overload (text: String) {
+            output: void
+            requires: text != null;
+        }
+        
+        overload (value: f64, precision: u32) {
+            output: void
+            requires: precision <= 10;
+            ensures: /* formatted with specified precision */;
+        }
+    }
+}
+
+class ConsolePrinter : Printer {
+    public void print(i32 value) {
+        DefaultLogger.log(value.toString());
+    }
+    
+    public void print(String text) {
+        DefaultLogger.log(text);
+    }
+    
+    public void print(f64 value, u32 precision) {
+        System.out.printf("%.*f", precision, value);
+    }
+}
+```
+
+### Implicit Signature Mapping
+
+The compiler automatically maps implementation methods to blueprint overloads based on exact signature matching - no naming tricks required:
+
+```blueprint
+blueprint Calculator {
+    public compute {
+        overload (a: f64, b: f64) {
+            output: f64
+            ensures: compute == a + b;
+        }
+        
+        overload (values: f64[]) {
+            output: f64
+            requires: values.length > 0;
+        }
+    }
+}
+
+class BasicCalculator : Calculator {
+    // Automatically maps to first overload
+    public f64 compute(f64 a, f64 b) {
+        return a + b;
+    }
+    
+    // Automatically maps to second overload  
+    public f64 compute(f64[] values) {
+        f64 sum = 0.0;
+        for (f64 value : values) {
+            sum += value;
+        }
+        return sum;
+    }
+}
+```
+
 ## Advanced Blueprint Features
 
 ### Default Values and Base Cases
 
-Default values completely eliminate the need for base case checking in implementations. When a default condition is met, that value is returned automatically:
+Default values provide automatic return values for specific conditions, **completely bypassing the implementation code** when matched. The relationship is simple:
+
+**If a default condition matches → return that value immediately, skip implementation**  
+**If no default matches → run the implementation code**
 
 ```blueprint
 blueprint MathUtils {
     public fibonacci(n) {
         input: n: u32;
         output: u32
-        default: n == 0 ==> 0;      // If n == 0, return 0
-        default: n == 1 ==> 1;      // If n == 1, return 1
-        default: n == 2 ==> 1;      // If n == 2, return 1
+        default: n == 0 ==> 0;      // If n == 0, return 0 (skip implementation)
+        default: n == 1 ==> 1;      // If n == 1, return 1 (skip implementation)
+        default: n == 2 ==> 1;      // If n == 2, return 1 (skip implementation)
         ensures: (n > 2) ==> (fibonacci == fibonacci(n-1) + fibonacci(n-2));
     }
 }
 
 class MathCalculator : MathUtils {
     public u32 fibonacci(u32 n) {
-        // No base case checking needed - defaults handle it automatically
-        // This code only executes when n > 2
+        // This implementation code ONLY runs when n > 2
+        // For n = 0, 1, or 2, defaults handle it automatically
         return fibonacci(n - 1) + fibonacci(n - 2);
     }
 }
+
+// Execution examples:
+// fibonacci(0) → default matches, returns 0, implementation never runs
+// fibonacci(1) → default matches, returns 1, implementation never runs  
+// fibonacci(5) → no default matches, implementation runs with recursive calls
 ```
+
+This eliminates tedious base case checking in implementations - the blueprint handles edge cases declaratively.
 
 #### Multiple Default Priority Rules
 
@@ -302,8 +295,12 @@ Blueprints are not compiled as separate units. Instead, they function like C++ h
 3. **Verification**: The compiler verifies that class implementations satisfy blueprint contracts
 4. **Code Generation**: Final executable code includes both implementation and contract checking code
 
+### Contract Injection Example
+
+Here's a detailed example showing exactly what gets injected during compilation:
+
 ```blueprint
-// fibonacci.blueprint - Not compiled separately
+// fibonacci.bpf - Blueprint specification
 blueprint MathUtils {
     public fibonacci(n) {
         input: n: u32;
@@ -315,18 +312,38 @@ blueprint MathUtils {
     }
 }
 
-// calculator.bp - Compiled with injected contracts
+// calculator.bp - Implementation class
 class Calculator : MathUtils {
     public u32 fibonacci(u32 n) {
-        // Compiler injects:
-        // 1. Precondition checks: assert(n >= 0)
-        // 2. Default value handling: if (n == 0) return 0; if (n == 1) return 1;
-        // 3. Implementation code (only runs if no defaults match):
         return fibonacci(n - 1) + fibonacci(n - 2);
-        // 4. Postcondition checks: assert(result >= 0)
+    }
+}
+
+// What the compiler actually generates (conceptual):
+class Calculator : MathUtils {
+    public u32 fibonacci(u32 n) {
+        // 1. INJECTED: Precondition checks
+        assert(n >= 0, "Precondition violated: n >= 0");
+        
+        // 2. INJECTED: Default value handling
+        if (n == 0) return 0;  // First matching default
+        if (n == 1) return 1;  // Second matching default
+        
+        // 3. ORIGINAL: Implementation code (only runs if no defaults match)
+        u32 result = fibonacci(n - 1) + fibonacci(n - 2);
+        
+        // 4. INJECTED: Postcondition checks
+        assert(result >= 0, "Postcondition violated: fibonacci >= 0");
+        return result;
     }
 }
 ```
+
+**Key Points:**
+- **Preconditions** are checked first before any code runs
+- **Default values** are evaluated in order - first match wins, skips implementation
+- **Implementation code** only executes if no default conditions are met
+- **Postconditions** are verified before returning the result
 
 ### Contract Verification Phases
 
@@ -347,6 +364,8 @@ class GoodImplementation : MathUtils {
 }
 ```
 
+> **Note**: Error messages shown in this documentation are not finalized, as the language implementation does not exist yet.
+
 #### 2. Runtime Verification
 When compile-time verification isn't possible, contracts are checked at runtime:
 
@@ -359,7 +378,11 @@ class RuntimeChecked : MathUtils {
 }
 ```
 
+> **Note**: Error messages shown in this documentation are not finalized, as the language implementation does not exist yet.
+
 ### Error Reporting
+
+> **Note**: The following error messages are conceptual examples and not finalized. Actual compiler error messages will be determined during language implementation.
 
 #### Compile-Time Contract Violations
 ```
@@ -637,6 +660,8 @@ class IncorrectMath : BadMath {
     }
 }
 
+> **Note**: Error messages shown in this documentation are not finalized, as the language implementation does not exist yet.
+
 class MaybeBadMath : BadMath {
     public i32 badMax(i32 a, i32 b) {
         if (someComplexCondition()) {
@@ -717,3 +742,7 @@ class Example {
 ### Assertion Modes
 - `--contracts=on`: All contracts checked, program terminates on violation (default for debug builds)
 - `--contracts=off`: No runtime contract checking (production builds for performance)
+
+> **Note**: Performance characteristics of contract checking are conceptual, as the language implementation does not exist yet. Actual performance impact will be determined during implementation.
+
+> **See Also**: For a comprehensive example demonstrating blueprints in a real application, see [Comprehensive Web Service Example](examples.md#comprehensive-web-service-example) which shows blueprint contracts, exception handling, memory management, and concurrency working together.

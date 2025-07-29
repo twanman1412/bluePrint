@@ -50,6 +50,11 @@ for (i32 item : array) {
 for (i32 i : 0..10) {
     // iterate from 0 to 9
 }
+
+// Inclusive range-based for loop
+for (i32 i : 0..=10) {
+    // iterate from 0 to 10
+}
 ```
 
 ## Switch Statements

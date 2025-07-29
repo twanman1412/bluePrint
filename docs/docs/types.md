@@ -79,6 +79,21 @@ try {
 f64 approximate = result.toF64();     // 0.8333333333333334
 i32 truncated = result.toI32();       // 0 (truncates towards zero)
 String display = result.toString();   // "5/6"
+
+// Practical example: Recipe scaling with exact fractions
+fractional recipeServings = 4/1;           // Original recipe serves 4
+fractional desiredServings = 6/1;          // Want to serve 6 people
+fractional scaleFactor = desiredServings / recipeServings;  // Exactly 3/2
+
+fractional originalFlour = 2/1;            // 2 cups flour
+fractional scaledFlour = originalFlour * scaleFactor;      // Exactly 3 cups
+
+fractional originalSugar = 3/4;            // 3/4 cup sugar  
+fractional scaledSugar = originalSugar * scaleFactor;      // Exactly 9/8 cups (1.125 cups exactly)
+
+System.out.println("Scale factor: " + scaleFactor.toString());     // "3/2"
+System.out.println("Scaled flour: " + scaledFlour.toString());     // "3/1"
+System.out.println("Scaled sugar: " + scaledSugar.toString());     // "9/8"
 ```
 
 ## Reference Types
@@ -87,26 +102,42 @@ String display = result.toString();   // "5/6"
 
 BluePrint distinguishes between basic character arrays and rich string objects:
 
+**Use `str` when:** You need simple string passing, basic character array operations, or performance-critical string handling where you don't need complex string methods.
+
+**Use `String` when:** You need complex string operations like concatenation, searching, formatting, or any advanced string manipulation.
+
 ```blueprint
-// Basic string type (character array)
+// Basic string type (character array) - for simple string passing
 str name = "Hello, World!";     // Character array (str == char[])
 str empty = "";                 // Empty character array
 str nullStr = null;             // Null reference
 
-// Character array operations
+// Character array operations - direct access
 char firstChar = name[0];       // Access individual characters
 u32 length = name.length;       // Get array length
 
-// Rich String type with methods
+// Rich String type - for complex string operations
 String message = new String("Hello");
-String result = message.concat(" World");
-bool isEqual = message.equals("Hello");
-u32 stringLength = message.length();
+String result = message.concat(" World");    // Complex concatenation
+bool isEqual = message.equals("Hello");      // Content comparison
+u32 stringLength = message.length();         // Method-based length
+String upperCase = message.toUpperCase();    // Case transformation
+bool contains = message.contains("ell");     // Search operations
 
 // Type conversion rules
-String richString = String.from("Hello");  // Convert str to String
-str basicString = richString.toCharArray(); // Convert String to str
+String richString = String.from("Hello");    // Convert str to String
+str basicString = richString.toCharArray();  // Convert String to str
+
+// Usage guidelines:
+// str: Pass filenames, simple identifiers, basic text
+// String: Text processing, user input handling, formatted output
 ```
+
+### Example: String operation in blueprints
+
+Below is an example of using string operation in a blueprint.
+
+See [Blueprint Specifications](blueprints.md) for more information about blueprints.
 
 ```blueprint
 // String operations in blueprints
@@ -152,6 +183,8 @@ matrix[0][0] = 1;                        // Set element
 // numbers[5] = 6; // COMPILE ERROR - index out of bounds, array only has 5 elements
 // Use dynamic collections for resizable data
 ```
+
+> **Note**: Error messages shown in this documentation are not finalized, as the language implementation does not exist yet.
 
 ### Dynamic Collections
 
@@ -257,30 +290,30 @@ class ArrayStack<T> : Stack<T> {
     }
     
     public void push(T item) {
-        if (count >= items.length) {
-            resize();
+        if (this.count >= this.items.length) {
+            this.resize();
         }
-        items[count++] = item;
+        this.items[this.count++] = item;
     }
     
     public T pop() {
-        return items[--count];
+        return this.items[--this.count];
     }
     
     public T top() {
-        return items[count - 1];
+        return this.items[this.count - 1];
     }
     
     public u32 size() {
-        return count;
+        return this.count;
     }
     
     private void resize() {
-        T[] newItems = new T[items.length * 2];
-        for (u32 i = 0; i < count; i++) {
-            newItems[i] = items[i];
+        T[] newItems = new T[this.items.length * 2];
+        for (u32 i = 0; i < this.count; i++) {
+            newItems[i] = this.items[i];
         }
-        items = newItems;
+        this.items = newItems;
     }
 }
 ```
@@ -341,7 +374,7 @@ blueprint Cloneable<T> {
 }
 
 // Multiple bounds using comma separation - type must satisfy ALL constraints
-blueprint SortedContainer<T : Comparable<T>, Serializable, Cloneable<T>> {
+blueprint SortedContainer<T : Comparable, Serializable, Cloneable> {
     public add(item) {
         input: item: T;
         output: void
@@ -357,15 +390,15 @@ blueprint SortedContainer<T : Comparable<T>, Serializable, Cloneable<T>> {
 }
 
 // Implementation must satisfy ALL bounds
-class StringList : SortedContainer<String, Serializable, Cloneable<String>> {
+class StringList : SortedContainer<String> {
     // String must implement:
-    // 1. Comparable<String> (for sorting)
+    // 1. Comparable (for sorting)
     // 2. Serializable (for serialization)  
-    // 3. Cloneable<String> (for cloning)
+    // 3. Cloneable (for cloning)
     
     public void add(String item) {
         // Implementation must maintain sorted order
-        // Can use item.compareTo() because String : Comparable<String>
+        // Can use item.compareTo() because String : Comparable
     }
     
     public str serialize() {
@@ -376,16 +409,20 @@ class StringList : SortedContainer<String, Serializable, Cloneable<String>> {
 }
 
 // Example of constraint verification
-class InvalidList : SortedContainer<i32, Serializable, Cloneable<i32>> {
+class InvalidList : SortedContainer<i32> {
     // COMPILE ERROR: i32 does not implement Serializable
     // All bounds must be satisfied by the type argument
 }
+```
 
+> **Note**: Error messages shown in this documentation are not finalized, as the language implementation does not exist yet.
+
+```blueprint
 // Generic variance examples showing invariance
 class Example {
     public void demonstrateInvariance() {
-        SortedContainer<String, Serializable, Cloneable<String>> stringContainer;
-        SortedContainer<Object, Serializable, Cloneable<Object>> objectContainer;
+        SortedContainer<String> stringContainer;
+        SortedContainer<Object> objectContainer;
         
         // This would be invalid - generics are invariant
         // objectContainer = stringContainer; // COMPILE ERROR
@@ -456,7 +493,7 @@ class Shape : Drawable, Movable, Resizable {
     }
     
     public f64 getArea() {
-        return width * height;
+        return this.width * this.height;
     }
 }
 ```
@@ -469,31 +506,29 @@ BluePrint uses virtual inheritance (similar to C++) to resolve diamond inheritan
 blueprint A {
     public method() {
         output: String;
-        ensures: method != null;
+        ensures: method.length() > 0;
     }
 }
 
 blueprint B : A {
     public method() {
         output: String
-        ensures: method == "B";
-        ensures: method != null;  // Inherited from A
+        ensures: method.length() >  5;
     }
 }
 
 blueprint C : A {
     public method() {
         output: String
-        ensures: method == "C";
-        ensures: method != null;  // Inherited from A
+        ensures: method.length < 10;
+        // ensures: method.length () > 0 inherited from A
     }
 }
 
 // Virtual inheritance - explicit casting required for access
 class D : B, C {
-    // Must explicitly override to resolve ambiguity
     public String method() {
-        return "D";
+        return "123456";
     }
 }
 
@@ -503,7 +538,7 @@ class DiamondExample {
         D obj = new D();
         
         // Direct access to D's method
-        String directResult = obj.method();  // "D"
+        String directResult = obj.method();  // "123456"
         
         // Explicit casting required for blueprint access
         A asA_fromB = (B) obj;  // Cast to A via B path
@@ -518,6 +553,8 @@ class DiamondExample {
     }
 }
 ```
+
+> **Note**: Error messages shown in this documentation are not finalized, as the language implementation does not exist yet.
 
 #### Contract Conflicts in Diamond Inheritance
 
@@ -574,6 +611,8 @@ Error: Conflicting blueprint contracts in ConflictingCalculator.calculate()
   Suggestion: Use composition instead of multiple inheritance for conflicting behaviors.
 ```
 
+> **Note**: Error messages shown in this documentation are not finalized, as the language implementation does not exist yet.
+
 This design choice ensures that contract violations are caught at compile time rather than causing runtime inconsistencies.
 
 ## Type Inference
@@ -596,16 +635,14 @@ class Example {
 }
 ```
 
+> **Note**: Error messages shown in this documentation are not finalized, as the language implementation does not exist yet.
+
 ### Generic Type Inference
 
 ```blueprint
 class GenericExample {
     public void demonstrateGenericInference() {
         List<String> names = new ArrayList<>();  // <> inferred as <String>
-        
-        // Method call inference
-        String max = Utilities.max("hello", "world", String::compareTo);
-        // T inferred as String from arguments
     }
 }
 ```

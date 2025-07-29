@@ -67,12 +67,12 @@ class StringUtils {
 class Application : System.Application {
     public static void main(str[] args) {
         if (args.length == 0) {
-            System.out.println("No arguments provided");
+            DefaultLogger.warn("No arguments provided");
             return;
         }
         
         for (str arg : args) {
-            System.out.println("Argument: " + arg);
+            DefaultLogger.log("Argument: " + arg);
         }
     }
 }
@@ -225,9 +225,9 @@ class ArrayList<T> : Collection<T> {
 
 ```blueprint
 // Function type aliases
-typedef Predicate<T> = Function<T, bool>;
-typedef Mapper<T, U> = Function<T, U>;
-typedef Comparator<T> = Function<T, T, i32>;
+// Predicate<T> = Function<T, bool>;
+// Mapper<T, U> = Function<T, U>;
+// Comparator<T> = Function<T, T, i32>;
 
 blueprint Algorithms {
     public sort<T>(array, comparator) {

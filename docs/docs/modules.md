@@ -116,8 +116,8 @@ When importing from a filename, BluePrint checks both `.bp` and `.bpf` files:
 
 ```blueprint
 // Importing from "math_operations" will check:
-// 1. math_operations.bp
-// 2. math_operations.bpf
+// 1. math_operations.bpf
+// 2. math_operations.bp
 import math_operations/Calculator;
 
 // This import resolves to math_operations.bpf
@@ -219,18 +219,14 @@ Bundles are directory structures containing multiple related blueprints:
 ```
 std/
 ├── collections/
-│   ├── List.blueprint
-│   ├── Set.blueprint
-│   ├── Map.blueprint
-│   └── bundle.manifest
-├── io/
-│   ├── FileSystem.blueprint
-│   ├── InputStream.blueprint
-│   ├── OutputStream.blueprint
+│   ├── Collections.bpf
+│   ├── Set.bp
+│   ├── Map.bp
 │   └── bundle.manifest
 └── math/
-    ├── Calculator.blueprint
-    ├── MathUtils.blueprint
+    ├── Math.bpf
+    ├── Calculator.bp
+    ├── MathUtils.bp
     └── bundle.manifest
 ```
 
@@ -309,8 +305,8 @@ class FileProcessor : FileSystem, StringProcessor {
             }
         }
         
-        System.out.println("Processed " + results.size() + " files");
-        System.out.println("Found " + uniqueWords.size() + " unique words");
+        DefaultLogger.log("Processed " + results.size() + " files");
+        DefaultLogger.log("Found " + uniqueWords.size() + " unique words");
     }
     
     public str readFile(str filename) {
@@ -405,6 +401,8 @@ import [NonExistent] from bundle std/collections;  // COMPILE ERROR: Blueprint n
 // If A imports B and B imports A, compile error occurs with detailed cycle information
 ```
 
+> **Note**: Error messages shown in this documentation are not finalized, as the language implementation does not exist yet.
+
 ### Version Compatibility
 
 The version system tracks method implementations and interface changes:
@@ -428,11 +426,11 @@ The BluePrint standard library is organized into logical bundles:
 
 ### Core Bundles
 
-- **std/core** - Basic types, System.Object, System.Application
-- **std/collections** - List, Set, Map, Stack, Queue implementations  
+- **std/core** - Basic types, System.Object, System.Application, Logger
+- **std/collections** - Collection, List, Set, Map, Stack, Queue implementations  
 - **std/io** - File I/O, streams, readers, writers
 - **std/text** - String processing, regular expressions
-- **std/math** - Mathematical functions, random numbers
+- **std/math** - Mathematical operations, random numbers
 - **std/concurrent** - Threading, async/await, channels
 - **std/network** - HTTP client/server, TCP/UDP sockets
 - **std/time** - Date, time, duration utilities
@@ -454,7 +452,7 @@ class StandardApp : System.Application {
             arguments.add(arg);
         }
         
-        System.out.println("Received " + arguments.size() + " arguments");
+        DefaultLogger.log("Received " + arguments.size() + " arguments");
     }
 }
 ```

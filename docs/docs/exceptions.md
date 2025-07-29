@@ -181,6 +181,8 @@ class DataProcessor {
 #### 2. BluePrintException (Contract Violations)
 Thrown automatically by the runtime when contracts are violated:
 
+> **Note**: Contract checking performance characteristics are conceptual, as the language implementation does not exist yet. Actual runtime performance will be determined during implementation.
+
 ```blueprint
 blueprint SafeCalculator {
     public divide(a, b) {
@@ -478,6 +480,8 @@ class DatabaseDataAccess : DataAccessLayer {
 ## Debugging and Diagnostics
 
 ### Stack Traces
+
+> **Note**: The following error messages and stack traces are conceptual examples and not finalized. Actual error formats will be determined during language implementation.
 
 BluePrint provides detailed stack traces similar to Java:
 
