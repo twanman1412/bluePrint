@@ -1,0 +1,17 @@
+# bundle.manifest for std/concurrent
+bundle: std.concurrent
+version: 1.0.0
+exports:
+  - Thread
+  - Mutex
+  - Lock
+  - Semaphore
+  - Future
+  - Promise
+  - Channel
+  - AsyncProcessor
+  - ThreadPool
+  - Atomic
+
+dependencies:
+  - std.core >= 1.0.0

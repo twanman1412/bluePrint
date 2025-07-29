@@ -11,6 +11,15 @@ BluePrint was created to enable writing clean, expressive code without repetitiv
 ```
 bluePrint/
 ├── src/                    # Compiler source code (C++)
+├── stdlib/                 # Standard library bundles
+│   ├── core/              # Core system blueprints
+│   ├── collections/       # Collection framework
+│   ├── io/                # I/O operations
+│   ├── text/              # String processing
+│   ├── math/              # Mathematical operations
+│   ├── concurrent/        # Threading and concurrency
+│   ├── network/           # Network operations
+│   └── time/              # Date and time utilities
 ├── tests/                  # Test files
 ├── docs/                   # Documentation (Markdown files)
 ├── examples/               # Example BluePrint programs

@@ -1,0 +1,17 @@
+# bundle.manifest for std/collections
+bundle: std.collections
+version: 1.0.0
+exports:
+  - Collection
+  - List
+  - Set
+  - Map
+  - Stack
+  - Queue
+  - ArrayList
+  - HashSet
+  - HashMap
+  - LinkedList
+
+dependencies:
+  - std.core >= 1.0.0

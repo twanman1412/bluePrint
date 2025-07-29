@@ -1,0 +1,16 @@
+# bundle.manifest for std/io
+bundle: std.io
+version: 1.0.0
+exports:
+  - FileSystem
+  - InputStream
+  - OutputStream
+  - Reader
+  - Writer
+  - BufferedReader
+  - BufferedWriter
+  - FileReader
+  - FileWriter
+
+dependencies:
+  - std.core >= 1.0.0

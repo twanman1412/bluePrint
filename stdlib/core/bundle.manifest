@@ -1,0 +1,12 @@
+# bundle.manifest for std/core
+bundle: std.core
+version: 1.0.0
+exports:
+  - Object
+  - Application
+  - Logger
+  - DefaultLogger
+  - Comparable
+
+dependencies:
+  # Core bundle has no dependencies
