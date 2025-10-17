@@ -2,11 +2,20 @@
 bundle: std.core
 version: 1.0.0
 exports:
+  # Core object model (from objects sub-bundle)
   - Object
-  - Application
-  - Logger
-  - DefaultLogger
+  - Equatable
   - Comparable
+  - Hashable
+  - Clonable
+  - Printable
+  
+  # Runtime blueprints (from runtime sub-bundle)
+  - Application
+  - Exception
+  - RuntimeException
 
 dependencies:
-  # Core bundle has no dependencies
+  # Core depends on its sub-bundles
+  - std.core.objects
+  - std.core.runtime

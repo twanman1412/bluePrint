@@ -1,0 +1,10 @@
+/**
+ * RuntimeException.bp - Base runtime exception blueprint
+ * Part of std.core bundle
+ */
+
+import Exception from std.core;
+
+blueprint RuntimeException : Exception {}
+
+export { RuntimeException };

@@ -1,0 +1,22 @@
+/**
+ * Comparable.bpf - Blueprint for objects that can be compared
+ * Part of std.core bundle
+ */
+
+import Object from std.core;
+
+blueprint Comparable<T> : Object {
+    /**
+     * Compares this object with another object for ordering
+     */
+    public compareTo(other) {
+        input: other: T;
+        output: i32;
+        requires: other != null;
+        ensures: (compareTo == 0) ==> (this.equals(other));         // Consistent with equals
+        ensures: (compareTo == 0) ==> (other.compareTo(this) == 0); // Symmetric for equality
+        ensures: (compareTo > 0)  ==> (other.compareTo(this) < 0);  // Antisymmetric
+    }
+}
+
+export { Comparable };

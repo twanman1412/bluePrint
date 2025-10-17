@@ -1,0 +1,18 @@
+// Core module - Re-exports all core functionality for convenience
+// Users can import from std.core directly or from specific sub-bundles
+
+// Import the sub-bundles first
+import bundle std.core.objects;
+import bundle std.core.runtime;
+
+// Export all object model blueprints
+export Object from std.core.objects;
+export Equatable from std.core.objects;
+export Comparable from std.core.objects;
+export Hashable from std.core.objects;
+export Clonable from std.core.objects;
+export Printable from std.core.objects;
+
+// Export all runtime blueprints
+export Application from std.core.runtime;
+export Exception from std.core.runtime;

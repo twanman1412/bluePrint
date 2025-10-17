@@ -1,0 +1,39 @@
+/**
+ * Exception.bpf - Base exception blueprint
+ * Part of std.core bundle
+ */
+
+import Equatable from std.core;
+
+blueprint Exception : Equatable {
+    /**
+     * Returns the detail message of this exception
+     */
+    public getMessage() {
+        output: str;
+        ensures: getMessage != null;
+    }
+    
+    /**
+     * Returns the cause of this exception
+     */
+    public getCause() {
+        output: Exception?;
+    }
+    
+    /**
+     * Prints this exception and its backtrace to stderr
+     */
+    public printStackTrace() {
+        output: void;
+    }
+
+    /**
+     * Gets this exception and its backtrace as str
+     */
+    public getStackTrace() {
+        output: str;
+    }
+}
+
+export { Exception };

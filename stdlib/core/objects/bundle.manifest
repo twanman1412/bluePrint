@@ -1,0 +1,16 @@
+# bundle.manifest for std/core/objects
+bundle: std.core.objects
+version: 1.0.0
+exports:
+  # Base object blueprint
+  - Object
+  
+  # Behavioral blueprints
+  - Equatable
+  - Comparable
+  - Hashable
+  - Clonable
+  - Printable
+
+dependencies:
+  # Objects bundle has no dependencies - pure foundation layer
