@@ -367,8 +367,8 @@ blueprint System.String {
 
 ```blueprint
 // Import standard library components
-import [List, Map] from bundle std/collections;
-import System.FileSystem from bundle std/io;
+import [List, Map] from bundle std.collections;
+import System.FileSystem from bundle std.io;
 
 class DataProcessor : FileSystem {
     public void processDataFile(str filename) {

@@ -10,12 +10,12 @@ Import specific blueprints directly from their file path:
 
 ```blueprint
 // Direct import syntax
-import blueprint_path/blueprint_name;
+import blueprint_path.blueprint_name;
 
 // Examples
-import io/FileSystem;           // Import FileSystem blueprint from io directory
-import math/Calculator;         // Import Calculator blueprint from math directory
-import collections/List;       // Import List blueprint from collections directory
+import io.FileSystem;           // Import FileSystem blueprint from io directory
+import math.Calculator;         // Import Calculator blueprint from math directory
+import collections.List;       // Import List blueprint from collections directory
 
 // Using imported blueprints
 class MyFileManager : FileSystem {
@@ -43,13 +43,13 @@ import bundle blueprint_bundle_path;
 import [blueprint_name1, blueprint_name2] from bundle blueprint_bundle_path;
 
 // Examples
-import bundle std/collections;  // Import all blueprints from collections bundle
-import bundle network/http;     // Import all HTTP-related blueprints
+import bundle std.collections;  // Import all blueprints from collections bundle
+import bundle network.http;     // Import all HTTP-related blueprints
 
 // Selective imports from bundles
-import [List, Set, Map] from bundle std/collections;
-import [HttpServer, HttpClient] from bundle network/http;
-import [Calculator, MathUtils] from bundle math/advanced;
+import [List, Set, Map] from bundle std.collections;
+import [HttpServer, HttpClient] from bundle network.http;
+import [Calculator, MathUtils] from bundle math.advanced;
 ```
 
 ## File Types and Organization
@@ -118,7 +118,7 @@ When importing from a filename, BluePrint checks both `.bp` and `.bpf` files:
 // Importing from "math_operations" will check:
 // 1. math_operations.bpf
 // 2. math_operations.bp
-import math_operations/Calculator;
+import math_operations.Calculator;
 
 // This import resolves to math_operations.bpf
 class MyCalculator : Calculator {
@@ -161,7 +161,7 @@ class StringUtilities : StringUtils {  // StringUtils available without import
 }
 
 // main.bp - Must explicitly import
-import utils/StringUtils;
+import utils.StringUtils;
 
 class Application {
     public static void main(str[] args) {
@@ -284,9 +284,9 @@ export { List, Set };
 
 ```blueprint
 // Import necessary blueprints
-import io/FileSystem;
-import [List, Set] from bundle std/collections;
-import text/StringProcessor;
+import io.FileSystem;
+import [List, Set] from bundle std.collections;
+import text.StringProcessor;
 
 class FileProcessor : FileSystem, StringProcessor {
     public void processFiles(str[] filenames) {
@@ -325,9 +325,9 @@ class FileProcessor : FileSystem, StringProcessor {
 
 ```blueprint
 // Import web-related bundles
-import bundle network/http;
-import bundle std/collections;
-import concurrent/AsyncProcessor;
+import bundle network.http;
+import bundle std.collections;
+import concurrent.AsyncProcessor;
 
 class WebApplication : HttpServer, AsyncProcessor {
     private Map<str, str> routes;
@@ -368,7 +368,7 @@ BluePrint searches for modules in the following order:
 
 ```blueprint
 // When importing from bundles, blueprints are available directly
-import [List, Map] from bundle std/collections;
+import [List, Map] from bundle std.collections;
 
 class Example {
     public void demonstrateCollections() {
@@ -378,8 +378,8 @@ class Example {
 }
 
 // When importing entire bundles, use bundle prefix if conflicts exist
-import bundle std/collections;
-import bundle custom/collections;  // Potential naming conflict
+import bundle std.collections;
+import bundle custom.collections;  // Potential naming conflict
 
 class Example {
     public void demonstrateCollections() {
@@ -394,8 +394,8 @@ class Example {
 
 ```blueprint
 // Import errors are compile-time errors
-import nonexistent/Blueprint;  // COMPILE ERROR: Blueprint not found
-import [NonExistent] from bundle std/collections;  // COMPILE ERROR: Blueprint not exported
+import nonexistent.Blueprint;  // COMPILE ERROR: Blueprint not found
+import [NonExistent] from bundle std.collections;  // COMPILE ERROR: Blueprint not exported
 
 // Circular import detection
 // If A imports B and B imports A, compile error occurs with detailed cycle information
@@ -439,10 +439,10 @@ The BluePrint standard library is organized into logical bundles:
 
 ```blueprint
 // Most common imports
-import bundle std/core;        // Always available by default
-import [List, Map] from bundle std/collections;
-import io/FileSystem from bundle std/io;
-import [HttpServer] from bundle std/network;
+import bundle std.core;        // Always available by default
+import [List, Map] from bundle std.collections;
+import io.FileSystem from bundle std/io;
+import [HttpServer] from bundle std.network;
 
 // Application using standard library
 class StandardApp : System.Application {
