@@ -1,0 +1,14 @@
+# bundle.manifest for std/core/runtime
+bundle: std.core.runtime
+version: 1.0.0
+exports:
+  # Application lifecycle
+  - Application
+  
+  # Exception handling
+  - Exception
+  - RuntimeException
+
+dependencies:
+  # Runtime depends on the core object model
+  - std.core.objects

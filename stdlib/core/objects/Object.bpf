@@ -1,0 +1,8 @@
+/**
+ * Object.bpf - Base blueprint for all objects in BluePrint
+ * Part of std.core bundle
+ */
+
+blueprint Object {}
+
+export { Object };

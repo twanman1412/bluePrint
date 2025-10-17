@@ -1,0 +1,17 @@
+/**
+ * Hashable.bpf - Base blueprint for all hashable objects in BluePrint
+ * Part of std.core bundle
+ */
+
+import Object from std.core;
+
+blueprint Hashable : Object {
+    /**
+     * Returns a hash code value for this object
+     */
+    public hashCode() {
+        output: i32;
+    }
+}
+
+export { Hashable };

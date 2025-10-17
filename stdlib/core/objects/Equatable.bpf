@@ -1,0 +1,21 @@
+/**
+ * Equatable.bpf - Blueprint for objects that can be compared for equality
+ * Part of std.core bundle
+ */
+
+import Object from std.core;
+
+blueprint Equatable : Object {
+    /**
+     * Determines whether another object is equal to this one
+     */
+    public equals(other) {
+        input: other: Object;
+        output: bool;
+        ensures: equals ==> (other != null);
+        ensures: this.equals(this) == true;     // Reflexive
+        ensures: equals ==> other.equals(this); // Symmetric
+    }
+}
+
+export { Equatable };

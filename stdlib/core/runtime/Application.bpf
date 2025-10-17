@@ -1,0 +1,17 @@
+/**
+ * Application.bpf - Base blueprint for BluePrint applications
+ * Part of std.core bundle
+ */
+
+blueprint Application {
+    /**
+     * Main entry point for BluePrint applications
+     */
+    public static main(args) {
+        input: args: str[];
+        output: void;
+        requires: args != null;
+    }
+}
+
+export { Application };

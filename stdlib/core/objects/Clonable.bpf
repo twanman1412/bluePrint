@@ -1,0 +1,20 @@
+/**
+ * Clonable.bpf - Base blueprint for all clonable objects in BluePrint
+ * Part of std.core bundle
+ */
+
+import Object from std.core;
+
+blueprint Clonable : Object {
+    /**
+     * Creates and returns a copy of this object
+     */
+    public clone() {
+        output: Object;
+        ensures: clone != null;
+        ensures: clone.equals(this);
+        ensures: clone != this;  // Different reference
+    }
+}
+
+export { Clonable };
