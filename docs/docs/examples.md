@@ -407,9 +407,9 @@ See [Modules](modules.md) for import system details.
 
 ```blueprint
 // Import necessary modules
-import [List, Map] from bundle std/collections;
-import bundle std/io;
-import [HttpServer, HttpRequest, HttpResponse] from bundle network/http;
+import [List, Map] from bundle std.collections;
+import bundle std.io;
+import [HttpServer, HttpRequest, HttpResponse] from bundle network.http;
 
 // Blueprint specifications with contracts and default values
 blueprint UserService {
