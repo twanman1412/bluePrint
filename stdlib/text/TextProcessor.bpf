@@ -1,0 +1,81 @@
+/**
+ * TextProcessor.bp - Text processing utilities blueprint
+ * Part of std.text bundle
+ */
+
+import [Object, String] from std.core;
+
+blueprint TextProcessor : Object {
+    /**
+     * Splits text by delimiter
+     */
+    public split(text, delimiter) {
+        input:
+            text: String,
+            delimiter: String;
+        output: String[];
+        requires: text != null && delimiter != null;
+        ensures: split != null;
+    }
+    
+    /**
+     * Joins array of strings with delimiter
+     */
+    public join(strings, delimiter) {
+        input:
+            strings: String[],
+            delimiter: String;
+        output: String;
+        requires: strings != null && delimiter != null;
+        ensures: join != null;
+    }
+    
+    /**
+     * Removes whitespace from both ends of string
+     */
+    public trim(text) {
+        input: text: String;
+        output: String;
+        requires: text != null;
+        ensures: trim != null;
+        ensures: trim.length() <= text.length();
+    }
+    
+    /**
+     * Replaces all occurrences of target with replacement
+     */
+    public replace(text, target, replacement) {
+        input:
+            text: String,
+            target: String,
+            replacement: String;
+        output: String;
+        requires: text != null && target != null && replacement != null;
+        ensures: replace != null;
+    }
+    
+    /**
+     * Checks if text matches a pattern
+     */
+    public matches(text, pattern) {
+        input:
+            text: String,
+            pattern: String;
+        output: bool;
+        requires: text != null && pattern != null;
+    }
+    
+    /**
+     * Finds all matches of pattern in text
+     */
+    public findMatches(text, pattern) {
+        input:
+            text: String,
+            pattern: String;
+        output: String[];
+        requires: text != null && pattern != null;
+        ensures: findMatches != null;
+    }
+}
+
+export { TextProcessor };

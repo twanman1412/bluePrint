@@ -2,13 +2,7 @@
 bundle: std.text
 version: 1.0.0
 exports:
-  - String
-  - StringBuilder
-  - StringProcessor
-  - Regex
-  - Pattern
-  - Matcher
+  - TextProcessor
 
 dependencies:
   - std.core >= 1.0.0
-  - std.collections >= 1.0.0

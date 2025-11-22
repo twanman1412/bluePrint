@@ -1,0 +1,128 @@
+/**
+ * String.bp - Rich string type implementation
+ * Part of std.core bundle
+ */
+
+import Object from std.core;
+import Comparable from std.core;
+
+/**
+ * Rich string type that implements List<char> for string operations
+ * Provides advanced string manipulation methods beyond basic str type
+ */
+blueprint String : Object, Comparable<String> {
+    /**
+     * Returns the length of this string
+     */
+    public length() {
+        output: u32;
+        ensures: length >= 0;
+    }
+    
+    /**
+     * Returns the character at the specified index
+     */
+    public charAt(index) {
+        input: index: u32;
+        output: char;
+        requires: index < this.length();
+    }
+    
+    /**
+     * Returns a substring from start to end (exclusive)
+     */
+    public substring(start, end) {
+        input: 
+            start: u32,
+            end: u32;
+        output: String;
+        requires: start <= end && end <= this.length();
+        ensures: substring.length() == end - start;
+    }
+    
+    /**
+     * Concatenates this string with another string
+     */
+    public concat(other) {
+        input: other: String;
+        output: String;
+        requires: other != null;
+        ensures: concat.length() == this.length() + other.length();
+    }
+    
+    /**
+     * Converts this string to uppercase
+     */
+    public toUpperCase() {
+        output: String;
+        ensures: toUpperCase.length() == this.length();
+    }
+    
+    /**
+     * Converts this string to lowercase
+     */
+    public toLowerCase() {
+        output: String;
+        ensures: toLowerCase.length() == this.length();
+    }
+    
+    /**
+     * Checks if this string contains the specified substring
+     */
+    public contains(substring) {
+        input: substring: String;
+        output: bool;
+        requires: substring != null;
+    }
+    
+    /**
+     * Returns the index of the first occurrence of the specified substring
+     */
+    public indexOf(substring) {
+        input: substring: String;
+        output: i32;
+        requires: substring != null;
+        ensures: (indexOf >= 0) ==> (indexOf <= this.length() - substring.length());
+        ensures: (indexOf == -1) ==> (!this.contains(substring));
+    }
+    
+    /**
+     * Removes whitespace from both ends of the string
+     */
+    public trim() {
+        output: String;
+        ensures: trim.length() <= this.length();
+    }
+    
+    /**
+     * Splits this string around matches of the given delimiter
+     */
+    public split(delimiter) {
+        input: delimiter: String;
+        output: String[];
+        requires: delimiter != null;
+        ensures: split != null;
+    }
+    
+    /**
+     * Converts this String to a basic character array (str)
+     */
+    public toCharArray() {
+        output: str;
+        ensures: toCharArray != null;
+        ensures: toCharArray.length == this.length();
+    }
+    
+    /**
+     * Creates a String from a character array (str)
+     */
+    public static from(charArray) {
+        input: charArray: str;
+        output: String;
+        requires: charArray != null;
+        ensures: from != null;
+        ensures: from.length() == charArray.length;
+    }
+}
+
+export { String };
