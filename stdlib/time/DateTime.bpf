@@ -1,0 +1,116 @@
+/**
+ * DateTime.bp - Date and time utilities blueprint
+ * Part of std.time bundle
+ */
+
+import [Object, String] from std.core;
+
+blueprint DateTime : Object {
+    /**
+     * Returns the current timestamp in milliseconds since epoch
+     */
+    public static currentTimeMillis() {
+        output: i64;
+        ensures: currentTimeMillis > 0;
+    }
+    
+    /**
+     * Returns the current year
+     */
+    public getYear() {
+        output: i32;
+        ensures: getYear >= 1970;  // Assuming Unix epoch minimum
+    }
+    
+    /**
+     * Returns the current month (1-12)
+     */
+    public getMonth() {
+        output: i32;
+        ensures: getMonth >= 1 && getMonth <= 12;
+    }
+    
+    /**
+     * Returns the current day of month (1-31)
+     */
+    public getDay() {
+        output: i32;
+        ensures: getDay >= 1 && getDay <= 31;
+    }
+    
+    /**
+     * Returns the current hour (0-23)
+     */
+    public getHour() {
+        output: i32;
+        ensures: getHour >= 0 && getHour <= 23;
+    }
+    
+    /**
+     * Returns the current minute (0-59)
+     */
+    public getMinute() {
+        output: i32;
+        ensures: getMinute >= 0 && getMinute <= 59;
+    }
+    
+    /**
+     * Returns the current second (0-59)
+     */
+    public getSecond() {
+        output: i32;
+        ensures: getSecond >= 0 && getSecond <= 59;
+    }
+    
+    /**
+     * Formats this DateTime as a string
+     */
+    public format(pattern) {
+        input: pattern: String;
+        output: String;
+        requires: pattern != null;
+        ensures: format != null;
+    }
+    
+    /**
+     * Parses a DateTime from a string
+     */
+    public static parse(dateString, pattern) {
+        input:
+            dateString: String,
+            pattern: String;
+        output: DateTime;
+        requires: dateString != null && pattern != null;
+        ensures: parse != null;
+    }
+    
+    /**
+     * Adds the specified number of days to this DateTime
+     */
+    public addDays(days) {
+        input: days: i32;
+        output: DateTime;
+        ensures: addDays != null;
+    }
+    
+    /**
+     * Adds the specified number of hours to this DateTime
+     */
+    public addHours(hours) {
+        input: hours: i32;
+        output: DateTime;
+        ensures: addHours != null;
+    }
+    
+    /**
+     * Compares this DateTime with another DateTime
+     */
+    public compareTo(other) {
+        input: other: DateTime;
+        output: i32;
+        requires: other != null;
+        ensures: (compareTo == 0) <==> (this.equals(other));
+    }
+}
+
+export { DateTime };

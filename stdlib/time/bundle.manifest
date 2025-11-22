@@ -2,15 +2,7 @@
 bundle: std.time
 version: 1.0.0
 exports:
-  - Date
-  - Time
   - DateTime
-  - Duration
-  - Instant
-  - Calendar
-  - TimeZone
-  - Clock
-  - Timer
 
 dependencies:
   - std.core >= 1.0.0
