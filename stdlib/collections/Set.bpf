@@ -1,0 +1,75 @@
+/**
+ * Set.bp - Unique element collection blueprint
+ * Part of std.collections bundle
+ */
+
+import Collection from std.collections;
+
+blueprint Set<T> : Collection<T> {
+    /**
+     * Adds element to set (only if not already present)
+     */
+    public add(item) {
+        input: item: T;
+        output: bool;
+        ensures: this.contains(item);
+        ensures: add ==> (this.length() == old(this.length()) + 1);
+        ensures: !add ==> (this.length() == old(this.length()));
+    }
+    
+    /**
+     * Removes element from set
+     */
+    public remove(item) {
+        input: item: T;
+        output: bool;
+        ensures: !this.contains(item);
+        ensures: remove ==> (this.length() == old(this.length()) - 1);
+        ensures: !remove ==> (this.length() == old(this.length()));
+    }
+    
+    /**
+     * Returns the union of this set with another set
+     */
+    public union(other) {
+        input: other: Set<T>;
+        output: Set<T>;
+        requires: other != null;
+        ensures: union.length() >= this.length();
+        ensures: union.length() >= other.length();
+        ensures: union.length() <= this.length() + other.length();
+    }
+    
+    /**
+     * Returns the intersection of this set with another set
+     */
+    public intersection(other) {
+        input: other: Set<T>;
+        output: Set<T>;
+        requires: other != null;
+        ensures: intersection.length() <= this.length();
+        ensures: intersection.length() <= other.length();
+    }
+    
+    /**
+     * Returns the difference of this set with another set
+     */
+    public difference(other) {
+        input: other: Set<T>;
+        output: Set<T>;
+        requires: other != null;
+        ensures: difference.length() <= this.length();
+    }
+    
+    /**
+     * Returns true if this set is a subset of another set
+     */
+    public isSubsetOf(other) {
+        input: other: Set<T>;
+        output: bool;
+        requires: other != null;
+        ensures: isSubsetOf ==> (this.length() <= other.length());
+    }
+}
+
+export { Set };

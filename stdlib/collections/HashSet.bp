@@ -1,0 +1,234 @@
+/**
+ * HashSet.bp - Hash-based Set implementation
+ * Part of std.collections bundle
+ */
+
+import [Set, Collection] from std.collections;
+import Object from std.core;
+
+class HashSet<T> : Set<T> {
+    private T[] buckets;
+    private bool[] occupied;
+    private i32 count;
+    private i32 capacity;
+    private final f64 LOAD_FACTOR = 0.75;
+    
+    /**
+     * Creates an empty HashSet with default capacity
+     */
+    public HashSet() {
+        this.capacity = 16;
+        this.buckets = new T[this.capacity];
+        this.occupied = new bool[this.capacity];
+        this.count = 0;
+    }
+    
+    /**
+     * Creates an empty HashSet with specified initial capacity
+     */
+    public HashSet(i32 initialCapacity) {
+        this.capacity = initialCapacity;
+        this.buckets = new T[this.capacity];
+        this.occupied = new bool[this.capacity];
+        this.count = 0;
+    }
+    
+    public str toString() {
+        return "HashSet[size=" + this.count + "]";
+    }
+    
+    public bool equals(Object other) {
+        if (!(other instanceof HashSet)) {
+            return false;
+        }
+        HashSet<T> otherSet = (HashSet<T>) other;
+        if (this.count != otherSet.count) {
+            return false;
+        }
+        T[] thisArray = this.toArray();
+        for (i32 i = 0; i < thisArray.length; i++) {
+            if (!otherSet.contains(thisArray[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public i32 hashCode() {
+        i32 hash = 0;
+        for (i32 i = 0; i < this.capacity; i++) {
+            if (this.occupied[i]) {
+                hash += this.buckets[i].hashCode();
+            }
+        }
+        return hash;
+    }
+    
+    public Object clone() {
+        HashSet<T> cloned = new HashSet<T>(this.capacity);
+        for (i32 i = 0; i < this.capacity; i++) {
+            if (this.occupied[i]) {
+                cloned.add(this.buckets[i]);
+            }
+        }
+        return cloned;
+    }
+    
+    public i32 length() {
+        return this.count;
+    }
+    
+    public bool isEmpty() {
+        return this.count == 0;
+    }
+    
+    public bool contains(T item) {
+        i32 index = this.findIndex(item);
+        return index >= 0;
+    }
+    
+    public T[] toArray() {
+        T[] result = new T[this.count];
+        i32 resultIndex = 0;
+        for (i32 i = 0; i < this.capacity; i++) {
+            if (this.occupied[i]) {
+                result[resultIndex++] = this.buckets[i];
+            }
+        }
+        return result;
+    }
+    
+    public bool add(T item) {
+        if (this.contains(item)) {
+            return false;
+        }
+        
+        if (this.count >= this.capacity * this.LOAD_FACTOR) {
+            this.resize();
+        }
+        
+        i32 index = this.findEmptySlot(item);
+        this.buckets[index] = item;
+        this.occupied[index] = true;
+        this.count++;
+        return true;
+    }
+    
+    public bool remove(T item) {
+        i32 index = this.findIndex(item);
+        if (index >= 0) {
+            this.occupied[index] = false;
+            this.count--;
+            return true;
+        }
+        return false;
+    }
+    
+    public void clear() {
+        for (i32 i = 0; i < this.capacity; i++) {
+            this.occupied[i] = false;
+        }
+        this.count = 0;
+    }
+    
+    public Set<T> union(Set<T> other) {
+        HashSet<T> result = new HashSet<T>();
+        // Add all elements from this set
+        for (i32 i = 0; i < this.capacity; i++) {
+            if (this.occupied[i]) {
+                result.add(this.buckets[i]);
+            }
+        }
+        // Add all elements from other set
+        T[] otherArray = other.toArray();
+        for (i32 i = 0; i < otherArray.length; i++) {
+            result.add(otherArray[i]);
+        }
+        return result;
+    }
+    
+    public Set<T> intersection(Set<T> other) {
+        HashSet<T> result = new HashSet<T>();
+        for (i32 i = 0; i < this.capacity; i++) {
+            if (this.occupied[i] && other.contains(this.buckets[i])) {
+                result.add(this.buckets[i]);
+            }
+        }
+        return result;
+    }
+    
+    public Set<T> difference(Set<T> other) {
+        HashSet<T> result = new HashSet<T>();
+        for (i32 i = 0; i < this.capacity; i++) {
+            if (this.occupied[i] && !other.contains(this.buckets[i])) {
+                result.add(this.buckets[i]);
+            }
+        }
+        return result;
+    }
+    
+    public bool isSubsetOf(Set<T> other) {
+        for (i32 i = 0; i < this.capacity; i++) {
+            if (this.occupied[i] && !other.contains(this.buckets[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Finds the index of an item in the hash table
+     */
+    private i32 findIndex(T item) {
+        i32 hash = item.hashCode();
+        i32 index = Math.abs(hash) % this.capacity;
+        i32 originalIndex = index;
+        
+        while (this.occupied[index]) {
+            if (this.buckets[index].equals(item)) {
+                return index;
+            }
+            index = (index + 1) % this.capacity;
+            if (index == originalIndex) {
+                break; // Table is full
+            }
+        }
+        return -1;
+    }
+    
+    /**
+     * Finds an empty slot for an item
+     */
+    private i32 findEmptySlot(T item) {
+        i32 hash = item.hashCode();
+        i32 index = Math.abs(hash) % this.capacity;
+        
+        while (this.occupied[index]) {
+            index = (index + 1) % this.capacity;
+        }
+        return index;
+    }
+    
+    /**
+     * Resizes the hash table when load factor is exceeded
+     */
+    private void resize() {
+        T[] oldBuckets = this.buckets;
+        bool[] oldOccupied = this.occupied;
+        i32 oldCapacity = this.capacity;
+        
+        this.capacity *= 2;
+        this.buckets = new T[this.capacity];
+        this.occupied = new bool[this.capacity];
+        this.count = 0;
+        
+        // Rehash all elements
+        for (i32 i = 0; i < oldCapacity; i++) {
+            if (oldOccupied[i]) {
+                this.add(oldBuckets[i]);
+            }
+        }
+    }
+}
+
+export { HashSet };

@@ -1,0 +1,115 @@
+/**
+ * List.bp - Dynamic array blueprint
+ * Part of std.collections bundle
+ */
+
+import Collection from std.collections;
+
+blueprint List<T> : Collection<T> {
+    /**
+     * Returns the underlying array representation (read-only access)
+     */
+    public getArray() {
+        output: T[];
+        ensures: getArray != null;
+        ensures: getArray.length >= this.length();
+    }
+
+    /**
+     * Gets element at specified index
+     * Supports negative indexing: -1 refers to last element
+     */
+    public get(index) {
+        input: index: i32;
+        output: T;
+        default: index == -1 ==> this.get(this.length() - 1);
+        requires: index >= -1;
+        requires: (index >= 0) ==> (index < this.length());
+        requires: (index == -1) ==> (this.length() > 0);
+        ensures: (index >= 0) ==> (get == this.getArray()[index]);
+        ensures: (index == -1) ==> (get == this.getArray()[this.length() - 1]);
+    }
+    
+    /**
+     * Sets element at specified index
+     */
+    public set(index, item) {
+        input: 
+            index: i32,
+            item: T;
+        output: T;
+        requires: index >= 0 && index < this.length();
+        ensures: this.get(index) == item;
+    }
+
+    /**
+     * Concatenates this list with another collection
+     */
+    public concat(other) {
+        input: other: Collection<T>;
+        output: List<T>;
+        requires: other != null;
+        ensures: concat.length() == this.length() + other.length();
+    }
+    
+    /**
+     * Adds element to end of list
+     */
+    public add(item) {
+        input: item: T;
+        output: bool;
+        ensures: this.contains(item);
+        ensures: this.length() == old(this.length()) + 1;
+        ensures: this.get(this.length() - 1) == item;
+        ensures: add == true;  // List.add always succeeds
+    }
+    
+    /**
+     * Inserts element at specified index
+     */
+    public insert(index, item) {
+        input:
+            index: i32,
+            item: T;
+        output: void;
+        requires: index >= 0 && index <= this.length();
+        ensures: this.length() == old(this.length()) + 1;
+        ensures: this.get(index) == item;
+        ensures: this.contains(item);
+    }
+    
+    /**
+     * Removes element at specified index
+     */
+    public removeAt(index) {
+        input: index: i32;
+        output: T;
+        requires: index >= 0 && index < this.length();
+        ensures: this.length() == old(this.length()) - 1;
+    }
+    
+    /**
+     * Returns the index of the first occurrence of the specified element
+     */
+    public indexOf(item) {
+        input: item: T;
+        output: i32;
+        ensures: (indexOf >= 0) ==> (indexOf < this.length());
+        ensures: (indexOf >= 0) ==> (this.get(indexOf) == item);
+        ensures: (indexOf == -1) ==> (!this.contains(item));
+    }
+    
+    /**
+     * Returns a sublist from start to end (exclusive)
+     */
+    public subList(start, end) {
+        input:
+            start: i32,
+            end: i32;
+        output: List<T>;
+        requires: start >= 0 && end >= start && end <= this.length();
+        ensures: subList.length() == end - start;
+    }
+}
+
+export { List };

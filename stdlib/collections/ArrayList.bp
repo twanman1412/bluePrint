@@ -1,0 +1,201 @@
+/**
+ * ArrayList.bp - Dynamic array implementation of List
+ * Part of std.collections bundle
+ */
+
+import [List, Collection] from std.collections;
+import Object from std.core;
+
+class ArrayList<T> : List<T> {
+    private T[] items;
+    private i32 count;
+    private i32 capacity;
+    
+    /**
+     * Creates an empty ArrayList with default capacity
+     */
+    public ArrayList() {
+        this.capacity = 10;
+        this.items = new T[this.capacity];
+        this.count = 0;
+    }
+    
+    /**
+     * Creates an empty ArrayList with specified initial capacity
+     */
+    public ArrayList(i32 initialCapacity) {
+        this.capacity = initialCapacity;
+        this.items = new T[this.capacity];
+        this.count = 0;
+    }
+    
+    public str toString() {
+        return "ArrayList[size=" + this.count + "]";
+    }
+    
+    public bool equals(Object other) {
+        if (!(other instanceof ArrayList)) {
+            return false;
+        }
+        ArrayList<T> otherList = (ArrayList<T>) other;
+        if (this.count != otherList.count) {
+            return false;
+        }
+        for (i32 i = 0; i < this.count; i++) {
+            if (!this.items[i].equals(otherList.items[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public i32 hashCode() {
+        i32 hash = 1;
+        for (i32 i = 0; i < this.count; i++) {
+            hash = 31 * hash + this.items[i].hashCode();
+        }
+        return hash;
+    }
+    
+    public Object clone() {
+        ArrayList<T> cloned = new ArrayList<T>(this.capacity);
+        for (i32 i = 0; i < this.count; i++) {
+            cloned.add(this.items[i]);
+        }
+        return cloned;
+    }
+    
+    public i32 length() {
+        return this.count;
+    }
+    
+    public bool isEmpty() {
+        return this.count == 0;
+    }
+    
+    public T[] getArray() {
+        return this.items;
+    }
+    
+    public T get(i32 index) {
+        if (index == -1) {
+            return this.items[this.count - 1];
+        }
+        return this.items[index];
+    }
+    
+    public T set(i32 index, T item) {
+        T oldValue = this.items[index];
+        this.items[index] = item;
+        return oldValue;
+    }
+    
+    public bool contains(T item) {
+        return this.indexOf(item) >= 0;
+    }
+    
+    public T[] toArray() {
+        T[] result = new T[this.count];
+        for (i32 i = 0; i < this.count; i++) {
+            result[i] = this.items[i];
+        }
+        return result;
+    }
+    
+    public bool add(T item) {
+        this.ensureCapacity(this.count + 1);
+        this.items[this.count++] = item;
+        return true;
+    }
+    
+    public void insert(i32 index, T item) {
+        this.ensureCapacity(this.count + 1);
+        // Shift elements to the right
+        for (i32 i = this.count; i > index; i--) {
+            this.items[i] = this.items[i - 1];
+        }
+        this.items[index] = item;
+        this.count++;
+    }
+    
+    public bool remove(T item) {
+        i32 index = this.indexOf(item);
+        if (index >= 0) {
+            this.removeAt(index);
+            return true;
+        }
+        return false;
+    }
+    
+    public T removeAt(i32 index) {
+        T removedItem = this.items[index];
+        // Shift elements to the left
+        for (i32 i = index; i < this.count - 1; i++) {
+            this.items[i] = this.items[i + 1];
+        }
+        this.count--;
+        return removedItem;
+    }
+    
+    public void clear() {
+        this.count = 0;
+    }
+    
+    public i32 indexOf(T item) {
+        for (i32 i = 0; i < this.count; i++) {
+            if (this.items[i].equals(item)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    public List<T> concat(Collection<T> other) {
+        ArrayList<T> result = new ArrayList<T>(this.count + other.length());
+        // Add all items from this list
+        for (i32 i = 0; i < this.count; i++) {
+            result.add(this.items[i]);
+        }
+        // Add all items from other collection
+        T[] otherArray = other.toArray();
+        for (i32 i = 0; i < otherArray.length; i++) {
+            result.add(otherArray[i]);
+        }
+        return result;
+    }
+    
+    public List<T> subList(i32 start, i32 end) {
+        ArrayList<T> result = new ArrayList<T>(end - start);
+        for (i32 i = start; i < end; i++) {
+            result.add(this.items[i]);
+        }
+        return result;
+    }
+    
+    /**
+     * Ensures the internal array has at least the specified capacity
+     */
+    private void ensureCapacity(i32 minCapacity) {
+        if (minCapacity > this.capacity) {
+            i32 newCapacity = this.capacity * 2;
+            if (newCapacity < minCapacity) {
+                newCapacity = minCapacity;
+            }
+            this.resize(newCapacity);
+        }
+    }
+    
+    /**
+     * Resizes the internal array to the specified capacity
+     */
+    private void resize(i32 newCapacity) {
+        T[] newItems = new T[newCapacity];
+        for (i32 i = 0; i < this.count; i++) {
+            newItems[i] = this.items[i];
+        }
+        this.items = newItems;
+        this.capacity = newCapacity;
+    }
+}
+
+export { ArrayList };

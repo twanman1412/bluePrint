@@ -1,0 +1,228 @@
+/**
+ * HashMap.bp - Hash-based Map implementation
+ * Part of std.collections bundle
+ */
+
+import [Map, Set, Collection] from std.collections;
+import Object from std.core;
+
+class HashMap<K, V> : Map<K, V> {
+    private K[] keys;
+    private V[] values;
+    private bool[] occupied;
+    private i32 count;
+    private i32 capacity;
+    private final f64 LOAD_FACTOR = 0.75;
+    
+    /**
+     * Creates an empty HashMap with default capacity
+     */
+    public HashMap() {
+        this.capacity = 16;
+        this.keys = new K[this.capacity];
+        this.values = new V[this.capacity];
+        this.occupied = new bool[this.capacity];
+        this.count = 0;
+    }
+    
+    /**
+     * Creates an empty HashMap with specified initial capacity
+     */
+    public HashMap(i32 initialCapacity) {
+        this.capacity = initialCapacity;
+        this.keys = new K[this.capacity];
+        this.values = new V[this.capacity];
+        this.occupied = new bool[this.capacity];
+        this.count = 0;
+    }
+    
+    public str toString() {
+        return "HashMap[size=" + this.count + "]";
+    }
+    
+    public bool equals(Object other) {
+        if (!(other instanceof HashMap)) {
+            return false;
+        }
+        HashMap<K, V> otherMap = (HashMap<K, V>) other;
+        if (this.count != otherMap.count) {
+            return false;
+        }
+        for (i32 i = 0; i < this.capacity; i++) {
+            if (this.occupied[i]) {
+                V otherValue = otherMap.get(this.keys[i]);
+                if (otherValue == null || !this.values[i].equals(otherValue)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    public i32 hashCode() {
+        i32 hash = 0;
+        for (i32 i = 0; i < this.capacity; i++) {
+            if (this.occupied[i]) {
+                hash += this.keys[i].hashCode() ^ this.values[i].hashCode();
+            }
+        }
+        return hash;
+    }
+    
+    public Object clone() {
+        HashMap<K, V> cloned = new HashMap<K, V>(this.capacity);
+        for (i32 i = 0; i < this.capacity; i++) {
+            if (this.occupied[i]) {
+                cloned.put(this.keys[i], this.values[i]);
+            }
+        }
+        return cloned;
+    }
+    
+    public V? put(K key, V value) {
+        if (this.count >= this.capacity * this.LOAD_FACTOR) {
+            this.resize();
+        }
+        
+        i32 index = this.findIndex(key);
+        if (index >= 0) {
+            // Key already exists, update value
+            V oldValue = this.values[index];
+            this.values[index] = value;
+            return oldValue;
+        } else {
+            // New key, find empty slot
+            index = this.findEmptySlot(key);
+            this.keys[index] = key;
+            this.values[index] = value;
+            this.occupied[index] = true;
+            this.count++;
+            return null;
+        }
+    }
+    
+    public V? get(K key) {
+        i32 index = this.findIndex(key);
+        if (index >= 0) {
+            return this.values[index];
+        }
+        return null;
+    }
+    
+    public V? remove(K key) {
+        i32 index = this.findIndex(key);
+        if (index >= 0) {
+            V removedValue = this.values[index];
+            this.occupied[index] = false;
+            this.count--;
+            return removedValue;
+        }
+        return null;
+    }
+    
+    public bool containsKey(K key) {
+        return this.findIndex(key) >= 0;
+    }
+    
+    public bool containsValue(V value) {
+        for (i32 i = 0; i < this.capacity; i++) {
+            if (this.occupied[i] && this.values[i].equals(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public i32 size() {
+        return this.count;
+    }
+    
+    public bool isEmpty() {
+        return this.count == 0;
+    }
+    
+    public void clear() {
+        for (i32 i = 0; i < this.capacity; i++) {
+            this.occupied[i] = false;
+        }
+        this.count = 0;
+    }
+    
+    public Set<K> keySet() {
+        HashSet<K> result = new HashSet<K>();
+        for (i32 i = 0; i < this.capacity; i++) {
+            if (this.occupied[i]) {
+                result.add(this.keys[i]);
+            }
+        }
+        return result;
+    }
+    
+    public Collection<V> values() {
+        ArrayList<V> result = new ArrayList<V>();
+        for (i32 i = 0; i < this.capacity; i++) {
+            if (this.occupied[i]) {
+                result.add(this.values[i]);
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Finds the index of a key in the hash table
+     */
+    private i32 findIndex(K key) {
+        i32 hash = key.hashCode();
+        i32 index = Math.abs(hash) % this.capacity;
+        i32 originalIndex = index;
+        
+        while (this.occupied[index]) {
+            if (this.keys[index].equals(key)) {
+                return index;
+            }
+            index = (index + 1) % this.capacity;
+            if (index == originalIndex) {
+                break; // Table is full
+            }
+        }
+        return -1;
+    }
+    
+    /**
+     * Finds an empty slot for a key
+     */
+    private i32 findEmptySlot(K key) {
+        i32 hash = key.hashCode();
+        i32 index = Math.abs(hash) % this.capacity;
+        
+        while (this.occupied[index]) {
+            index = (index + 1) % this.capacity;
+        }
+        return index;
+    }
+    
+    /**
+     * Resizes the hash table when load factor is exceeded
+     */
+    private void resize() {
+        K[] oldKeys = this.keys;
+        V[] oldValues = this.values;
+        bool[] oldOccupied = this.occupied;
+        i32 oldCapacity = this.capacity;
+        
+        this.capacity *= 2;
+        this.keys = new K[this.capacity];
+        this.values = new V[this.capacity];
+        this.occupied = new bool[this.capacity];
+        this.count = 0;
+        
+        // Rehash all elements
+        for (i32 i = 0; i < oldCapacity; i++) {
+            if (oldOccupied[i]) {
+                this.put(oldKeys[i], oldValues[i]);
+            }
+        }
+    }
+}
+
+export { HashMap };

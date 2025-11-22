@@ -1,0 +1,302 @@
+/**
+ * LinkedList.bp - Doubly-linked list implementation
+ * Part of std.collections bundle
+ */
+
+import [List, Collection] from std.collections;
+import Object from std.core;
+
+class LinkedList<T> : List<T> {
+    private Node<T>? head;
+    private Node<T>? tail;
+    private i32 count;
+    
+    /**
+     * Node class for the linked list
+     */
+    private class Node<T> : Object {
+        public T data;
+        public Node<T>? next;
+        public Node<T>? prev;
+        
+        public Node(T data) {
+            this.data = data;
+            this.next = null;
+            this.prev = null;
+        }
+        
+        public str toString() {
+            return "Node[" + this.data.toString() + "]";
+        }
+        
+        public bool equals(Object other) {
+            if (!(other instanceof Node)) {
+                return false;
+            }
+            Node<T> otherNode = (Node<T>) other;
+            return this.data.equals(otherNode.data);
+        }
+        
+        public i32 hashCode() {
+            return this.data.hashCode();
+        }
+        
+        public Object clone() {
+            return new Node<T>(this.data);
+        }
+    }
+    
+    /**
+     * Creates an empty LinkedList
+     */
+    public LinkedList() {
+        this.head = null;
+        this.tail = null;
+        this.count = 0;
+    }
+    
+    public str toString() {
+        return "LinkedList[size=" + this.count + "]";
+    }
+    
+    public bool equals(Object other) {
+        if (!(other instanceof LinkedList)) {
+            return false;
+        }
+        LinkedList<T> otherList = (LinkedList<T>) other;
+        if (this.count != otherList.count) {
+            return false;
+        }
+        
+        Node<T>? current1 = this.head;
+        Node<T>? current2 = otherList.head;
+        
+        while (current1 != null && current2 != null) {
+            if (!current1.data.equals(current2.data)) {
+                return false;
+            }
+            current1 = current1.next;
+            current2 = current2.next;
+        }
+        return true;
+    }
+    
+    public i32 hashCode() {
+        i32 hash = 1;
+        Node<T>? current = this.head;
+        while (current != null) {
+            hash = 31 * hash + current.data.hashCode();
+            current = current.next;
+        }
+        return hash;
+    }
+    
+    public Object clone() {
+        LinkedList<T> cloned = new LinkedList<T>();
+        Node<T>? current = this.head;
+        while (current != null) {
+            cloned.add(current.data);
+            current = current.next;
+        }
+        return cloned;
+    }
+    
+    public i32 length() {
+        return this.count;
+    }
+    
+    public bool isEmpty() {
+        return this.count == 0;
+    }
+    
+    public T[] getArray() {
+        T[] result = new T[this.count];
+        Node<T>? current = this.head;
+        i32 index = 0;
+        while (current != null) {
+            result[index++] = current.data;
+            current = current.next;
+        }
+        return result;
+    }
+    
+    public T get(i32 index) {
+        if (index == -1) {
+            return this.tail.data;
+        }
+        Node<T>? node = this.getNode(index);
+        return node.data;
+    }
+    
+    public T set(i32 index, T item) {
+        Node<T>? node = this.getNode(index);
+        T oldValue = node.data;
+        node.data = item;
+        return oldValue;
+    }
+    
+    public bool contains(T item) {
+        return this.indexOf(item) >= 0;
+    }
+    
+    public T[] toArray() {
+        return this.getArray();
+    }
+    
+    public bool add(T item) {
+        Node<T> newNode = new Node<T>(item);
+        
+        if (this.tail == null) {
+            // First element
+            this.head = newNode;
+            this.tail = newNode;
+        } else {
+            // Add to end
+            this.tail.next = newNode;
+            newNode.prev = this.tail;
+            this.tail = newNode;
+        }
+        
+        this.count++;
+        return true;
+    }
+    
+    public void insert(i32 index, T item) {
+        if (index == this.count) {
+            // Insert at end
+            this.add(item);
+            return;
+        }
+        
+        Node<T> newNode = new Node<T>(item);
+        
+        if (index == 0) {
+            // Insert at beginning
+            newNode.next = this.head;
+            if (this.head != null) {
+                this.head.prev = newNode;
+            }
+            this.head = newNode;
+            if (this.tail == null) {
+                this.tail = newNode;
+            }
+        } else {
+            // Insert in middle
+            Node<T>? current = this.getNode(index);
+            newNode.next = current;
+            newNode.prev = current.prev;
+            current.prev.next = newNode;
+            current.prev = newNode;
+        }
+        
+        this.count++;
+    }
+    
+    public bool remove(T item) {
+        Node<T>? current = this.head;
+        while (current != null) {
+            if (current.data.equals(item)) {
+                this.removeNode(current);
+                return true;
+            }
+            current = current.next;
+        }
+        return false;
+    }
+    
+    public T removeAt(i32 index) {
+        Node<T>? node = this.getNode(index);
+        T removedData = node.data;
+        this.removeNode(node);
+        return removedData;
+    }
+    
+    public void clear() {
+        this.head = null;
+        this.tail = null;
+        this.count = 0;
+    }
+    
+    public i32 indexOf(T item) {
+        Node<T>? current = this.head;
+        i32 index = 0;
+        while (current != null) {
+            if (current.data.equals(item)) {
+                return index;
+            }
+            current = current.next;
+            index++;
+        }
+        return -1;
+    }
+    
+    public List<T> concat(Collection<T> other) {
+        LinkedList<T> result = new LinkedList<T>();
+        // Add all elements from this list
+        Node<T>? current = this.head;
+        while (current != null) {
+            result.add(current.data);
+            current = current.next;
+        }
+        // Add all elements from other collection
+        T[] otherArray = other.toArray();
+        for (i32 i = 0; i < otherArray.length; i++) {
+            result.add(otherArray[i]);
+        }
+        return result;
+    }
+    
+    public List<T> subList(i32 start, i32 end) {
+        LinkedList<T> result = new LinkedList<T>();
+        Node<T>? current = this.getNode(start);
+        for (i32 i = start; i < end && current != null; i++) {
+            result.add(current.data);
+            current = current.next;
+        }
+        return result;
+    }
+    
+    /**
+     * Gets the node at the specified index
+     */
+    private Node<T>? getNode(i32 index) {
+        Node<T>? current;
+        
+        if (index < this.count / 2) {
+            // Search from head
+            current = this.head;
+            for (i32 i = 0; i < index; i++) {
+                current = current.next;
+            }
+        } else {
+            // Search from tail
+            current = this.tail;
+            for (i32 i = this.count - 1; i > index; i--) {
+                current = current.prev;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Removes a specific node from the list
+     */
+    private void removeNode(Node<T> node) {
+        if (node.prev != null) {
+            node.prev.next = node.next;
+        } else {
+            this.head = node.next;
+        }
+        
+        if (node.next != null) {
+            node.next.prev = node.prev;
+        } else {
+            this.tail = node.prev;
+        }
+        
+        this.count--;
+    }
+}
+
+export { LinkedList };

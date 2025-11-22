@@ -1,0 +1,54 @@
+/**
+ * Queue.bp - First-In-First-Out collection blueprint
+ * Part of std.collections bundle
+ */
+
+import Collection from std.collections;
+
+blueprint Queue<T> : Collection<T> {
+    /**
+     * Adds an element to the rear of this queue
+     */
+    public enqueue(item) {
+        input: item: T;
+        output: void;
+        ensures: this.length() == old(this.length()) + 1;
+        ensures: this.contains(item);
+    }
+    
+    /**
+     * Removes and returns the front element of this queue
+     */
+    public dequeue() {
+        output: T;
+        requires: this.length() > 0;
+        ensures: this.length() == old(this.length()) - 1;
+    }
+    
+    /**
+     * Returns the front element without removing it
+     */
+    public front() {
+        output: T;
+        requires: this.length() > 0;
+    }
+    
+    /**
+     * Returns the rear element without removing it
+     */
+    public rear() {
+        output: T;
+        requires: this.length() > 0;
+    }
+    
+    /**
+     * Returns the front element without removing it (alias for front)
+     */
+    public peek() {
+        output: T;
+        requires: this.length() > 0;
+        ensures: peek == this.front();
+    }
+}
+
+export { Queue };

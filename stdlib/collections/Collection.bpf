@@ -1,0 +1,71 @@
+/**
+ * Collection.bpf - Base blueprint for all collections in BluePrint
+ * Part of std.collections bundle
+ */
+
+import Object from std.core;
+
+blueprint Collection<T> : Object {
+    /**
+     * Returns the number of elements in this collection
+     */
+    public length() {
+        output: i32;
+        ensures: length >= 0;
+    }
+    
+    /**
+     * Returns true if this collection contains no elements
+     */
+    public isEmpty() {
+        output: bool;
+        ensures: isEmpty <==> (this.length() == 0);
+    }
+    
+    /**
+     * Returns true if this collection contains the specified element
+     */
+    public contains(item) {
+        input: item: T;
+        output: bool;
+    }
+    
+    /**
+     * Returns an array containing all elements in this collection
+     */
+    public toArray() {
+        output: T[];
+        ensures: toArray != null;
+        ensures: toArray.length == this.length();
+    }
+    
+    /**
+     * Adds the specified element to this collection
+     */
+    public add(item) {
+        input: item: T;
+        output: bool;
+        ensures: this.contains(item);
+    }
+    
+    /**
+     * Removes the specified element from this collection
+     */
+    public remove(item) {
+        input: item: T;
+        output: bool;
+        ensures: !remove ==> this.contains(item);
+        ensures: remove ==> !this.contains(item);
+    }
+    
+    /**
+     * Removes all elements from this collection
+     */
+    public clear() {
+        output: void;
+        ensures: this.isEmpty();
+        ensures: this.length() == 0;
+    }
+}
+
+export { Collection };

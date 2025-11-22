@@ -1,0 +1,103 @@
+/**
+ * Map.bp - Key-value mapping blueprint
+ * Part of std.collections bundle
+ */
+
+import Object from std.core;
+
+blueprint Map<K, V> : Object {
+    /**
+     * Associates the specified value with the specified key
+     */
+    public put(key, value) {
+        input: 
+            key: K,
+            value: V;
+        output: V?;
+        requires: key != null;
+        ensures: this.get(key) == value;
+        ensures: this.containsKey(key);
+    }
+    
+    /**
+     * Returns the value associated with the specified key
+     */
+    public get(key) {
+        input: key: K;
+        output: V?;
+        requires: key != null;
+        ensures: (get != null) ==> this.containsKey(key);
+    }
+    
+    /**
+     * Removes the mapping for the specified key
+     */
+    public remove(key) {
+        input: key: K;
+        output: V?;
+        requires: key != null;
+        ensures: !this.containsKey(key);
+    }
+    
+    /**
+     * Returns true if this map contains a mapping for the specified key
+     */
+    public containsKey(key) {
+        input: key: K;
+        output: bool;
+        requires: key != null;
+    }
+    
+    /**
+     * Returns true if this map contains the specified value
+     */
+    public containsValue(value) {
+        input: value: V;
+        output: bool;
+    }
+    
+    /**
+     * Returns the number of key-value mappings in this map
+     */
+    public size() {
+        output: i32;
+        ensures: size >= 0;
+    }
+    
+    /**
+     * Returns true if this map contains no key-value mappings
+     */
+    public isEmpty() {
+        output: bool;
+        ensures: isEmpty <==> (this.size() == 0);
+    }
+    
+    /**
+     * Removes all mappings from this map
+     */
+    public clear() {
+        output: void;
+        ensures: this.isEmpty();
+        ensures: this.size() == 0;
+    }
+    
+    /**
+     * Returns a set of all keys in this map
+     */
+    public keySet() {
+        output: Set<K>;
+        ensures: keySet != null;
+        ensures: keySet.length() == this.size();
+    }
+    
+    /**
+     * Returns a collection of all values in this map
+     */
+    public values() {
+        output: Collection<V>;
+        ensures: values != null;
+        ensures: values.length() == this.size();
+    }
+}
+
+export { Map };

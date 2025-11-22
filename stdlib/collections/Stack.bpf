@@ -1,0 +1,47 @@
+/**
+ * Stack.bp - Last-In-First-Out collection blueprint
+ * Part of std.collections bundle
+ */
+
+import Collection from std.collections;
+
+blueprint Stack<T> : Collection<T> {
+    /**
+     * Pushes an element onto the top of this stack
+     */
+    public push(item) {
+        input: item: T;
+        output: void;
+        ensures: this.length() == old(this.length()) + 1;
+        ensures: this.top() == item;
+        ensures: this.contains(item);
+    }
+    
+    /**
+     * Removes and returns the top element of this stack
+     */
+    public pop() {
+        output: T;
+        requires: this.length() > 0;
+        ensures: this.length() == old(this.length()) - 1;
+    }
+    
+    /**
+     * Returns the top element without removing it
+     */
+    public top() {
+        output: T;
+        requires: this.length() > 0;
+    }
+    
+    /**
+     * Returns the top element without removing it (alias for top)
+     */
+    public peek() {
+        output: T;
+        requires: this.length() > 0;
+        ensures: peek == this.top();
+    }
+}
+
+export { Stack };
