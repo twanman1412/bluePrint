@@ -1,0 +1,75 @@
+/**
+ * DefaultLogger.bp - Default implementation of the Logger blueprint
+ * Part of std.core bundle
+ */
+
+import [Object, Logger, String, System] from std.core;
+
+/**
+ * Default logger implementation that outputs to system console
+ * Available as a static utility class
+ */
+class DefaultLogger : Logger {
+    
+    public str toString() {
+        return "DefaultLogger";
+    }
+    
+    public bool equals(Object other) {
+        return other instanceof DefaultLogger;
+    }
+    
+    public i32 hashCode() {
+        return "DefaultLogger".hashCode();
+    }
+    
+    public Object clone() {
+        return new DefaultLogger();
+    }
+
+    /**
+     * Log a general message to stdout
+     */
+    public static void log(str message) {
+        System.println("[LOG] " + message);
+    }
+    
+    public static void log(String message) {
+        System.println("[LOG] " + message.toCharArray());
+    }
+
+    /**
+     * Log a debug message to stdout
+     */
+    public static void debug(str message) {
+        System.println("[DEBUG] " + message);
+    }
+    
+    public static void debug(String message) {
+        System.println("[DEBUG] " + message.toCharArray());
+    }
+
+    /**
+     * Log a warning message to stderr
+     */
+    public static void warn(str message) {
+        System.printErrorLine("[WARN] " + message);
+    }
+    
+    public static void warn(String message) {
+        System.printErrorLine("[WARN] " + message.toCharArray());
+    }
+
+    /**
+     * Log an error message to stderr
+     */
+    public static void error(str message) {
+        System.printErrorLine("[ERROR] " + message);
+    }
+    
+    public static void error(String message) {
+        System.printErrorLine("[ERROR] " + message.toCharArray());
+    }
+}
+
+export { DefaultLogger };

@@ -1,0 +1,53 @@
+/**
+ * OutputStream.bp - Output stream blueprint for writing bytes
+ * Part of std.io bundle
+ */
+
+import [AutoCloseable, IOException] from std.io;
+
+blueprint OutputStream : AutoCloseable {
+    /**
+     * Writes a single byte to the output stream
+     */
+    public write(b) {
+        input: b: i32;
+        output: void;
+        throws: IOException;
+        requires: b >= 0 && b <= 255;
+    }
+    
+    /**
+     * Writes all bytes from a buffer
+     */
+    public write(buffer) {
+        input: buffer: u8[];
+        output: void;
+        throws: IOException;
+        requires: buffer != null;
+    }
+    
+    /**
+     * Writes bytes from a buffer with offset and length
+     */
+    public write(buffer, offset, length) {
+        input:
+            buffer: u8[],
+            offset: i32,
+            length: i32;
+        output: void;
+        throws: IOException;
+        requires: buffer != null;
+        requires: offset >= 0 && length >= 0;
+        requires: offset + length <= buffer.length;
+    }
+    
+    /**
+     * Flushes any buffered output
+     */
+    public flush() {
+        output: void;
+        throws: IOException;
+    }
+}
+
+export { OutputStream };

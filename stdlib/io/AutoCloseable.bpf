@@ -1,0 +1,25 @@
+/**
+ * AutoCloseable.bp - Resource management blueprint
+ * Part of std.io bundle
+ */
+
+import Object from std.core;
+
+blueprint AutoCloseable : Object {
+    /**
+     * Closes this resource, relinquishing any underlying resources
+     */
+    public close() {
+        output: void;
+        ensures: this.isClosed();
+    }
+    
+    /**
+     * Returns true if this resource has been closed
+     */
+    public isClosed() {
+        output: bool;
+    }
+}
+
+export { AutoCloseable };

@@ -1,0 +1,78 @@
+/**
+ * Logger.bpf - Logging functionality blueprint
+ * Part of std.core bundle
+ */
+
+import Object from std.core;
+
+blueprint Logger : Object {
+    /**
+     * Log a general message
+     */
+    log {
+        overload(message) {
+            input: message: str;
+            output: void;
+            requires: message != null;
+        }
+
+        overload(message) {
+            input: message: String;
+            output: void;
+            requires: message != null;
+        }
+    }
+
+    /**
+     * Log a debug message
+     */
+    debug {
+        overload(message) {
+            input: message: str;
+            output: void;
+            requires: message != null;
+        }
+
+        overload(message) {
+            input: message: String;
+            output: void;
+            requires: message != null;
+        }
+    }
+
+    /**
+     * Log a warning message
+     */
+    warn {
+        overload(message) {
+            input: message: str;
+            output: void;
+            requires: message != null;
+        }
+
+        overload(message) {
+            input: message: String;
+            output: void;
+            requires: message != null;
+        }
+    }
+
+    /**
+     * Log an error message
+     */
+    error {
+        overload(message) {
+            input: message: str;
+            output: void;
+            requires: message != null;
+        }
+
+        overload(message) {
+            input: message: String;
+            output: void;
+            requires: message != null;
+        }
+    }
+}
+
+export { Logger };

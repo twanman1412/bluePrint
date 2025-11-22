@@ -1,0 +1,147 @@
+/**
+ * FileSystem.bp - File system operations blueprint
+ * Part of std.io bundle
+ */
+
+import [Object, String, Exception] from std.core;
+
+/**
+ * Exception for I/O related errors
+ */
+blueprint IOException : Exception {
+    // Inherits all methods from Exception
+}
+
+/**
+ * Exception for file not found errors
+ */
+blueprint FileNotFoundException : IOException {
+    // Inherits all methods from IOException
+}
+
+blueprint FileSystem : Object {
+    /**
+     * Reads the entire contents of a file as a string
+     */
+    public readFile(filename) {
+        input: filename: str;
+        output: str;
+        throws: IOException, FileNotFoundException;
+        requires: filename != null;
+        ensures: readFile != null;
+    }
+    
+    /**
+     * Reads the entire contents of a file as a String object
+     */
+    public readFileAsString(filename) {
+        input: filename: str;
+        output: String;
+        throws: IOException, FileNotFoundException;
+        requires: filename != null;
+        ensures: readFileAsString != null;
+    }
+    
+    /**
+     * Writes content to a file
+     */
+    public writeFile(filename, content) {
+        input: 
+            filename: str,
+            content: str;
+        output: void;
+        throws: IOException;
+        requires: filename != null && content != null;
+        ensures: this.fileExists(filename);
+    }
+    
+    /**
+     * Writes String content to a file
+     */
+    public writeFile(filename, content) {
+        input: 
+            filename: str,
+            content: String;
+        output: void;
+        throws: IOException;
+        requires: filename != null && content != null;
+        ensures: this.fileExists(filename);
+    }
+    
+    /**
+     * Appends content to the end of a file
+     */
+    public appendToFile(filename, content) {
+        input:
+            filename: str,
+            content: str;
+        output: void;
+        throws: IOException;
+        requires: filename != null && content != null;
+    }
+    
+    /**
+     * Checks if a file exists
+     */
+    public fileExists(filename) {
+        input: filename: str;
+        output: bool;
+        requires: filename != null;
+    }
+    
+    /**
+     * Deletes a file
+     */
+    public deleteFile(filename) {
+        input: filename: str;
+        output: bool;
+        requires: filename != null;
+        ensures: !deleteFile ==> this.fileExists(filename);
+        ensures: deleteFile ==> !this.fileExists(filename);
+    }
+    
+    /**
+     * Creates a directory
+     */
+    public createDirectory(path) {
+        input: path: str;
+        output: bool;
+        requires: path != null;
+        ensures: createDirectory ==> this.directoryExists(path);
+    }
+    
+    /**
+     * Checks if a directory exists
+     */
+    public directoryExists(path) {
+        input: path: str;
+        output: bool;
+        requires: path != null;
+    }
+    
+    /**
+     * Lists all files in a directory
+     */
+    public listFiles(directoryPath) {
+        input: directoryPath: str;
+        output: str[];
+        throws: IOException;
+        requires: directoryPath != null;
+        requires: this.directoryExists(directoryPath);
+        ensures: listFiles != null;
+    }
+    
+    /**
+     * Gets the size of a file in bytes
+     */
+    public getFileSize(filename) {
+        input: filename: str;
+        output: i64;
+        throws: IOException, FileNotFoundException;
+        requires: filename != null;
+        requires: this.fileExists(filename);
+        ensures: getFileSize >= 0;
+    }
+}
+
+export { IOException, FileNotFoundException, FileSystem };

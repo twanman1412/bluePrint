@@ -1,0 +1,157 @@
+/**
+ * System.bp - Core system operations and I/O streams
+ * Part of std.core bundle
+ */
+
+import Object from std.core;
+
+/**
+ * Low-level system output interface  
+ * These are implemented at the native/runtime level
+ */
+blueprint SystemOutput : Object {
+    public writeStdout(data) {
+        input: data: str;
+        output: void;
+    }
+    
+    public writeStderr(data) {
+        input: data: str;
+        output: void;
+    }
+    
+    public flushStdout() {
+        output: void;
+    }
+    
+    public flushStderr() {
+        output: void;
+    }
+}
+
+/**
+ * System class provides thread-safe access to system-level operations
+ * Uses built-in synchronization to ensure thread safety
+ */
+class System : Object {
+    // Native system output implementation
+    private static SystemOutput nativeOutput = new NativeSystemOutput();
+    
+    // Built-in synchronization for thread safety
+    private static synchronized void withStdoutLock(void action()) {
+        action();
+    }
+    
+    private static synchronized void withStderrLock(void action()) {
+        action();
+    }
+    
+    public str toString() {
+        return "System";
+    }
+    
+    public bool equals(Object other) {
+        return other instanceof System;
+    }
+    
+    public i32 hashCode() {
+        return "System".hashCode();
+    }
+    
+    public Object clone() {
+        return new System();
+    }
+    
+    /**
+     * Thread-safe printing to stdout
+     */
+    public static void print(str message) {
+        withStdoutLock(() => {
+            nativeOutput.writeStdout(message);
+            nativeOutput.flushStdout();
+        });
+    }
+    
+    /**
+     * Thread-safe printing to stdout with newline
+     */
+    public static void println(str message) {
+        withStdoutLock(() => {
+            nativeOutput.writeStdout(message);
+            nativeOutput.writeStdout("\n");
+            nativeOutput.flushStdout();
+        });
+    }
+    
+    /**
+     * Thread-safe printing to stderr
+     */
+    public static void printError(str message) {
+        withStderrLock(() => {
+            nativeOutput.writeStderr(message);
+            nativeOutput.flushStderr();
+        });
+    }
+    
+    /**
+     * Thread-safe printing to stderr with newline
+     */
+    public static void printErrorLine(str message) {
+        withStderrLock(() => {
+            nativeOutput.writeStderr(message);
+            nativeOutput.writeStderr("\n");
+            nativeOutput.flushStderr();
+        });
+    }
+}
+
+/**
+ * Native implementation of system output
+ * This class interfaces with the runtime/OS level I/O
+ */
+class NativeSystemOutput : SystemOutput {
+    
+    public str toString() {
+        return "NativeSystemOutput";
+    }
+    
+    public bool equals(Object other) {
+        return other instanceof NativeSystemOutput;
+    }
+    
+    public i32 hashCode() {
+        return "NativeSystemOutput".hashCode();
+    }
+    
+    public Object clone() {
+        return new NativeSystemOutput();
+    }
+    
+    public void writeStdout(str data) {
+        // Native call to write to stdout - implemented by runtime
+        nativeWriteStdout(data);
+    }
+    
+    public void writeStderr(str data) {
+        // Native call to write to stderr - implemented by runtime
+        nativeWriteStderr(data);
+    }
+    
+    public void flushStdout() {
+        // Native call to flush stdout - implemented by runtime
+        nativeFlushStdout();
+    }
+    
+    public void flushStderr() {
+        // Native call to flush stderr - implemented by runtime
+        nativeFlushStderr();
+    }
+    
+    // Native methods to be implemented by the BluePrint runtime
+    private native void nativeWriteStdout(str data);
+    private native void nativeWriteStderr(str data);
+    private native void nativeFlushStdout();
+    private native void nativeFlushStderr();
+}
+
+export { SystemOutput, System, NativeSystemOutput };

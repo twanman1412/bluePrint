@@ -1,0 +1,66 @@
+/**
+ * InputStream.bp - Input stream blueprint for reading bytes
+ * Part of std.io bundle
+ */
+
+import [AutoCloseable, IOException] from std.io;
+
+blueprint InputStream : AutoCloseable {
+    /**
+     * Reads the next byte from the input stream
+     */
+    public read() {
+        output: i32;
+        throws: IOException;
+        ensures: (read >= 0 && read <= 255) || read == -1;  // -1 indicates end of stream
+    }
+    
+    /**
+     * Reads bytes into a buffer
+     */
+    public read(buffer) {
+        input: buffer: u8[];
+        output: i32;
+        throws: IOException;
+        requires: buffer != null;
+        ensures: (read >= 0 && read <= buffer.length) || read == -1;
+    }
+    
+    /**
+     * Reads bytes into a buffer with offset and length
+     */
+    public read(buffer, offset, length) {
+        input:
+            buffer: u8[],
+            offset: i32,
+            length: i32;
+        output: i32;
+        throws: IOException;
+        requires: buffer != null;
+        requires: offset >= 0 && length >= 0;
+        requires: offset + length <= buffer.length;
+        ensures: (read >= 0 && read <= length) || read == -1;
+    }
+    
+    /**
+     * Returns the number of bytes available for reading
+     */
+    public available() {
+        output: i32;
+        throws: IOException;
+        ensures: available >= 0;
+    }
+    
+    /**
+     * Skips over n bytes in the input stream
+     */
+    public skip(n) {
+        input: n: i64;
+        output: i64;
+        throws: IOException;
+        requires: n >= 0;
+        ensures: skip >= 0 && skip <= n;
+    }
+}
+
+export { InputStream };
