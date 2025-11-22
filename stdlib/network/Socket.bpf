@@ -1,0 +1,59 @@
+/**
+ * Socket.bp - Basic network socket blueprint
+ * Part of std.network bundle
+ */
+
+import [Object, String, IOException] from std.core;
+import [InputStream, OutputStream] from std.io;
+
+blueprint Socket : Object {
+    /**
+     * Connects to a remote host
+     */
+    public connect(host, port) {
+        input:
+            host: String,
+            port: i32;
+        output: void;
+        throws: IOException;
+        requires: host != null;
+        requires: port > 0 && port <= 65535;
+        ensures: this.isConnected();
+    }
+    
+    /**
+     * Returns true if this socket is connected
+     */
+    public isConnected() {
+        output: bool;
+    }
+    
+    /**
+     * Closes the socket connection
+     */
+    public close() {
+        output: void;
+        throws: IOException;
+        ensures: !this.isConnected();
+    }
+    
+    /**
+     * Gets the input stream for reading data
+     */
+    public getInputStream() {
+        output: InputStream;
+        requires: this.isConnected();
+        ensures: getInputStream != null;
+    }
+    
+    /**
+     * Gets the output stream for writing data
+     */
+    public getOutputStream() {
+        output: OutputStream;
+        requires: this.isConnected();
+        ensures: getOutputStream != null;
+    }
+}
+
+export { Socket };
