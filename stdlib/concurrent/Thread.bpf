@@ -1,0 +1,71 @@
+/**
+ * Thread.bp - Basic threading blueprint
+ * Part of std.concurrent bundle
+ */
+
+import Object from std.core;
+
+blueprint Thread : Object {
+    /**
+     * Starts the execution of this thread
+     */
+    public start() {
+        output: void;
+        requires: !this.isRunning();
+        ensures: this.isRunning();
+    }
+    
+    /**
+     * The main execution method of the thread
+     */
+    public run() {
+        output: void;
+    }
+    
+    /**
+     * Waits for this thread to complete
+     */
+    public join() {
+        output: void;
+        ensures: !this.isRunning();
+    }
+    
+    /**
+     * Returns true if this thread is currently running
+     */
+    public isRunning() {
+        output: bool;
+    }
+    
+    /**
+     * Returns true if this thread is alive
+     */
+    public isAlive() {
+        output: bool;
+    }
+    
+    /**
+     * Interrupts this thread
+     */
+    public interrupt() {
+        output: void;
+    }
+    
+    /**
+     * Returns true if this thread has been interrupted
+     */
+    public isInterrupted() {
+        output: bool;
+    }
+    
+    /**
+     * Causes the currently executing thread to sleep for the specified milliseconds
+     */
+    public static sleep(milliseconds) {
+        input: milliseconds: i64;
+        output: void;
+        requires: milliseconds >= 0;
+    }
+}
+
+export { Thread };

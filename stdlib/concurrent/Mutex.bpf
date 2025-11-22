@@ -1,0 +1,60 @@
+/**
+ * Mutex.bp - Mutual exclusion lock blueprint
+ * Part of std.concurrent bundle
+ */
+
+import Object from std.core;
+
+blueprint Mutex<T> : Object {
+    /**
+     * Acquires the lock, blocking if necessary
+     */
+    public lock() {
+        output: void;
+        ensures: this.isLocked();
+    }
+    
+    /**
+     * Releases the lock
+     */
+    public unlock() {
+        output: void;
+        requires: this.isLocked();
+        ensures: !this.isLocked();
+    }
+    
+    /**
+     * Attempts to acquire the lock without blocking
+     */
+    public tryLock() {
+        output: bool;
+        ensures: tryLock ==> this.isLocked();
+    }
+    
+    /**
+     * Returns true if the lock is currently held
+     */
+    public isLocked() {
+        output: bool;
+    }
+    
+    /**
+     * Gets the protected data (requires lock to be held)
+     */
+    public getData() {
+        output: T;
+        requires: this.isLocked();
+    }
+    
+    /**
+     * Sets the protected data (requires lock to be held)
+     */
+    public setData(data) {
+        input: data: T;
+        output: void;
+        requires: this.isLocked();
+        ensures: this.getData() == data;
+    }
+}
+
+export { Mutex };
