@@ -1,0 +1,71 @@
+/**
+ * Calculator.bp - Basic calculator operations blueprint
+ * Part of std.math bundle
+ * This blueprint can be used to test blueprint specifications
+ */
+
+import Object from std.core;
+
+blueprint Calculator : Object {
+    /**
+     * Returns the maximum of two integers
+     */
+    public max(a, b) {
+        input:
+            a: i32,
+            b: i32;
+        output: i32;
+        requires: a >= 0 && b >= 0;
+        ensures: max >= a && max >= b;
+        ensures: max == a || max == b;
+    }
+    
+    /**
+     * Returns the square root of a number
+     */
+    public sqrt(x) {
+        input: x: f64;
+        output: f64;
+        requires: x >= 0.0;
+        ensures: sqrt * sqrt >= x - 0.001 && sqrt * sqrt <= x + 0.001;
+    }
+    
+    /**
+     * Adds two numbers
+     */
+    public add(a, b) {
+        input: a: f64, b: f64;
+        output: f64;
+        ensures: add == a + b;
+    }
+    
+    /**
+     * Subtracts two numbers
+     */
+    public subtract(a, b) {
+        input: a: f64, b: f64;
+        output: f64;
+        ensures: subtract == a - b;
+    }
+    
+    /**
+     * Multiplies two numbers
+     */
+    public multiply(a, b) {
+        input: a: f64, b: f64;
+        output: f64;
+        ensures: multiply == a * b;
+    }
+    
+    /**
+     * Divides two numbers
+     */
+    public divide(a, b) {
+        input: a: f64, b: f64;
+        output: f64;
+        requires: b != 0.0;
+        ensures: divide == a / b;
+    }
+}
+
+export { Calculator };

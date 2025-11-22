@@ -1,0 +1,63 @@
+/**
+ * Random.bp - Random number generation blueprint
+ * Part of std.math bundle
+ */
+
+import Object from std.core;
+
+blueprint Random : Object {
+    /**
+     * Returns a random integer between min and max (inclusive)
+     */
+    public nextInt(min, max) {
+        input: min: i32, max: i32;
+        output: i32;
+        requires: min <= max;
+        ensures: nextInt >= min && nextInt <= max;
+    }
+    
+    /**
+     * Returns a random integer between 0 and max (exclusive)
+     */
+    public nextInt(max) {
+        input: max: i32;
+        output: i32;
+        requires: max > 0;
+        ensures: nextInt >= 0 && nextInt < max;
+    }
+    
+    /**
+     * Returns a random floating-point number between 0.0 and 1.0
+     */
+    public nextDouble() {
+        output: f64;
+        ensures: nextDouble >= 0.0 && nextDouble < 1.0;
+    }
+    
+    /**
+     * Returns a random floating-point number between min and max
+     */
+    public nextDouble(min, max) {
+        input: min: f64, max: f64;
+        output: f64;
+        requires: min <= max;
+        ensures: nextDouble >= min && nextDouble <= max;
+    }
+    
+    /**
+     * Returns a random boolean value
+     */
+    public nextBoolean() {
+        output: bool;
+    }
+    
+    /**
+     * Sets the seed for the random number generator
+     */
+    public setSeed(seed) {
+        input: seed: i64;
+        output: void;
+    }
+}
+
+export { Random };
