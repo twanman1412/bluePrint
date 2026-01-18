@@ -1,0 +1,542 @@
+# BluePrint Programming Language - Complete AST Grammar
+# This file defines the complete abstract syntax tree grammar for the BluePrint language
+
+# ============================================================================
+# TOP-LEVEL CONSTRUCTS
+# ============================================================================
+
+program -> compilation_unit_list
+
+compilation_unit_list -> compilation_unit | compilation_unit compilation_unit_list | ε
+
+# TODO: Update to use all blueprint options
+# Must include
+#   Export
+
+compilation_unit -> import_declaration
+                 | blueprint_declaration
+                 | class_declaration
+                 | interface_declaration
+                 | enum_declaration
+
+# ============================================================================
+# EXPORT SYSTEM
+# ============================================================================
+
+export_declaration -> "export" blueprint_declaration
+                   | "export" class_declaration
+                   | "export" interface_declaration
+                   | "export" enum_declaration
+                   | "export" "{" export_list "}"
+
+export_list -> identifier | identifier "," export_list
+
+# ============================================================================
+# IMPORT SYSTEM
+# ============================================================================
+
+# TODO: Update to use proper blueprint import
+# Either 
+#   import blueprint_location.blueprint_name
+#   import bundle blueprint_bundle
+#   import [blueprint_name 1, ...] from bundle blueprint_bundle
+
+import_declaration -> "import" import_path ";"
+                   | "import" "bundle" bundle_path ";"
+                   | "import" "[" blueprint_list "]" "from" "bundle" bundle_path ";"
+
+import_path -> identifier "." identifier | identifier "." import_path
+
+bundle_path -> identifier | identifier "." bundle_path
+
+# ============================================================================
+# BLUEPRINT DECLARATIONS
+# ============================================================================
+
+blueprint_declaration -> "blueprint" identifier blueprint_inheritance "{" blueprint_member_list "}"
+
+blueprint_inheritance -> ":" blueprint_list | ε
+
+blueprint_list -> identifier | identifier "," blueprint_list
+
+blueprint_member_list -> blueprint_member | blueprint_member blueprint_member_list | ε
+
+blueprint_member -> method_specification
+                 | field_specification
+                 | invariant_declaration
+
+method_specification -> access_modifier method_name method_signature
+                     | access_modifier method_name overload_group
+
+method_signature -> "(" parameter_list ")" "{" contract_list "}"
+
+overload_group -> "{" overload_list "}"
+
+overload_list -> overload | overload overload_list
+
+overload -> "overload" "(" parameter_list ")" "{" contract_list "}"
+
+field_specification -> access_modifier type identifier ";"
+
+invariant_declaration -> "invariant" ":" expression ";"
+
+# ============================================================================
+# CLASS DECLARATIONS
+# ============================================================================
+
+class_declaration -> "class" identifier class_inheritance "{" class_member_list "}"
+
+class_inheritance -> ":" blueprint_list | ε
+
+class_member_list -> class_member | class_member class_member_list | ε
+
+class_member -> field_declaration
+             | method_implementation
+             | constructor_declaration
+             | destructor_declaration
+
+field_declaration -> access_modifier storage_modifier type identifier field_initializer ";"
+
+field_initializer -> "=" expression | ε
+
+storage_modifier -> "static" | "final" | "volatile" | ε
+
+method_implementation -> access_modifier storage_modifier return_type identifier "(" parameter_list ")" method_body
+                      | access_modifier "async" return_type identifier "(" parameter_list ")" method_body
+                      | access_modifier "synchronized" return_type identifier "(" parameter_list ")" method_body
+
+constructor_declaration -> access_modifier identifier "(" parameter_list ")" constructor_body
+
+destructor_declaration -> access_modifier "~" identifier "(" ")" method_body
+
+method_body -> "{" statement_list "}"
+
+constructor_body -> "{" statement_list "}"
+
+destructor_body -> "{" statement_list "}"
+
+return_type -> type | "void"
+
+# ============================================================================
+# INTERFACE DECLARATIONS
+# ============================================================================
+
+interface_declaration -> "interface" identifier interface_inheritance "{" interface_member_list "}"
+
+interface_inheritance -> ":" interface_list | ε
+
+interface_list -> identifier | identifier "," interface_list
+
+interface_member_list -> interface_member | interface_member interface_member_list | ε
+
+interface_member -> method_signature
+                 | field_specification
+
+# ============================================================================
+# ENUM DECLARATIONS
+# ============================================================================
+
+enum_declaration -> "enum" identifier "{" enum_member_list "}"
+
+enum_member_list -> enum_member | enum_member "," enum_member_list
+
+enum_member -> identifier enum_value
+
+enum_value -> "=" expression | ε
+
+# ============================================================================
+# CONTRACTS
+# ============================================================================
+
+contract_list -> contract | contract contract_list | ε
+
+contract -> input_clause
+         | output_clause
+         | requires_clause
+         | ensures_clause
+         | default_clause
+         | throws_clause
+
+input_clause -> "input" ":" input_list ";"
+
+input_list -> typed_parameter | typed_parameter "," input_list
+
+typed_parameter -> identifier ":" type
+
+output_clause -> "output" ":" type
+
+requires_clause -> "requires" ":" expression ";"
+
+ensures_clause -> "ensures" ":" expression ";"
+
+default_clause -> "default" ":" expression "==>" expression ";"
+
+throws_clause -> "throws" ":" exception_list ";"
+
+exception_list -> exception_type | exception_type "," exception_list
+
+exception_type -> identifier
+
+# ============================================================================
+# STATEMENTS
+# ============================================================================
+
+statement_list -> statement | statement statement_list | ε
+
+statement -> variable_declaration
+          | assignment_statement
+          | expression_statement
+          | if_statement
+          | while_statement
+          | for_statement
+          | do_while_statement
+          | switch_statement
+          | try_statement
+          | return_statement
+          | break_statement
+          | continue_statement
+          | throw_statement
+          | block_statement
+          | match_statement
+          | synchronized_statement
+          | channel_operation
+
+synchronized_statement -> "synchronized" "(" expression ")" block_statement
+
+channel_operation -> identifier "." "send" "(" expression ")"
+                  | identifier "." "receive" "(" ")"
+                  | identifier "." "close" "(" ")"
+
+variable_declaration -> type identifier variable_initializer ";"
+                     | "var" identifier "=" expression ";"
+                     | "final" type identifier "=" expression ";"
+
+variable_initializer -> "=" expression | ε
+
+assignment_statement -> lvalue assignment_operator expression ";"
+
+assignment_operator -> "=" | "+=" | "-=" | "*=" | "/=" | "%="
+
+expression_statement -> expression ";"
+
+if_statement -> "if" "(" expression ")" statement else_clause
+
+else_clause -> "else" statement | ε
+
+while_statement -> "while" "(" expression ")" statement
+
+for_statement -> "for" "(" for_init ";" expression ";" for_update ")" statement
+              | "for" "(" type identifier ":" expression ")" statement
+              | "for" "(" identifier ":" range_expression ")" statement
+
+for_init -> variable_declaration | assignment_statement | ε
+
+for_update -> expression | ε
+
+do_while_statement -> "do" statement "while" "(" expression ")" ";"
+
+switch_statement -> "switch" "(" expression ")" "{" case_list default_case "}"
+
+case_list -> case_clause | case_clause case_list | ε
+
+case_clause -> "case" literal ":" statement_list
+
+default_case -> "default" ":" statement_list | ε
+
+try_statement -> "try" block_statement catch_list finally_clause
+
+catch_list -> catch_clause | catch_clause catch_list | ε
+
+catch_clause -> "catch" "(" exception_type identifier ")" block_statement
+
+finally_clause -> "finally" block_statement | ε
+
+return_statement -> "return" expression ";" | "return" ";"
+
+break_statement -> "break" ";"
+
+continue_statement -> "continue" ";"
+
+throw_statement -> "throw" expression ";"
+
+block_statement -> "{" statement_list "}"
+
+match_statement -> "match" "(" expression ")" "{" match_case_list "}"
+
+match_case_list -> match_case | match_case match_case_list
+
+match_case -> "case" pattern "->" statement
+
+pattern -> literal_pattern
+        | identifier_pattern
+        | constructor_pattern
+        | wildcard_pattern
+
+literal_pattern -> literal
+
+identifier_pattern -> identifier
+
+constructor_pattern -> identifier "(" pattern_list ")"
+
+pattern_list -> pattern | pattern "," pattern_list | ε
+
+wildcard_pattern -> "_"
+
+lvalue -> identifier
+       | array_access
+       | member_access
+
+# ============================================================================
+# EXPRESSIONS
+# ============================================================================
+
+expression -> ternary_expression
+
+ternary_expression -> logical_or_expression ternary_rest
+
+ternary_rest -> "?" expression ":" ternary_expression | ε
+
+logical_or_expression -> logical_and_expression logical_or_rest
+
+logical_or_rest -> "||" logical_and_expression logical_or_rest | ε
+
+logical_and_expression -> equality_expression logical_and_rest
+
+logical_and_rest -> "&&" equality_expression logical_and_rest | ε
+
+equality_expression -> relational_expression equality_rest
+
+equality_rest -> equality_op relational_expression equality_rest | ε
+
+equality_op -> "==" | "!="
+
+relational_expression -> additive_expression relational_rest
+
+relational_rest -> relational_op additive_expression relational_rest | ε
+
+relational_op -> "<" | ">" | "<=" | ">="
+
+additive_expression -> multiplicative_expression additive_rest
+
+additive_rest -> additive_op multiplicative_expression additive_rest | ε
+
+additive_op -> "+" | "-"
+
+multiplicative_expression -> unary_expression multiplicative_rest
+
+multiplicative_rest -> multiplicative_op unary_expression multiplicative_rest | ε
+
+multiplicative_op -> "*" | "/" | "%"
+
+unary_expression -> unary_op unary_expression
+                 | postfix_expression
+
+unary_op -> "!" | "-" | "++" | "--" | "~"
+
+postfix_expression -> primary_expression postfix_rest
+
+postfix_rest -> postfix_op postfix_rest | ε
+
+postfix_op -> "++"
+           | "--"
+           | "(" argument_list ")"
+           | "[" expression "]"
+           | "." identifier
+           | "?." identifier
+           | "??" expression
+           | "." "send" "(" expression ")"
+           | "." "receive" "(" ")"
+           | "." "sendAsync" "(" expression ")"
+           | "." "receiveAsync" "(" ")"
+
+primary_expression -> literal
+                   | identifier
+                   | "this"
+                   | "super"
+                   | "(" expression ")"
+                   | array_literal
+                   | object_creation
+                   | lambda_expression
+                   | await_expression
+                   | old_expression
+                   | quantified_expression
+                   | cast_expression
+                   | channel_expression
+
+channel_expression -> "new" "Channel" "<" type ">" "(" argument_list ")"
+
+array_literal -> "{" expression_list "}"
+
+expression_list -> expression | expression "," expression_list | ε
+
+object_creation -> "new" type "(" argument_list ")"
+                | "new" type "[" expression "]"
+
+argument_list -> expression | expression "," argument_list | ε
+
+lambda_expression -> "(" parameter_list ")" "=>" expression
+                  | "(" parameter_list ")" "=>" block_statement
+
+await_expression -> "await" expression
+
+old_expression -> "old" "(" expression ")"
+
+quantified_expression -> "forall" identifier ":" range "==>" expression
+                      | "exists" identifier ":" range "==>" expression
+
+range -> expression ".." expression
+      | expression "..=" expression
+      | identifier "in" expression
+
+cast_expression -> "(" type ")" expression
+
+array_access -> expression "[" expression "]"
+
+member_access -> expression "." identifier
+
+range_expression -> expression ".." expression
+                 | expression "..=" expression
+
+# ============================================================================
+# CONCURRENCY
+# ============================================================================
+
+async_method -> "async" method_implementation
+
+async_expression -> "async" block_statement
+
+synchronized_method -> "synchronized" method_implementation
+
+synchronized_statement -> "synchronized" "(" expression ")" block_statement
+
+# Channel operations
+channel_declaration -> "Channel" "<" type ">" identifier "=" "new" "Channel" "<" type ">" "(" argument_list ")" ";"
+
+channel_send -> expression "." "send" "(" expression ")" ";"
+             | expression "." "sendAsync" "(" expression ")" ";"
+
+channel_receive -> expression "." "receive" "(" ")"
+                | expression "." "receiveAsync" "(" ")"
+
+# Thread classes
+thread_declaration -> "class" identifier ":" thread_base_class "{" class_member_list "}"
+
+thread_base_class -> "GreenThread" | "OSThread"
+
+# ============================================================================
+# TYPES
+# ============================================================================
+
+parameter_list -> parameter | parameter "," parameter_list | ε
+
+parameter -> type identifier default_value
+
+default_value -> "=" expression | ε
+
+type -> primitive_type
+     | user_type
+     | array_type
+     | generic_type
+     | nullable_type
+     | function_type
+     | future_type
+     | channel_type
+
+primitive_type -> "i8" | "i16" | "i32" | "i64"
+               | "u8" | "u16" | "u32" | "u64"
+               | "f32" | "f64"
+               | "bool" | "char" | "str" | "void"
+               | "fractional"
+
+user_type -> identifier
+
+array_type -> type "[" "]"
+
+generic_type -> identifier "<" type_list ">"
+
+type_list -> type | type "," type_list
+
+nullable_type -> type "?"
+
+function_type -> "Function" "<" type_list ">"
+
+future_type -> "Future" "<" type ">"
+
+channel_type -> "Channel" "<" type ">"
+
+# ============================================================================
+# LITERALS
+# ============================================================================
+
+literal -> integer_literal
+        | float_literal
+        | string_literal
+        | char_literal
+        | bool_literal
+        | null_literal
+        | fractional_literal
+
+integer_literal -> [0-9]+
+                | [0-9]+[uU]
+                | [0-9]+[lL]
+                | 0[xX][0-9a-fA-F]+
+                | 0[bB][01]+
+
+float_literal -> [0-9]*\.[0-9]+
+              | [0-9]*\.[0-9]+[fF]
+              | [0-9]+[fF]
+
+string_literal -> "\"" [^"]* "\""
+
+char_literal -> "'" [^'] "'"
+
+bool_literal -> "true" | "false"
+
+null_literal -> "null"
+
+fractional_literal -> integer_literal "/" integer_literal
+
+# ============================================================================
+# MODULE SYSTEM EXTENSIONS
+# ============================================================================
+
+# Bundle manifest structure (not parsed, but documented for completeness)
+# bundle.manifest format:
+# bundle: bundle.name
+# version: major.minor.patch
+# exports:
+#   - BlueprintName1
+#   - BlueprintName2
+# dependencies:
+#   - other.bundle >= version
+
+# ============================================================================
+# ACCESS MODIFIERS
+# ============================================================================
+
+access_modifier -> "public" | "private" | "protected" | ε
+
+# ============================================================================
+# IDENTIFIERS AND KEYWORDS
+# ============================================================================
+
+identifier -> [a-zA-Z_][a-zA-Z0-9_]*
+
+method_name -> identifier
+
+# ============================================================================
+# RESERVED KEYWORDS
+# ============================================================================
+
+# Declaration keywords: blueprint, class, enum, interface
+# Access modifiers: public, private, protected, static, final
+# Blueprint contracts: input, output, requires, ensures, default, throws, invariant
+# Control flow: if, else, while, for, do, switch, case, break, continue, return, match
+# Exception handling: try, catch, finally, throw
+# Type keywords: i8, i16, i32, i64, u8, u16, u32, u64, f32, f64, bool, char, str, void, fractional
+# Literals: true, false, null
+# Object operations: new, this, super, instanceof, as
+# Concurrency: async, await, synchronized, volatile
+# Type inference: var
+# Quantifiers: forall, exists, old
+# Import: import
