@@ -2,8 +2,8 @@
 #include <unordered_map>
 #include <cctype>
 
-#include "lexer.h"
-#include "tokens.h"
+#include "lexer.hpp"
+#include "tokens.hpp"
 
 // Initialize the keyword lookup table
 std::unordered_map<std::string, Token> Lexer::keywords = {

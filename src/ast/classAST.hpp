@@ -4,10 +4,10 @@
 #include <vector>
 #include <memory>
 
-#include "exprAST.h"
-#include "programAST.h"
-#include "stmtAST.h"
-#include "commonAST.h"
+#include "exprAST.hpp"
+#include "programAST.hpp"
+#include "stmtAST.hpp"
+#include "commonAST.hpp"
 
 class AccessModifierAST {
 	public: 

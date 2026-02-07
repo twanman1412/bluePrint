@@ -1,8 +1,8 @@
 #include <iostream>
 #include <map>
 
-#include "parser.h"
-#include "../lexer/tokens.h"
+#include "parser.hpp"
+#include "../lexer/tokens.hpp"
 
 std::unique_ptr<ExprAST> Parser::parseExpression() {
 	std::cout << "Parsing Expression..." << std::endl;

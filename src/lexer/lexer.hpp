@@ -3,7 +3,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "tokens.h"
+#include "tokens.hpp"
 
 class Lexer {
 

@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "parser.h"
-#include "../lexer/tokens.h"
+#include "parser.hpp"
+#include "../lexer/tokens.hpp"
 
 void Parser::parse() {
 

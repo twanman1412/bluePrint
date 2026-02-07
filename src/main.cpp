@@ -2,8 +2,8 @@
 #include <string>
 #include <fstream>
 
-#include "lexer/lexer.h"
-#include "parser/parser.h"
+#include "lexer/lexer.hpp"
+#include "parser/parser.hpp"
 
 int main (int argc, char *argv[]) {
 	

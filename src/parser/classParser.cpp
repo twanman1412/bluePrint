@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <memory>
 
-#include "parser.h"
-#include "../lexer/tokens.h"
+#include "parser.hpp"
+#include "../lexer/tokens.hpp"
 
 std::unique_ptr<ClassAST> Parser::parseClassDefinition() {
 	std::cout << "Parsing Class Definition..." << std::endl;

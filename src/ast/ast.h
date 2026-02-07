@@ -1,5 +1,0 @@
-#include "classAST.h"
-#include "commonAST.h"
-#include "exprAST.h"
-#include "stmtAST.h"
-#include "programAST.h"

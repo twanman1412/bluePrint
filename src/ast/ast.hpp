@@ -1,0 +1,5 @@
+#include "classAST.hpp"
+#include "commonAST.hpp"
+#include "exprAST.hpp"
+#include "stmtAST.hpp"
+#include "programAST.hpp"

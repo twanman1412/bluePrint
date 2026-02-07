@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "parser.h"
-#include "../lexer/tokens.h"
+#include "parser.hpp"
+#include "../lexer/tokens.hpp"
 
 std::unique_ptr<StmtAST> Parser::parseStatement() {
 
