@@ -5,7 +5,7 @@
 #include "../lexer/tokens.hpp"
 
 std::unique_ptr<ExprAST> Parser::parseExpression() {
-	std::cout << "Parsing Expression..." << std::endl;
+	Parser::logln("Parsing Expression...");
 	int16_t currentToken = lexer.getCurrentToken();
 	switch (currentToken) {
 		case '(':
@@ -17,7 +17,7 @@ std::unique_ptr<ExprAST> Parser::parseExpression() {
 }
 
 std::unique_ptr<ExprAST> Parser::parseParenExpression() {
-	std::cout << "Parsing Parenthesized Expression..." << std::endl;
+	Parser::logln("Parsing Parenthesized Expression...");
 
 	// Expect '('
 	if (lexer.getCurrentToken() != '(') {

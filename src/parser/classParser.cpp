@@ -7,7 +7,7 @@
 #include "../lexer/tokens.hpp"
 
 std::unique_ptr<ClassAST> Parser::parseClassDefinition() {
-	std::cout << "Parsing Class Definition..." << std::endl;
+	Parser::logln("Parsing Class Definition...");
 
 	// Expect 'class' keyword
 	if (lexer.getCurrentToken() != tok_class) {
@@ -55,16 +55,14 @@ std::unique_ptr<ClassAST> Parser::parseClassDefinition() {
 		if (currentToken == '}') {
 			break; // End of class body
 		}
-		 std::cout << "Current Token at start of method impl: " << static_cast<Token>(currentToken) << std::endl;
 
 		auto implementation = this->parseMethodImplementation();
 		if (!implementation || implementation == nullptr) {
-			std::cout << "Failed to parse method implementation." << std::endl;
+			Parser::logln("Failed to parse method implementation.");
 			return nullptr;
 		}
-		std::cout << "Parsed Method Implementation" << std::endl;
-		std::cout << "\t Name: " << implementation->getName() << std::endl;
-		std::cout << "\t Params Count: " << implementation->getParams().size() << std::endl;
+
+		Parser::logln("Parsed Method Implementation");
 		methodImpls.push_back(std::move(implementation));
 	}
 
@@ -75,7 +73,7 @@ std::unique_ptr<ClassAST> Parser::parseClassDefinition() {
 }
 
 std::unique_ptr<MethodImplAST> Parser::parseMethodImplementation() {
-	std::cout << "Parsing Method Implementation..." << std::endl;
+	Parser::logln("Parsing Method Implementation...");
 
 	int16_t currentToken = lexer.getCurrentToken();
 	const auto accessModifiers = TokenUtils::getAccessModifierTokens();
@@ -105,6 +103,10 @@ std::unique_ptr<MethodImplAST> Parser::parseMethodImplementation() {
 		return nullptr;
 	}
 	std::string methodName = lexer.getIdentifierName();
+	if (methodName != "main") {
+		std::cerr << "Error: Expected method name 'main'." << std::endl;
+		return nullptr;
+	}
 
 	// Expect '('
 	currentToken = lexer.getNextToken();
@@ -123,7 +125,6 @@ std::unique_ptr<MethodImplAST> Parser::parseMethodImplementation() {
 		std::unique_ptr<TypeAST> paramType = ParserUtils::getPrimitiveTypeFromToken(currentToken);
 
 		currentToken = lexer.getNextToken();
-		std::cout << "Current Token at middle of method impl: " << static_cast<Token>(currentToken) << std::endl;
 		if (currentToken != tok_identifier) {
 			std::cerr << "Error: Expected parameter." << std::endl;
 			return nullptr;

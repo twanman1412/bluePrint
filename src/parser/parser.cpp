@@ -1,11 +1,9 @@
-#include <iostream>
-
 #include "parser.hpp"
 #include "../lexer/tokens.hpp"
 
 void Parser::parse() {
 
-	std::cout << "======== Starting Parsing  ========" << std::endl;
+	Parser::logln("======== Starting Lexing  ========");
 
 	// Start parsing by getting the first token
 	lexer.getNextToken();
@@ -15,37 +13,36 @@ void Parser::parse() {
 		switch (currentToken) {
 			case tok_integer_literal:
 				parseIntegerValue();
-				std::cout << "Parsed Integer Value" << std::endl;
+				Parser::logln("Parsed Integer Value");
 				break;
 			case tok_float_literal:
 				parseFloatValue();
-				std::cout << "Parsed Float Value" << std::endl;
+				Parser::logln("Parsed Float Value");
 				break;
 			case tok_true:
 			case tok_false:
 				parseBoolValue();
-				std::cout << "Parsed Bool Value" << std::endl;
+				Parser::logln("Parsed Bool Value");
 				break;
 			case tok_char_literal:
 				parseCharValue();
-				std::cout << "Parsed Char Value" << std::endl;
+				Parser::logln("Parsed Char Value");
 				break;
 			case tok_identifier:
 				parseIdentifier();
-				std::cout << "Parsed Identifier" << std::endl;
+				Parser::logln("Parsed Identifier");
 				break;
 			case tok_class:
 				// For now, we can assum this class to inherit from Application
 				parseClassDefinition();
 				break;
 			default:
-				// Ignore other tokens for now
-				std::cerr << "Ignoring token: " << static_cast<Token>(currentToken) << std::endl;
-				break;
+				perror("Unknown token encountered during parsing.");
+				exit(-1);
 		}
 
 		currentToken = lexer.getNextToken();
 	}
 
-	std::cout << "======== Parsing completed ========." << std::endl;
+	Parser::logln("======== Parsing completed ========.");
 }

@@ -5,7 +5,7 @@
 
 std::unique_ptr<StmtAST> Parser::parseStatement() {
 
-	std::cout << "Parsing Statement..." << std::endl;
+	Parser::logln("Parsing Statement...");
 
 	int16_t currentToken = lexer.getCurrentToken();
 	switch (currentToken) {

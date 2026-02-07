@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <memory>
 
 #include "../lexer/lexer.hpp"
@@ -7,7 +8,7 @@
 
 class Parser {
     public:
-        Parser(Lexer lexer) : lexer(std::move(lexer)) {}
+        Parser(Lexer lexer, bool verbose = false) : lexer(std::move(lexer)), verbose(verbose) {}
         ~Parser() = default;
 
 		void parse();
@@ -29,8 +30,15 @@ class Parser {
 		std::unique_ptr<MethodImplAST> parseMethodImplementation();
 		std::unique_ptr<StmtAST> parseStatement();
 
+		void logln(const std::string &message) {
+			if (verbose) {
+				std::cout << message << std::endl;
+			}
+		}
+
     private:
         Lexer lexer;
+		bool verbose = false;
 };
 
 namespace ParserUtils {
