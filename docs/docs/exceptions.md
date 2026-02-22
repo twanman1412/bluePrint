@@ -119,13 +119,13 @@ class DataProcessor {
             str content = FileSystem.read(filename);
             return parseData(content);
         } catch (FileNotFoundException e) {
-            System.err.println("File not found: " + filename);
+            Defaultlogger.errorln("File not found: " + filename);
             return "";
         } catch (IOException e) {
-            System.err.println("Failed to read file: " + e.getMessage());
+            Defaultlogger.errorln("Failed to read file: " + e.getMessage());
             throw e;
         } catch (ParseException e) {
-            System.err.println("Invalid data format: " + e.getMessage());
+            Defaultlogger.errorln("Invalid data format: " + e.getMessage());
             throw e;
         }
     }
@@ -137,7 +137,7 @@ class DataProcessor {
             }
             return a / b;
         } catch (DivisionByZeroException e) {
-            System.err.println("Division error: " + e.getMessage());
+            Defaultlogger.errorln("Division error: " + e.getMessage());
             return 0.0;
         }
     }
@@ -152,7 +152,7 @@ class DataProcessor {
             }
             return array[index];
         } catch (NullPointerException | IndexOutOfBoundsException e) {
-            System.err.println("Access error: " + e.getMessage());
+            Defaultlogger.errorln("Access error: " + e.getMessage());
             return -1;
         }
     }
@@ -171,7 +171,7 @@ class DataProcessor {
             
             return result;
         } catch (FractionDivisionByZeroException | FractionOverflowException e) {
-            System.err.println("Fractional arithmetic error: " + e.getMessage());
+            Defaultlogger.errorln("Fractional arithmetic error: " + e.getMessage());
             return 0/1; // Return zero fraction
         }
     }
@@ -203,7 +203,7 @@ class Calculator : SafeCalculator {
             f64 result = divide(10.0, 0.0);  // Violates precondition
         } catch (BluePrintException e) {
             // Automatically thrown: "Precondition violated: b != 0.0"
-            System.err.println("Contract violation: " + e.getMessage());
+            Defaultlogger.errorln("Contract violation: " + e.getMessage());
         }
     }
 }
@@ -276,10 +276,10 @@ class FileProcessor {
             FileSystem.write(filename + ".processed", processed);
             return processed;
         } catch (IOException e) {
-            System.err.println("IO error: " + e.getMessage());
+            Defaultlogger.errorln("IO error: " + e.getMessage());
             return null;
         } catch (TransformException e) {
-            System.err.println("Transform error: " + e.getMessage());
+            Defaultlogger.errorln("Transform error: " + e.getMessage());
             return content; // Return original content
         } finally {
             // Cleanup code - always executed
@@ -298,13 +298,13 @@ class NetworkClient {
             Connection conn = openConnection(url);
             return conn.getData();
         } catch (ConnectException e) {
-            System.err.println("Failed to connect: " + e.getMessage());
+            Defaultlogger.errorln("Failed to connect: " + e.getMessage());
             return getCachedData(url);
         } catch (TimeoutException e) {
-            System.err.println("Request timed out: " + e.getMessage());
+            Defaultlogger.errorln("Request timed out: " + e.getMessage());
             return retryWithTimeout(url, 30);
         } catch (NetworkException e) {
-            System.err.println("Network error: " + e.getMessage());
+            Defaultlogger.errorln("Network error: " + e.getMessage());
             throw e; // Re-throw for caller to handle
         } finally {
             closeConnection();
@@ -332,7 +332,7 @@ class DatabaseExample {
             
             return data;
         } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
+            Defaultlogger.errorln("Database error: " + e.getMessage());
             return new ArrayList<str>();
         }
         // Resources automatically closed here
@@ -383,7 +383,7 @@ class ContractDemo {
             str content = reader.readFile(null);
         } catch (BluePrintException e) {
             // "Precondition violated: filename != null"
-            System.err.println(e.getMessage());
+            Defaultlogger.errorln(e.getMessage());
         }
         
         // Precondition violation
@@ -391,7 +391,7 @@ class ContractDemo {
             str content = reader.readFile("nonexistent.txt");
         } catch (BluePrintException e) {
             // "Precondition violated: fileExists(filename)"
-            System.err.println(e.getMessage());
+            Defaultlogger.errorln(e.getMessage());
         }
     }
 }
@@ -514,13 +514,13 @@ blueprintc --debug-contracts --verbose-exceptions app.bp
 ```blueprint
 class DebugHelper {
     public static void analyzeException(Exception e) {
-        System.err.println("Exception type: " + e.getClass().getName());
-        System.err.println("Message: " + e.getMessage());
+        Defaultlogger.errorln("Exception type: " + e.getClass().getName());
+        Defaultlogger.errorln("Message: " + e.getMessage());
         
         if (e instanceof BluePrintException) {
             BluePrintException bpe = (BluePrintException) e;
-            System.err.println("Contract: " + bpe.getContractName());
-            System.err.println("Violation details: " + bpe.getViolationDetails());
+            Defaultlogger.errorln("Contract: " + bpe.getContractName());
+            Defaultlogger.errorln("Violation details: " + bpe.getViolationDetails());
         }
         
         // Print full stack trace

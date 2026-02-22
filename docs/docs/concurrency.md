@@ -497,7 +497,7 @@ class ThreadSafeBankAccount : BankAccount {
     
     private void notifyBalanceChange() {
         // Internal method called within synchronized context
-        System.out.println("Balance changed to: " + this.balance);
+        Defaultlogger.logln("Balance changed to: " + this.balance);
     }
 }
 
@@ -742,7 +742,7 @@ class DatabaseConnection : AsyncDatabase {
                 ResultSet results = await futures[i];
                 processResults(results);
             } catch (SQLException e) {
-                System.err.println("Query failed: " + queries[i] + " - " + e.getMessage());
+                Defaultlogger.errorln("Query failed: " + queries[i] + " - " + e.getMessage());
             }
         }
     }

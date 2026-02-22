@@ -377,7 +377,7 @@ class HttpService : WebService {
     public async void demonstrateUsage() {
         str data = await fetchData("https://api.example.com/data");
         ProcessedData result = await processData(data);
-        System.out.println(result);
+        Defaultlogger.logln(result);
     }
 }
 ```

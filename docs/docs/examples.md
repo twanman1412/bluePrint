@@ -35,7 +35,7 @@ class MathCalculatorApp : System.Application {
     public static void main(str[] args) {
         BasicMathCalculator calc = new BasicMathCalculator();
         f64 result = calc.add(5.0, 3.0);
-        System.out.println("5 + 3 = " + result);
+        Defaultlogger.logln("5 + 3 = " + result);
     }
 }
 ```
@@ -64,7 +64,7 @@ class FibonacciDemoApp : System.Application {
     public static void main(str[] args) {
         RecursiveFibonacciCalculator fibCalc = new RecursiveFibonacciCalculator();
         for (u32 i = 0; i < 10; i++) {
-            System.out.println("fib(" + i + ") = " + fibCalc.fibonacci(i));
+            Defaultlogger.logln("fib(" + i + ") = " + fibCalc.fibonacci(i));
         }
     }
 }
@@ -150,7 +150,7 @@ class Button : Drawable, Resizable, Clickable {
     }
     
     public void onClick(MouseEvent event) {
-        System.out.println("Button clicked: " + this.text);
+        Defaultlogger.logln("Button clicked: " + this.text);
     }
 }
 ```
@@ -224,7 +224,7 @@ class Button : Drawable, Resizable, Clickable {
     }
     
     public void onClick(MouseEvent event) {
-        System.out.println("Button '" + this.text + "' clicked!");
+        Defaultlogger.logln("Button '" + this.text + "' clicked!");
     }
     
     public bool isVisible() {
@@ -254,7 +254,7 @@ class UIApplication : System.Application {
         MouseEvent clickEvent = new MouseEvent(50, 15);
         submitButton.onClick(clickEvent);
         
-        System.out.println("Submit button size: " + 
+        Defaultlogger.logln("Submit button size: " + 
                           submitButton.getWidth() + "x" + submitButton.getHeight());
     }
 }
@@ -672,7 +672,7 @@ class UserWebService : HttpServer, AutoCloseable {
         // This method only runs if port is valid (1-65535)
         
         this.running = true;
-        System.out.println("Server starting on port " + port);
+        Defaultlogger.logln("Server starting on port " + port);
     }
     
     public async Future<HttpResponse> handleRequest(HttpRequest request) {
@@ -825,21 +825,21 @@ See [Standard Library](stdlib.md) for System.Application details.
 // Main application with blueprint contracts
 class WebServiceApp : System.Application {
     public static void main(str[] args) {
-        System.out.println("Starting BluePrint Web Service...");
+        Defaultlogger.logln("Starting BluePrint Web Service...");
         
         try (UserWebService server = new UserWebService()) {
             server.start(8080);
-            System.out.println("Server started on port 8080");
+            Defaultlogger.logln("Server started on port 8080");
             
             // Keep server running
             while (server.isRunning()) {
                 Thread.sleep(1000);
             }
         } catch (Exception e) {
-            System.err.println("Server error: " + e.getMessage());
+            Defaultlogger.errorln("Server error: " + e.getMessage());
         }
         
-        System.out.println("Server shutdown complete");
+        Defaultlogger.logln("Server shutdown complete");
     }
 }
 ```
@@ -878,8 +878,8 @@ class ArrayAndStudentDemoApp : System.Application {
         i32 maxNumber = processor.findMax(numbers);
         i32 totalSum = processor.sum(positiveValues);
         
-        System.out.println("Max: " + maxNumber);
-        System.out.println("Sum: " + totalSum);
+        Defaultlogger.logln("Max: " + maxNumber);
+        Defaultlogger.logln("Sum: " + totalSum);
         
         // Demonstrate student management
         List<StudentRecord> students = new ArrayList<StudentRecord>();
@@ -893,11 +893,11 @@ class ArrayAndStudentDemoApp : System.Application {
         
         StudentRecord? found = registry.findStudent(students, "Alice");
         if (found != null) {
-            System.out.println("Found student: " + found.getName() + 
+            Defaultlogger.logln("Found student: " + found.getName() + 
                              ", age " + found.getAge());
         }
         
-        System.out.println("Total students: " + students.size());
+        Defaultlogger.logln("Total students: " + students.size());
     }
 }
 ```

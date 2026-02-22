@@ -72,7 +72,7 @@ f32 floatResult = half + floatNum;           // 3.0f (float)
 try {
     fractional huge = (i32.MAX_VALUE / 2) * (i32.MAX_VALUE / 2); // May throw OverflowException
 } catch (OverflowException e) {
-    System.err.println("Fractional overflow: " + e.getMessage());
+    Defaultlogger.errorln("Fractional overflow: " + e.getMessage());
 }
 
 // Explicit conversion when needed
@@ -91,9 +91,9 @@ fractional scaledFlour = originalFlour * scaleFactor;      // Exactly 3 cups
 fractional originalSugar = 3/4;            // 3/4 cup sugar  
 fractional scaledSugar = originalSugar * scaleFactor;      // Exactly 9/8 cups (1.125 cups exactly)
 
-System.out.println("Scale factor: " + scaleFactor.toString());     // "3/2"
-System.out.println("Scaled flour: " + scaledFlour.toString());     // "3/1"
-System.out.println("Scaled sugar: " + scaledSugar.toString());     // "9/8"
+Defaultlogger.logln("Scale factor: " + scaleFactor.toString());     // "3/2"
+Defaultlogger.logln("Scaled flour: " + scaledFlour.toString());     // "3/1"
+Defaultlogger.logln("Scaled sugar: " + scaledSugar.toString());     // "9/8"
 ```
 
 ## Reference Types
@@ -683,7 +683,7 @@ class FileSystemImpl : FileSystem {
         
         // Null check required before use
         if (content != null) {
-            System.out.println(content.length());
+            Defaultlogger.logln(content.length());
         }
         
         // Or use safe navigation

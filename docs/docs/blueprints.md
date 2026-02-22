@@ -180,7 +180,7 @@ class ConsolePrinter : Printer {
     }
     
     public void print(f64 value, u32 precision) {
-        System.out.printf("%.*f", precision, value);
+        Defaultlogger.logf("%.*f", precision, value);
     }
 }
 ```
@@ -730,10 +730,10 @@ class Example {
         try {
             str content = reader.readFile(null); // Violates precondition
         } catch (BluePrintException e) {
-            System.err.println("Contract violation: " + e.getMessage());
+            Defaultlogger.errorln("Contract violation: " + e.getMessage());
             // Message might be: "Precondition violated: filename != null"
         } catch (IOException e) {
-            System.err.println("IO error: " + e.getMessage());
+            Defaultlogger.errorln("IO error: " + e.getMessage());
         }
     }
 }

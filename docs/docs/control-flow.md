@@ -120,10 +120,10 @@ class FileProcessor {
     public void handleFileResult(Result<String, IOException> result) {
         match (result) {
             case OkResult(value) -> {
-                System.out.println("File content: " + value);
+                Defaultlogger.logln("File content: " + value);
             }
             case ErrorResult(error) -> {
-                System.err.println("File error: " + error.getMessage());
+                Defaultlogger.errorln("File error: " + error.getMessage());
             }
         }
     }
@@ -132,10 +132,10 @@ class FileProcessor {
     public void handleFileResultAlt(Result<String, IOException> result) {
         if (result instanceof OkResult) {
             OkResult<String, IOException> ok = (OkResult<String, IOException>) result;
-            System.out.println("Success: " + ok.getValue());
+            Defaultlogger.logln("Success: " + ok.getValue());
         } else if (result instanceof ErrorResult) {
             ErrorResult<String, IOException> err = (ErrorResult<String, IOException>) result;
-            System.err.println("Error: " + err.getError().getMessage());
+            Defaultlogger.errorln("Error: " + err.getError().getMessage());
         }
     }
 }
@@ -152,9 +152,9 @@ class FileProcessor {
             str content = FileSystem.readFile(filename);
             // Process content
         } catch (FileNotFoundException e) {
-            System.err.println("File not found: " + filename);
+            Defaultlogger.errorln("File not found: " + filename);
         } catch (IOException e) {
-            System.err.println("IO Error: " + e.getMessage());
+            Defaultlogger.errorln("IO Error: " + e.getMessage());
         } finally {
             // Cleanup code
         }
