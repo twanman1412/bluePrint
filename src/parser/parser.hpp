@@ -8,12 +8,14 @@
 #include "../ast/stmtAST.hpp"
 #include "../ast/classAST.hpp"
 
+class CodeGenerator;
+
 class Parser {
     public:
         Parser(Lexer lexer, bool verbose = false) : lexer(std::move(lexer)), verbose(verbose) {}
         ~Parser() = default;
 
-		void parse();
+		bool parse(CodeGenerator& generator);
 
 		std::unique_ptr<ExprAST> parseExpression();
         std::unique_ptr<ExprAST> parseParenExpression();

@@ -1,12 +1,14 @@
 #include "parser.hpp"
 #include "../lexer/tokens.hpp"
+#include "../codegen/CodeGenerator.hpp"
 
-void Parser::parse() {
+bool Parser::parse(CodeGenerator& generator) {
 
 	Parser::logln("======== Starting Lexing  ========");
 
 	// Start parsing by getting the first token
 	lexer.getNextToken();
+	bool hasGeneratedIR = false;
 
 	int16_t currentToken = lexer.getCurrentToken();
 	while (currentToken != tok_eof) {
@@ -34,15 +36,38 @@ void Parser::parse() {
 				break;
 			case tok_class:
 				// For now, we can assum this class to inherit from Application
-				parseClassDefinition();
+				{
+					auto classAST = parseClassDefinition();
+					if (!classAST) {
+						std::cerr << "Error: Failed to parse class definition." << std::endl;
+						return false;
+					}
+
+					if (!classAST->codegen(generator)) {
+						std::cerr << "Error: Failed to generate LLVM IR for class." << std::endl;
+						return false;
+					}
+
+					hasGeneratedIR = true;
+				}
 				break;
 			default:
 				perror("Unknown token encountered during parsing.");
-				exit(-1);
+				return false;
 		}
 
 		currentToken = lexer.getNextToken();
 	}
 
+	if (hasGeneratedIR && verbose) {
+		generator.dumpIR();
+	}
+
 	Parser::logln("======== Parsing completed ========.");
+	if (!hasGeneratedIR) {
+		std::cerr << "Error: No compilable class/program was found in source." << std::endl;
+		return false;
+	}
+
+	return true;
 }
