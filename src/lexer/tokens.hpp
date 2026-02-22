@@ -34,6 +34,12 @@ enum Token : int16_t {
 
 	// Access modifiers
 	tok_public = -250,
+
+	// Operators
+	tok_equal_equal = -300,
+	tok_not_equal = -301,
+	tok_less_equal = -302,
+	tok_greater_equal = -303,
 };
 
 namespace TokenUtils {

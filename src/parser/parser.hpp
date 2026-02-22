@@ -4,7 +4,9 @@
 #include <memory>
 
 #include "../lexer/lexer.hpp"
-#include "../ast/ast.hpp"
+#include "../ast/exprAST.hpp"
+#include "../ast/stmtAST.hpp"
+#include "../ast/classAST.hpp"
 
 class Parser {
     public:
@@ -15,7 +17,8 @@ class Parser {
 
 		std::unique_ptr<ExprAST> parseExpression();
         std::unique_ptr<ExprAST> parseParenExpression();
-        std::unique_ptr<BinaryExprAST> parseBinaryExpression();
+		std::unique_ptr<ExprAST> parseBinaryExpression();
+		std::unique_ptr<ExprAST> parseUnaryExpression();
 		std::unique_ptr<ExprAST> parseBinaryOpRHS(int exprPrecedence, std::unique_ptr<ExprAST> lhs);
 
 		std::unique_ptr<ExprAST> parsePrimaryExpression();

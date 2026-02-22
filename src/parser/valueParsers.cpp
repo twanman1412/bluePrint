@@ -7,6 +7,8 @@
 std::unique_ptr<ExprAST> Parser::parsePrimaryExpression() {
 	int16_t currentToken = lexer.getCurrentToken();
 	switch (currentToken) {
+		case '(':
+			return parseParenExpression();
 		case tok_integer_literal:
 			return parseIntegerValue();
 		case tok_float_literal:
@@ -37,7 +39,7 @@ std::unique_ptr<FloatExprAST> Parser::parseFloatValue() {
 }
 
 std::unique_ptr<BoolExprAST> Parser::parseBoolValue() {
-    bool value = lexer.getBoolValue();
+	bool value = lexer.getCurrentToken() == tok_true;
     lexer.getNextToken();
     return std::make_unique<BoolExprAST>(value);
 }

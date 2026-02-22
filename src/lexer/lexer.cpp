@@ -60,10 +60,16 @@ int16_t Lexer::getNextToken() {
 		ungetCurrentToken(); // Put back the last read character
 
         this->currentToken = getKeywordToken(identifierStr);
+		if (this->currentToken == tok_true) {
+			this->boolValue = true;
+		} else if (this->currentToken == tok_false) {
+			this->boolValue = false;
+		}
 		return this->currentToken;
     }
 
-    if (isdigit(lastChar) || lastChar == '.') {
+    const bool dotStartsFloat = lastChar == '.' && currentIndex < source.size() && isdigit(source[currentIndex]);
+    if (isdigit(lastChar) || dotStartsFloat) {
         std::string numStr;
         bool isFloat = false;
         do {
@@ -78,6 +84,8 @@ int16_t Lexer::getNextToken() {
             lastChar = this->getchar();
         } while (isdigit(lastChar) || lastChar == '.');
 
+		ungetCurrentToken();
+
         // Handle number conversion and return appropriate token
         if (isFloat) {
             this->floatValue = strtod(numStr.c_str(), nullptr);
@@ -91,8 +99,8 @@ int16_t Lexer::getNextToken() {
     }
 
     if (lastChar == '/') {
-        lastChar = this->getchar();
-        if (lastChar == '/') {
+        char nextChar = this->getchar();
+        if (nextChar == '/') {
             // Single line comment
             do {
                 lastChar = this->getchar();
@@ -100,7 +108,7 @@ int16_t Lexer::getNextToken() {
 
             if (lastChar != EOF)
                 return getNextToken();
-        } else if (lastChar == '*') {
+        } else if (nextChar == '*') {
             // Multi-line comment
             while (true) {
                 lastChar = this->getchar();
@@ -113,7 +121,78 @@ int16_t Lexer::getNextToken() {
                 }
             }
             return getNextToken();
-        } 
+        }
+
+		ungetCurrentToken();
+		this->currentToken = '/';
+		return this->currentToken;
+    }
+
+    if (lastChar == '\'') {
+        char value = this->getchar();
+        char closing = this->getchar();
+        if (value == EOF || closing != '\'') {
+            std::cerr << "Error: Invalid char literal." << std::endl;
+            return tok_eof;
+        }
+
+        this->charValue = value;
+        this->currentToken = tok_char_literal;
+        return this->currentToken;
+    }
+
+    if (lastChar == '=') {
+        char nextChar = this->getchar();
+        if (nextChar == '=') {
+            this->currentToken = tok_equal_equal;
+            return this->currentToken;
+        }
+        ungetCurrentToken();
+    }
+
+    if (lastChar == '!') {
+        char nextChar = this->getchar();
+        if (nextChar == '=') {
+            this->currentToken = tok_not_equal;
+            return this->currentToken;
+        }
+        ungetCurrentToken();
+    }
+
+    if (lastChar == '<') {
+        char nextChar = this->getchar();
+        if (nextChar == '=') {
+            this->currentToken = tok_less_equal;
+            return this->currentToken;
+        }
+        ungetCurrentToken();
+    }
+
+    if (lastChar == '>') {
+        char nextChar = this->getchar();
+        if (nextChar == '=') {
+            this->currentToken = tok_greater_equal;
+            return this->currentToken;
+        }
+        ungetCurrentToken();
+    }
+
+    if (lastChar == '&') {
+        char nextChar = this->getchar();
+        if (nextChar == '&') {
+            this->currentToken = '&';
+            return this->currentToken;
+        }
+        ungetCurrentToken();
+    }
+
+    if (lastChar == '|') {
+        char nextChar = this->getchar();
+        if (nextChar == '|') {
+            this->currentToken = '|';
+            return this->currentToken;
+        }
+        ungetCurrentToken();
     }
 
 	this->currentToken = lastChar;

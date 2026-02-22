@@ -154,17 +154,15 @@ std::unique_ptr<MethodImplAST> Parser::parseMethodImplementation() {
 	}
 
 	std::vector<std::unique_ptr<StmtAST>> body;
-	while (true) {
-		currentToken = lexer.getNextToken();
-		if (currentToken == '}') {
-			break; // End of method body
-		}
+	currentToken = lexer.getNextToken();
+	while (currentToken != '}') {
 
 		std::unique_ptr<StmtAST> stmt = parseStatement();
 		if (!stmt) {
 			return nullptr;
 		}
 		body.push_back(std::move(stmt));
+		currentToken = lexer.getCurrentToken();
 	}
 
 	// Expect '}'
