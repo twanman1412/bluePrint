@@ -6,12 +6,12 @@ This roadmap outlines the iterative development of the BluePrint programming lan
 *Goal: Establish the runtime behavior, type system, and basic execution flow.*
 
 ### v0.0.0: The Bare Essentials
-- [ ] **Primitive Types:** Support for core types `i32`, `f64`, `bool`, `char`.
-- [ ] **Variables:** Declaration and assignment logic.
-- [ ] **Arithmetic:** Basic operators (`+`, `-`, `*`, `/`, `%`) and precedence logic.
-- [ ] **Logic:** Boolean operators (`&&`, `||`, `!`) and comparison (`==`, `!=`, `<`, `>`).
-- [ ] **Control Flow:** `if`, `else`, and `while` loop structures.
-- [ ] **Entry Point:** Logic to identify and execute `System.Application.main`.
+- [x] **Primitive Types:** Support for core types `i32`, `f64`, `bool`, `char`.
+- [x] **Variables:** Declaration and assignment logic.
+- [x] **Arithmetic:** Basic operators (`+`, `-`, `*`, `/`, `%`) and precedence logic.
+- [x] **Logic:** Boolean operators (`&&`, `||`, `!`) and comparison (`==`, `!=`, `<`, `>`).
+- [x] **Control Flow:** `if`, `else`, and `while` loop structures.
+- [x] **Entry Point:** Logic to identify and execute `System.Application.main`.
 
 ### v0.1.0: Extended Type System
 - [ ] **Full Primitive Suite:** Implementation of `i8`-`i64`, `u8`-`u64`, and `f32`.
