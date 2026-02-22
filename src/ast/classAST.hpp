@@ -8,6 +8,8 @@
 #include "stmtAST.hpp"
 #include "commonAST.hpp"
 
+class CodeGenerator;
+
 class AccessModifierAST {
 	public: 
 		enum AccessModifierKind {
@@ -37,6 +39,7 @@ class MethodImplAST {
 		const std::string &getName() const { return name; }
 		const std::vector<std::unique_ptr<TypedIdentifierAST>> &getParams() const { return params; }
 		const std::vector<std::unique_ptr<StmtAST>> &getBody() const { return body; }
+		llvm::Value *codegen(CodeGenerator& generator);
 
 	private:
 		std::vector<std::unique_ptr<AccessModifierAST>> accessModifiers;
@@ -56,6 +59,7 @@ class ClassAST : public ProgramAST {
 		const std::string &getName() const { return name; }
 		const std::vector<std::unique_ptr<MethodImplAST>> &getMethodImpls() const { return methodImpls; }
 		const std::vector<std::string> &getBlueprintNames() const { return blueprintNames; }
+		llvm::Value *codegen(CodeGenerator& generator) override;
 
 	private:
 		std::string name;

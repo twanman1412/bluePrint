@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <llvm/IR/Value.h>
 
 class ExprAST;
 class TypeAST;
@@ -10,10 +11,12 @@ class PatternAST;
 class CaseStmtAST;
 class CatchStmtAST;
 class MatchCaseAST;
+class CodeGenerator;
 
 class StmtAST {
     public:
         virtual ~StmtAST() = default;
+    virtual llvm::Value *codegen(CodeGenerator& generator) = 0;
 };
 
 class VarDeclStmtAST : public StmtAST {
@@ -24,6 +27,7 @@ class VarDeclStmtAST : public StmtAST {
         const TypeAST *getType() const { return type.get(); }
         const std::string &getName() const { return name; }
         ExprAST *getInitializer() const { return initializer.get(); }
+        llvm::Value *codegen(CodeGenerator& generator) override;
         
     private:
         std::unique_ptr<TypeAST> type;
@@ -38,6 +42,7 @@ class AssignmentStmtAST : public StmtAST {
         
         const std::string &getName() const { return name; }
         ExprAST *getValue() const { return value.get(); }
+        llvm::Value *codegen(CodeGenerator& generator) override;
         
     private:
         std::string name;
@@ -54,6 +59,7 @@ class IfStmtAST : public StmtAST {
         ExprAST *getCondition() const { return condition.get(); }
         StmtAST *getThenStmt() const { return thenStmt.get(); }
         StmtAST *getElseStmt() const { return elseStmt.get(); }
+        llvm::Value *codegen(CodeGenerator& generator) override;
         
     private:
         std::unique_ptr<ExprAST> condition;
@@ -68,6 +74,7 @@ class WhileStmtAST : public StmtAST {
         
         ExprAST *getCondition() const { return condition.get(); }
         StmtAST *getBody() const { return body.get(); }
+        llvm::Value *codegen(CodeGenerator& generator) override;
         
     private:
         std::unique_ptr<ExprAST> condition;
@@ -80,8 +87,21 @@ class BlockStmtAST : public StmtAST {
             : statements(std::move(statements)) {}
         
         const std::vector<std::unique_ptr<StmtAST>> &getStatements() const { return statements; }
+        llvm::Value *codegen(CodeGenerator& generator) override;
         
     private:
         std::vector<std::unique_ptr<StmtAST>> statements;
+};
+
+class PrintStmtAST : public StmtAST {
+    public:
+        explicit PrintStmtAST(std::unique_ptr<ExprAST> value)
+            : value(std::move(value)) {}
+
+        ExprAST *getValue() const { return value.get(); }
+        llvm::Value *codegen(CodeGenerator& generator) override;
+
+    private:
+        std::unique_ptr<ExprAST> value;
 };
 
