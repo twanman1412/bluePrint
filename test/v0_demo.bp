@@ -1,0 +1,25 @@
+class DemoApplication : Application {
+    public void main() {
+        i32 x = 2 + 3 * 4;
+        f32 y = 10.0 / 4.0;
+        bool cond = x > 10 && y < 3.0;
+        char c = 'Z';
+
+        Defaultlogger.logln(x);
+        Defaultlogger.logln(y);
+        Defaultlogger.logln(cond);
+        Defaultlogger.logln(c);
+
+        i32 i = 0;
+        while (i < 3) {
+            Defaultlogger.logln(i);
+            i = i + 1;
+        }
+
+        if (x == 14) {
+            Defaultlogger.logln(true);
+        } else {
+            Defaultlogger.logln(false);
+        }
+    }
+}

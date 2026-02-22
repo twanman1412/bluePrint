@@ -47,5 +47,8 @@ Thumbs.db
 *.log
 
 # Test files
-test_output/
-*.test
+test/*
+!test/*.bp
+
+# Cache files
+.cache/
