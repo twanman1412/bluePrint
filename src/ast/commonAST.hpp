@@ -12,8 +12,16 @@ class TypeAST {
 class PrimitiveTypeAST : public TypeAST {
     public:
         enum PrimitiveKind {
+            INT8,
+            INT16,
             INT32,
+            INT64,
+            UINT8,
+            UINT16,
+            UINT32,
+            UINT64,
             FLOAT32,
+            FLOAT64,
             BOOL,
             CHAR,
 			VOID,

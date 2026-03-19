@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <cstdint>
 
 #include "parser.hpp"
 #include "../lexer/tokens.hpp"
@@ -27,7 +28,7 @@ std::unique_ptr<ExprAST> Parser::parsePrimaryExpression() {
 }
 
 std::unique_ptr<IntegerExprAST> Parser::parseIntegerValue() {
-    int value = lexer.getIntegerValue();
+	int64_t value = lexer.getIntegerValue();
     lexer.getNextToken();
     return std::make_unique<IntegerExprAST>(value);
 }

@@ -50,10 +50,26 @@ namespace ParserUtils {
 
 	inline static std::unique_ptr<TypeAST> getPrimitiveTypeFromToken(int16_t token) {
 		switch (token) {
+				case tok_i8:
+					return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::INT8);
+				case tok_i16:
+					return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::INT16);
 			case tok_i32:
 				return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::INT32);
+				case tok_i64:
+					return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::INT64);
+				case tok_u8:
+					return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::UINT8);
+				case tok_u16:
+					return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::UINT16);
+				case tok_u32:
+					return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::UINT32);
+				case tok_u64:
+					return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::UINT64);
 			case tok_f32:
 				return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::FLOAT32);
+				case tok_f64:
+					return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::FLOAT64);
 			case tok_bool:
 				return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::BOOL);
 			case tok_char:
