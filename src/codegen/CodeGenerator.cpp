@@ -12,6 +12,17 @@
 #include "../ast/stmtAST.hpp"
 #include "../ast/commonAST.hpp"
 
+namespace {
+
+std::optional<int64_t> getStaticIntegerIndex(const ExprAST* expr) {
+    if (const auto* integerExpr = dynamic_cast<const IntegerExprAST*>(expr)) {
+        return integerExpr->getValue();
+    }
+    return std::nullopt;
+}
+
+}
+
 CodeGenerator::CodeGenerator()
     : TheContext(), Builder(TheContext), TheModule(nullptr), NamedValues(), NamedPrimitiveKinds(), ValuePrimitiveKinds(), ExpectedIntegerResultBits(std::nullopt), ExpectedFractionResultKind(std::nullopt), CurrentFunction(nullptr), CurrentClassName(), CurrentClassIsApplication(false) {
     TheModule = std::make_unique<llvm::Module>("BluePrint", TheContext);
@@ -968,6 +979,59 @@ llvm::Value* CodeGenerator::visit(VarDeclStmtAST& node) {
         return logError("Variable declaration outside of function");
     }
 
+    // Array declaration
+    if (const auto* arrTypeAST = dynamic_cast<const ArrayTypeAST*>(node.getType())) {
+        llvm::Type* elemLLVMType = getLLVMType(arrTypeAST->getElementType());
+        if (!elemLLVMType) return logError("Invalid array element type");
+
+        uint64_t arraySize = 0;
+        std::vector<llvm::Value*> initValues;
+
+        if (const auto* literal = dynamic_cast<const ArrayLiteralExprAST*>(node.getInitializer())) {
+            arraySize = literal->getElements().size();
+            const std::optional<unsigned> prevBits = ExpectedIntegerResultBits;
+            if (elemLLVMType->isIntegerTy() && !elemLLVMType->isIntegerTy(1))
+                ExpectedIntegerResultBits = elemLLVMType->getIntegerBitWidth();
+            else
+                ExpectedIntegerResultBits = std::nullopt;
+            for (const auto& elem : literal->getElements()) {
+                llvm::Value* val = elem->codegen(*this);
+                if (!val) { ExpectedIntegerResultBits = prevBits; return nullptr; }
+                val = castValueToType(val, elemLLVMType);
+                if (!val) { ExpectedIntegerResultBits = prevBits; return logError("Array literal element type mismatch"); }
+                initValues.push_back(val);
+            }
+            ExpectedIntegerResultBits = prevBits;
+        } else if (const auto* newExpr = dynamic_cast<const ArrayNewExprAST*>(node.getInitializer())) {
+            const auto* sizeInt = dynamic_cast<const IntegerExprAST*>(newExpr->getSize());
+            if (!sizeInt) return logError("Array size must be an integer literal");
+            arraySize = static_cast<uint64_t>(sizeInt->getValue());
+        } else {
+            return logError("Array variable requires a literal {} or new[] initializer");
+        }
+
+        llvm::ArrayType* arrType = llvm::ArrayType::get(elemLLVMType, arraySize);
+        llvm::AllocaInst* arrAlloca = createEntryBlockAlloca(CurrentFunction, arrType, node.getName());
+
+        if (!initValues.empty()) {
+            llvm::Value* zero64 = llvm::ConstantInt::get(llvm::Type::getInt64Ty(TheContext), 0);
+            for (uint64_t i = 0; i < arraySize; i++) {
+                llvm::Value* idx64 = llvm::ConstantInt::get(llvm::Type::getInt64Ty(TheContext), i);
+                llvm::Value* gep = Builder.CreateGEP(arrType, arrAlloca, {zero64, idx64}, "arr.init.ptr");
+                Builder.CreateStore(initValues[i], gep);
+            }
+        } else {
+            Builder.CreateStore(llvm::ConstantAggregateZero::get(arrType), arrAlloca);
+        }
+
+        setNamedValue(node.getName(), arrAlloca);
+        NamedArrayTypes[node.getName()] = arrType;
+        if (const auto* primitiveElementType = getPrimitiveType(arrTypeAST->getElementType())) {
+            NamedArrayElementKinds[node.getName()] = primitiveElementType->getKind();
+        }
+        return arrAlloca;
+    }
+
     llvm::Type* variableType = getLLVMType(node.getType());
     if (!variableType || variableType->isVoidTy()) {
         return logError("Invalid variable type");
@@ -1079,6 +1143,11 @@ llvm::Value* CodeGenerator::visit(PrintStmtAST& node) {
     llvm::Type* type = value->getType();
     PrimitiveTypeAST::PrimitiveKind primitiveKind;
     const bool hasPrimitiveKind = getValuePrimitiveKind(value, primitiveKind);
+
+    // Guard: arrays cannot be printed directly
+    if (type->isArrayTy()) {
+        return logError("Defaultlogger.logln does not support array values directly; print individual elements with array[i]");
+    }
 
     if (hasPrimitiveKind && isFractionalPrimitiveKind(primitiveKind)) {
         llvm::Value* numerator = nullptr;
@@ -1281,10 +1350,14 @@ llvm::Value* CodeGenerator::visit(MethodImplAST& node) {
 
     std::map<std::string, llvm::AllocaInst*> previousNamedValues = NamedValues;
     std::map<std::string, PrimitiveTypeAST::PrimitiveKind> previousNamedPrimitiveKinds = NamedPrimitiveKinds;
+    std::map<std::string, PrimitiveTypeAST::PrimitiveKind> previousNamedArrayElementKinds = NamedArrayElementKinds;
+    std::map<std::string, llvm::ArrayType*> previousNamedArrayTypes = NamedArrayTypes;
     llvm::Function* previousFunction = CurrentFunction;
     CurrentFunction = function;
     NamedValues.clear();
     NamedPrimitiveKinds.clear();
+    NamedArrayElementKinds.clear();
+    NamedArrayTypes.clear();
 
     auto argumentIterator = function->arg_begin();
     for (const auto& parameter : node.getParams()) {
@@ -1304,6 +1377,8 @@ llvm::Value* CodeGenerator::visit(MethodImplAST& node) {
             function->eraseFromParent();
             NamedValues = previousNamedValues;
             NamedPrimitiveKinds = previousNamedPrimitiveKinds;
+            NamedArrayElementKinds = previousNamedArrayElementKinds;
+            NamedArrayTypes = previousNamedArrayTypes;
             CurrentFunction = previousFunction;
             return nullptr;
         }
@@ -1325,14 +1400,107 @@ llvm::Value* CodeGenerator::visit(MethodImplAST& node) {
         function->eraseFromParent();
         NamedValues = previousNamedValues;
         NamedPrimitiveKinds = previousNamedPrimitiveKinds;
+        NamedArrayElementKinds = previousNamedArrayElementKinds;
+        NamedArrayTypes = previousNamedArrayTypes;
         CurrentFunction = previousFunction;
         return logError("Function verification failed");
     }
 
     NamedValues = previousNamedValues;
     NamedPrimitiveKinds = previousNamedPrimitiveKinds;
+    NamedArrayElementKinds = previousNamedArrayElementKinds;
+    NamedArrayTypes = previousNamedArrayTypes;
     CurrentFunction = previousFunction;
     return function;
+}
+
+// Array visitor implementations
+
+llvm::Value* CodeGenerator::visit(ArrayLiteralExprAST& node) {
+    return logError("Array literal can only be used as a direct initializer in a variable declaration");
+}
+
+llvm::Value* CodeGenerator::visit(ArrayNewExprAST& node) {
+    return logError("new[] expression can only be used as a direct initializer in a variable declaration");
+}
+
+llvm::Value* CodeGenerator::visit(IndexExprAST& node) {
+    llvm::AllocaInst* arrAlloca = getNamedValue(node.getName());
+    if (!arrAlloca) return logError("Unknown array variable in index expression");
+
+    auto it = NamedArrayTypes.find(node.getName());
+    if (it == NamedArrayTypes.end()) return logError("Variable is not an array");
+    llvm::ArrayType* arrType = it->second;
+
+    const uint64_t arraySize = arrType->getNumElements();
+    if (arraySize == 0) {
+        return logError("Array index is out of bounds: cannot index into a zero-length array");
+    }
+
+    if (const std::optional<int64_t> staticIndex = getStaticIntegerIndex(node.getIndex())) {
+        if (*staticIndex < 0 || static_cast<uint64_t>(*staticIndex) >= arraySize) {
+            return logError("Array index is out of bounds for a compile-time known array size");
+        }
+    }
+
+    llvm::Value* idxVal = node.getIndex()->codegen(*this);
+    if (!idxVal) return nullptr;
+    idxVal = castValueToType(idxVal, llvm::Type::getInt64Ty(TheContext));
+
+    llvm::Value* zero64 = llvm::ConstantInt::get(llvm::Type::getInt64Ty(TheContext), 0);
+    llvm::Value* gep = Builder.CreateGEP(arrType, arrAlloca, {zero64, idxVal}, "arr.idx.ptr");
+    llvm::Value* loaded = Builder.CreateLoad(arrType->getElementType(), gep, "arr.idx.val");
+
+    // Propagate element primitive kind so print/cast paths work correctly
+    auto elemKindIt = NamedArrayElementKinds.find(node.getName());
+    if (elemKindIt != NamedArrayElementKinds.end()) {
+        setValuePrimitiveKind(loaded, elemKindIt->second);
+    } else if (arrType->getElementType()->isIntegerTy()) {
+        const unsigned bits = arrType->getElementType()->getIntegerBitWidth();
+        setValuePrimitiveKind(loaded, getIntegerPrimitiveKind(bits, false));
+    }
+    return loaded;
+}
+
+llvm::Value* CodeGenerator::visit(IndexAssignStmtAST& node) {
+    llvm::AllocaInst* arrAlloca = getNamedValue(node.getName());
+    if (!arrAlloca) return logError("Unknown array variable in index assignment");
+
+    auto it = NamedArrayTypes.find(node.getName());
+    if (it == NamedArrayTypes.end()) return logError("Variable is not an array");
+    llvm::ArrayType* arrType = it->second;
+
+    const uint64_t arraySize = arrType->getNumElements();
+    if (arraySize == 0) {
+        return logError("Array index assignment is out of bounds: cannot write into a zero-length array");
+    }
+
+    if (const std::optional<int64_t> staticIndex = getStaticIntegerIndex(node.getIndex())) {
+        if (*staticIndex < 0 || static_cast<uint64_t>(*staticIndex) >= arraySize) {
+            return logError("Array index assignment is out of bounds for a compile-time known array size");
+        }
+    }
+
+    llvm::Value* idxVal = node.getIndex()->codegen(*this);
+    if (!idxVal) return nullptr;
+    idxVal = castValueToType(idxVal, llvm::Type::getInt64Ty(TheContext));
+
+    const std::optional<unsigned> prevBits = ExpectedIntegerResultBits;
+    if (arrType->getElementType()->isIntegerTy() && !arrType->getElementType()->isIntegerTy(1))
+        ExpectedIntegerResultBits = arrType->getElementType()->getIntegerBitWidth();
+    else
+        ExpectedIntegerResultBits = std::nullopt;
+
+    llvm::Value* val = node.getValue()->codegen(*this);
+    ExpectedIntegerResultBits = prevBits;
+    if (!val) return nullptr;
+    val = castValueToType(val, arrType->getElementType());
+    if (!val) return logError("Cannot cast value to array element type");
+
+    llvm::Value* zero64 = llvm::ConstantInt::get(llvm::Type::getInt64Ty(TheContext), 0);
+    llvm::Value* gep = Builder.CreateGEP(arrType, arrAlloca, {zero64, idxVal}, "arr.idx.ptr");
+    Builder.CreateStore(val, gep);
+    return val;
 }
 
 llvm::Value* CodeGenerator::visit(ClassAST& node) {

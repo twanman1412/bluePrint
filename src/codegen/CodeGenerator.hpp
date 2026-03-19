@@ -39,6 +39,14 @@ public:
     llvm::Value* visit(PrintStmtAST& node);
 
     // Visitor methods for class/program AST nodes
+
+    // Visitor methods for array AST nodes
+    llvm::Value* visit(ArrayLiteralExprAST& node);
+    llvm::Value* visit(ArrayNewExprAST& node);
+    llvm::Value* visit(IndexExprAST& node);
+    llvm::Value* visit(IndexAssignStmtAST& node);
+
+    // Visitor methods for class/program AST nodes
     llvm::Value* visit(MethodImplAST& node);
     llvm::Value* visit(ClassAST& node);
 
@@ -59,6 +67,8 @@ private:
     std::map<std::string, llvm::AllocaInst*> NamedValues;
     std::map<std::string, PrimitiveTypeAST::PrimitiveKind> NamedPrimitiveKinds;
     std::map<const llvm::Value*, PrimitiveTypeAST::PrimitiveKind> ValuePrimitiveKinds;
+    std::map<std::string, PrimitiveTypeAST::PrimitiveKind> NamedArrayElementKinds;
+    std::map<std::string, llvm::ArrayType*> NamedArrayTypes;
     std::optional<unsigned> ExpectedIntegerResultBits;
     std::optional<PrimitiveTypeAST::PrimitiveKind> ExpectedFractionResultKind;
     llvm::Function* CurrentFunction;
