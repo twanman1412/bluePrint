@@ -14,7 +14,7 @@ This roadmap outlines the iterative development of the BluePrint programming lan
 - [x] **Entry Point:** Logic to identify and execute `System.Application.main`.
 
 ### v0.1.0: Extended Type System
-- [ ] **Full Primitive Suite:** Implementation of `i8`-`i64`, `u8`-`u64`, and `f32`.
+- [x] **Full Primitive Suite:** Implementation of `i8`-`i64`, `u8`-`u64`, and `f32`.
 - [ ] **Fractional Type:** Native support for the `fractional` type (numerator/denominator logic) and its arithmetic promotion rules.
 - [ ] **Strings:** Implementation of the `str` type (character array) and string literals.
 - [ ] **Arrays:** Fixed-size array syntax (`T[]`), initialization literals, and index access.

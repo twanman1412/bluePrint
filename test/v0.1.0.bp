@@ -1,0 +1,75 @@
+class PrimitiveSuite : Application {
+    public void main() {
+        i8 a = -7;
+        i16 b = -32000;
+        i32 c = 123456;
+        i64 d = 1234567890;
+
+        u8 e = 250;
+        u16 f = 65000;
+        u32 g = 4000000000;
+        u64 h = 9000000000;
+
+        f32 x = 1.5;
+        f64 y = 3.1415926535; 
+
+        i16 upfromi8 = a;
+        i32 upfromi16 = b;
+        i64 upfromi32 = c;
+        i8 downfromi16 = b;
+        i16 downfromi32 = c;
+
+        i32 mixsi = a + f;
+        i64 mixsiwide = d + g;
+        u32 mixui = e + g;
+        u64 mixuiwide = h + g;
+        i32 mixsub = c - e;
+        u32 mixmul = e * e;
+        u64 mixdivu = h / e;
+        i64 mixdivs = d / a;
+        u16 mixmodu = f % e;
+        i16 mixmods = b % a;
+
+        i32 assignfromu8 = e;
+        u8 assignfromi8 = a;
+        u32 assignfromi16 = b;
+        i16 assignfromu32 = g;
+        i64 assignfromu64 = h;
+        u64 assignfromi64 = d;
+
+        Defaultlogger.logln(a);
+        Defaultlogger.logln(b);
+        Defaultlogger.logln(c);
+        Defaultlogger.logln(d);
+        Defaultlogger.logln(e);
+        Defaultlogger.logln(f);
+        Defaultlogger.logln(g);
+        Defaultlogger.logln(h);
+        Defaultlogger.logln(x);
+        Defaultlogger.logln(y);
+
+        Defaultlogger.logln(upfromi8);
+        Defaultlogger.logln(upfromi16);
+        Defaultlogger.logln(upfromi32);
+        Defaultlogger.logln(downfromi16);
+        Defaultlogger.logln(downfromi32);
+
+        Defaultlogger.logln(mixsi);
+        Defaultlogger.logln(mixsiwide);
+        Defaultlogger.logln(mixui);
+        Defaultlogger.logln(mixuiwide);
+        Defaultlogger.logln(mixsub);
+        Defaultlogger.logln(mixmul);
+        Defaultlogger.logln(mixdivu);
+        Defaultlogger.logln(mixdivs);
+        Defaultlogger.logln(mixmodu);
+        Defaultlogger.logln(mixmods);
+
+        Defaultlogger.logln(assignfromu8);
+        Defaultlogger.logln(assignfromi8);
+        Defaultlogger.logln(assignfromi16);
+        Defaultlogger.logln(assignfromu32);
+        Defaultlogger.logln(assignfromu64);
+        Defaultlogger.logln(assignfromi64);
+    }
+}
