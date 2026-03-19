@@ -71,5 +71,47 @@ class PrimitiveSuite : Application {
         Defaultlogger.logln(assignfromu32);
         Defaultlogger.logln(assignfromu64);
         Defaultlogger.logln(assignfromi64);
+
+        fr32 frA = 1/2;
+        fr32 frB = 3/4;
+        fr32 frSum32 = frA + frB;
+        fr32 frMul32 = frA * frB;
+
+        fr64 frWideA = 5/6;
+        fr64 frWideB = 7/8;
+        fr64 frSum64 = frWideA + frWideB;
+        fr64 frMixWide = frA + frWideA;
+        fr64 frWithInt = frWideA + 2;
+        fr64 frDiv64 = frWideB / frA;
+
+        f64 frToFloat = frSum64 + y;
+        f32 fr32ToFloat = frA + x;
+
+        bool frCmpEq = frA == frA;
+        bool frCmpLt = frA < frB;
+        bool frCmpGe = frWideB >= frWideA;
+        bool frCmpInt = frA == 1;
+
+        fr64 frAssignedWide = frA;
+        fr32 frAssignedNarrow = frWideA;
+
+        Defaultlogger.logln(frA);
+        Defaultlogger.logln(frB);
+        Defaultlogger.logln(frSum32);
+        Defaultlogger.logln(frMul32);
+        Defaultlogger.logln(frWideA);
+        Defaultlogger.logln(frWideB);
+        Defaultlogger.logln(frSum64);
+        Defaultlogger.logln(frMixWide);
+        Defaultlogger.logln(frWithInt);
+        Defaultlogger.logln(frDiv64);
+        Defaultlogger.logln(frToFloat);
+        Defaultlogger.logln(fr32ToFloat);
+        Defaultlogger.logln(frCmpEq);
+        Defaultlogger.logln(frCmpLt);
+        Defaultlogger.logln(frCmpGe);
+        Defaultlogger.logln(frCmpInt);
+        Defaultlogger.logln(frAssignedWide);
+        Defaultlogger.logln(frAssignedNarrow);
     }
 }
