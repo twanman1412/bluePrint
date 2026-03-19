@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <cstdint>
 
 #include "tokens.hpp"
 
@@ -17,8 +18,8 @@ class Lexer {
         int16_t getCurrentToken();
 
         // Value retrieval based on token type
-        int getIntegerValue();        // For all integer literals
-        float getFloatValue();             // For all floating-point literals
+        int64_t getIntegerValue();
+        double getFloatValue();
         bool getBoolValue();
         char getCharValue();
 
@@ -35,8 +36,8 @@ class Lexer {
         int16_t currentToken;
 
         // Value storage for different token types
-        int integerValue;             // For all integer literals
-        float floatValue;                  // For all floating-point literals
+        int64_t integerValue;
+        double floatValue;
         bool boolValue;
         char charValue;
 

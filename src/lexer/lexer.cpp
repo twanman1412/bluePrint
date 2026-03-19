@@ -8,8 +8,16 @@
 // Initialize the keyword lookup table
 std::unordered_map<std::string, Token> Lexer::keywords = {
     // Primitive types
+    {"i8", tok_i8},
+    {"i16", tok_i16},
     {"i32", tok_i32},
+    {"i64", tok_i64},
+    {"u8", tok_u8},
+    {"u16", tok_u16},
+    {"u32", tok_u32},
+    {"u64", tok_u64},
     {"f32", tok_f32},
+    {"f64", tok_f64},
     {"bool", tok_bool}, 
 	{"char", tok_char}, 
 	{"void", tok_void},
@@ -207,11 +215,11 @@ int16_t Lexer::getCurrentToken() {
     return this->currentToken;
 }
 
-int Lexer::getIntegerValue() {
+int64_t Lexer::getIntegerValue() {
 	return this->integerValue;
 }
 
-float Lexer::getFloatValue() {
+double Lexer::getFloatValue() {
 	return this->floatValue;
 }
 

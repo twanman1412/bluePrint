@@ -8,11 +8,19 @@ enum Token : int16_t {
     tok_eof = -1,
 
     // Primitive types 
-    tok_i32 = -10, 
-    tok_f32 = -11, 
-    tok_bool = -12, 
-    tok_char = -13, 
-	tok_void = -14,
+	tok_i8 = -10,
+	tok_i16 = -11,
+	tok_i32 = -12,
+	tok_i64 = -13,
+	tok_u8 = -14,
+	tok_u16 = -15,
+	tok_u32 = -16,
+	tok_u64 = -17,
+	tok_f32 = -18,
+	tok_f64 = -19,
+	tok_bool = -20,
+	tok_char = -21,
+	tok_void = -22,
     
     // Literals 
     tok_true = -50, 
@@ -43,8 +51,8 @@ enum Token : int16_t {
 };
 
 namespace TokenUtils {
-	inline std::array<Token, 5> getPrimitiveTypeTokens() {
-		return {tok_i32, tok_f32, tok_bool, tok_char, tok_void};
+	inline std::array<Token, 13> getPrimitiveTypeTokens() {
+		return {tok_i8, tok_i16, tok_i32, tok_i64, tok_u8, tok_u16, tok_u32, tok_u64, tok_f32, tok_f64, tok_bool, tok_char, tok_void};
 	}
 
 	inline static bool isPrimitiveTypeToken(int16_t token) {
