@@ -37,59 +37,59 @@ BluePrint features a strong static type system with generics, multiple inheritan
 
 | Type | Description |
 |------|-------------|
-| `fractional` | Arbitrary precision fraction (two i32: numerator/denominator) |
+| `fr32` | Fractional value with two i16 components (numerator/denominator) |
+| `fr64` | Fractional value with two i32 components (numerator/denominator) |
 
 ```blueprint
 // Fractional arithmetic maintains exact precision
-fractional half = 1/2;
-fractional third = 1/3;
-fractional result = half + third;  // Exactly 5/6, not 0.833333...
+fr64 half = 1/2;
+fr64 third = 1/3;
+fr64 result = half + third;  // Exactly 5/6, not 0.833333...
 
 // Fractional operations with integers (exact arithmetic)
-fractional withInt = result + 1;   // Exactly 11/6
-fractional doubled = result * 2;   // Exactly 5/3
+fr64 withInt = result + 1;   // Exactly 11/6
+fr64 doubled = result * 2;   // Exactly 5/3
 i32 wholeNumber = 5;
-fractional mixed = half + wholeNumber; // Exactly 11/2
+fr64 mixed = half + wholeNumber; // Exactly 11/2
 
 // Operations remain exact as long as no floating point is involved
-fractional complex = (1/3) * 6 + (2/5); // Exactly 12/5
+fr64 complex = (1/3) * 6 + (2/5); // Exactly 12/5
 
 // Type promotion rules:
-// fractional + integer = fractional (exact arithmetic)
-// fractional + fractional = fractional (exact arithmetic)  
-// fractional + float = float (converts to floating point)
+// fr32/fr64 + integer = fr32/fr64 (exact arithmetic)
+// fr32 + fr64 = fr64 (exact arithmetic)
+// fr32/fr64 + float = float (converts to floating point)
 f64 floatValue = 3.14;
 f64 converted = result + floatValue;  // Becomes floating point: ~4.9733333...
 
 // Examples of type promotion
-fractional half = 1/2;
+fr32 smallHalf = 1/2;
 i32 wholeNumber = 5;
-fractional exactSum = half + wholeNumber;    // Exactly 11/2 (fractional)
+fr32 exactSum = smallHalf + wholeNumber;     // Exactly 11/2 (fr32)
 f32 floatNum = 2.5f;
-f32 floatResult = half + floatNum;           // 3.0f (float)
+f32 floatResult = smallHalf + floatNum;      // 3.0f (float)
 
-// Overflow protection - throws exception if numerator or denominator exceeds i32 range
+// Overflow protection - throws exception if numerator or denominator exceeds component range
 try {
-    fractional huge = (i32.MAX_VALUE / 2) * (i32.MAX_VALUE / 2); // May throw OverflowException
+    fr64 huge = (i32.MAX_VALUE / 2) * (i32.MAX_VALUE / 2); // May throw OverflowException
 } catch (OverflowException e) {
     Defaultlogger.errorln("Fractional overflow: " + e.getMessage());
 }
 
 // Explicit conversion when needed
-f64 approximate = result.toF64();     // 0.8333333333333334
-i32 truncated = result.toI32();       // 0 (truncates towards zero)
-String display = result.toString();   // "5/6"
+f64 approximate = (f64) result;     // 0.8333333333333334
+i32 truncated = (i32) result;       // 0 (truncates towards zero)
 
 // Practical example: Recipe scaling with exact fractions
-fractional recipeServings = 4/1;           // Original recipe serves 4
-fractional desiredServings = 6/1;          // Want to serve 6 people
-fractional scaleFactor = desiredServings / recipeServings;  // Exactly 3/2
+fr64 recipeServings = 4/1;           // Original recipe serves 4
+fr64 desiredServings = 6/1;          // Want to serve 6 people
+fr64 scaleFactor = desiredServings / recipeServings;  // Exactly 3/2
 
-fractional originalFlour = 2/1;            // 2 cups flour
-fractional scaledFlour = originalFlour * scaleFactor;      // Exactly 3 cups
+fr64 originalFlour = 2/1;            // 2 cups flour
+fr64 scaledFlour = originalFlour * scaleFactor;      // Exactly 3 cups
 
-fractional originalSugar = 3/4;            // 3/4 cup sugar  
-fractional scaledSugar = originalSugar * scaleFactor;      // Exactly 9/8 cups (1.125 cups exactly)
+fr64 originalSugar = 3/4;            // 3/4 cup sugar  
+fr64 scaledSugar = originalSugar * scaleFactor;      // Exactly 9/8 cups (1.125 cups exactly)
 
 Defaultlogger.logln("Scale factor: " + scaleFactor.toString());     // "3/2"
 Defaultlogger.logln("Scaled flour: " + scaledFlour.toString());     // "3/1"

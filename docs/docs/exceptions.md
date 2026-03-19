@@ -42,7 +42,7 @@ blueprint SafeMath {
     
     public createFraction(num, den) {
         input: num: i32, den: i32;
-        output: fractional
+        output: fr64
         throws: FractionDivisionByZeroException, FractionOverflowException;
         requires: den != 0;
         ensures: createFraction == num / den;
@@ -157,13 +157,13 @@ class DataProcessor {
         }
     }
     
-    public fractional safeFractionalOperation(i32 num, i32 den) {
+    public fr64 safeFractionalOperation(i32 num, i32 den) {
         try {
             if (den == 0) {
                 throw new FractionDivisionByZeroException("Fraction denominator cannot be zero");
             }
             
-            fractional result = num / den;
+            fr64 result = num / den;
             // Check for potential overflow in subsequent operations
             if (willOverflow(result)) {
                 throw new FractionOverflowException("Fractional operation would cause overflow");

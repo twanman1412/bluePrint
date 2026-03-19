@@ -446,7 +446,7 @@ primitive_type -> "i8" | "i16" | "i32" | "i64"
                | "u8" | "u16" | "u32" | "u64"
                | "f32" | "f64"
                | "bool" | "char" | "str" | "void"
-               | "fractional"
+               | "fr32" | "fr64"
 
 user_type -> identifier
 
@@ -533,7 +533,7 @@ method_name -> identifier
 # Blueprint contracts: input, output, requires, ensures, default, throws, invariant
 # Control flow: if, else, while, for, do, switch, case, break, continue, return, match
 # Exception handling: try, catch, finally, throw
-# Type keywords: i8, i16, i32, i64, u8, u16, u32, u64, f32, f64, bool, char, str, void, fractional
+# Type keywords: i8, i16, i32, i64, u8, u16, u32, u64, f32, f64, fr32, fr64, bool, char, str, void
 # Literals: true, false, null
 # Object operations: new, this, super, instanceof, as
 # Concurrency: async, await, synchronized, volatile

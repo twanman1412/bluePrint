@@ -409,7 +409,7 @@ blueprint BankAccount {
     invariant: isThreadSafe();
     
     public synchronized deposit(amount) {
-        input: amount: fractional;
+        input: amount: fr64;
         output: void;
         requires: amount > 0;
         ensures: balance == old(balance) + amount;
@@ -417,7 +417,7 @@ blueprint BankAccount {
     }
     
     public synchronized withdraw(amount) {
-        input: amount: fractional;
+        input: amount: fr64;
         output: bool;
         requires: amount > 0;
         ensures: withdraw ==> (balance == old(balance) - amount);
@@ -426,7 +426,7 @@ blueprint BankAccount {
     }
     
     public getBalance() {
-        output: fractional
+        output: fr64
         ensures: getBalance >= 0;
         // Note: not synchronized - snapshot read
     }
@@ -463,10 +463,10 @@ blueprint ConcurrentCache<K, V> {
 
 ```blueprint
 class ThreadSafeBankAccount : BankAccount {
-    private fractional balance = 0.0;
+    private fr64 balance = 0/1;
     private Mutex accountMutex = new Mutex();
     
-    public synchronized void deposit(fractional amount) {
+    public synchronized void deposit(fr64 amount) {
         this.accountMutex.lock();
         try {
             this.balance += amount;
@@ -476,7 +476,7 @@ class ThreadSafeBankAccount : BankAccount {
         }
     }
     
-    public synchronized bool withdraw(fractional amount) {
+    public synchronized bool withdraw(fr64 amount) {
         this.accountMutex.lock();
         try {
             if (this.balance >= amount) {
@@ -490,7 +490,7 @@ class ThreadSafeBankAccount : BankAccount {
         }
     }
     
-    public fractional getBalance() {
+    public fr64 getBalance() {
         // Atomic read of volatile field - no lock needed
         return this.balance;
     }

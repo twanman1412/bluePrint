@@ -427,7 +427,7 @@ blueprint FractionalMath {
         input:
             numerator: i32,
             denominator: i32;
-        output: fractional
+        output: fr64
         requires: denominator != 0;
         default: numerator == 0 ==> 0/1;
         default: denominator == 1 ==> numerator/1;
@@ -435,8 +435,8 @@ blueprint FractionalMath {
     }
     
     public simplify(frac) {
-        input: frac: fractional;
-        output: fractional
+        input: frac: fr64;
+        output: fr64
         default: frac.denominator == 1 ==> frac;
         ensures: simplify.gcd(numerator, denominator) == 1;
         ensures: simplify == frac;  // Mathematically equivalent
