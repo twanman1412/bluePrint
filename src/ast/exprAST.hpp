@@ -48,6 +48,15 @@ class CharExprAST : public ExprAST {
         char value;
 };
 
+class StrExprAST : public ExprAST {
+    public:
+        StrExprAST(const std::string& value) : value(value) {}
+        const std::string& getValue() const { return value; }
+        llvm::Value *codegen(CodeGenerator& generator) override;
+    private:
+        std::string value;
+};
+
 class IdentifierExprAST : public ExprAST {
     public:
         IdentifierExprAST(const std::string &name) : name(name) {}

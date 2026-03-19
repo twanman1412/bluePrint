@@ -25,6 +25,7 @@ class PrimitiveTypeAST : public TypeAST {
             FRACTIONAL64,
             BOOL,
             CHAR,
+            STR,
 			VOID,
         };
 

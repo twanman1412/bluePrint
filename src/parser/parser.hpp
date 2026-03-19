@@ -28,6 +28,7 @@ class Parser {
         std::unique_ptr<FloatExprAST> parseFloatValue();
         std::unique_ptr<BoolExprAST> parseBoolValue();
         std::unique_ptr<CharExprAST> parseCharValue();
+        std::unique_ptr<StrExprAST> parseStrValue();
 
         std::unique_ptr<IdentifierExprAST> parseIdentifier();
 
@@ -78,6 +79,8 @@ namespace ParserUtils {
 				return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::BOOL);
 			case tok_char:
 				return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::CHAR);
+			case tok_str:
+				return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::STR);
 			case tok_void:
 				return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::VOID);
 			default:

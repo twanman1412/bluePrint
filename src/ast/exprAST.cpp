@@ -21,6 +21,11 @@ llvm::Value *CharExprAST::codegen(CodeGenerator& generator) {
     return generator.visit(*this);
 }
 
+// StrExprAST codegen - delegates to visitor
+llvm::Value *StrExprAST::codegen(CodeGenerator& generator) {
+    return generator.visit(*this);
+}
+
 // IdentifierExprAST codegen - delegates to visitor
 llvm::Value *IdentifierExprAST::codegen(CodeGenerator& generator) {
     return generator.visit(*this);

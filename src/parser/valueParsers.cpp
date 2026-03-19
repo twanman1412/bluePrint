@@ -21,8 +21,11 @@ std::unique_ptr<ExprAST> Parser::parsePrimaryExpression() {
 			return parseCharValue();
 		case tok_identifier:
 			return parseIdentifier();
+		case tok_str_literal:
+			return parseStrValue();
 		default:
 			std::cerr << "Error: Unknown primary expression token." << std::endl;
+			std::cerr << "Token: " << currentToken << std::endl;
 			return nullptr;
 	}
 }
@@ -49,6 +52,12 @@ std::unique_ptr<CharExprAST> Parser::parseCharValue() {
     char value = lexer.getCharValue();
     lexer.getNextToken();
     return std::make_unique<CharExprAST>(value);
+}
+
+std::unique_ptr<StrExprAST> Parser::parseStrValue() {
+    std::string value = lexer.getStringValue();
+    lexer.getNextToken();
+    return std::make_unique<StrExprAST>(value);
 }
 
 std::unique_ptr<IdentifierExprAST> Parser::parseIdentifier() {
