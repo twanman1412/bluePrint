@@ -85,6 +85,7 @@ private:
     PrimitiveTypeAST::PrimitiveKind getFractionalPrimitiveKindForType(llvm::Type* type) const;
     llvm::Type* getFractionalComponentType(PrimitiveTypeAST::PrimitiveKind kind);
     llvm::StructType* getFractionalLLVMType(PrimitiveTypeAST::PrimitiveKind kind);
+    llvm::Function* getOrCreateGcdFunction(unsigned bitWidth);
     llvm::Value* buildFractionValue(llvm::Value* numerator, llvm::Value* denominator, PrimitiveTypeAST::PrimitiveKind kind);
     bool decomposeFractionValue(llvm::Value* fractionValue, PrimitiveTypeAST::PrimitiveKind kind, llvm::Value*& numerator, llvm::Value*& denominator);
     llvm::Value* castIntegerToFraction(llvm::Value* value, PrimitiveTypeAST::PrimitiveKind targetKind);

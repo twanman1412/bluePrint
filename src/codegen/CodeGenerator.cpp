@@ -132,6 +132,61 @@ llvm::StructType* CodeGenerator::getFractionalLLVMType(PrimitiveTypeAST::Primiti
     return llvm::StructType::get(TheContext, {componentType, componentType});
 }
 
+llvm::Function* CodeGenerator::getOrCreateGcdFunction(unsigned bitWidth) {
+    const std::string name = "__blueprint_gcd_i" + std::to_string(bitWidth);
+    if (llvm::Function* existing = TheModule->getFunction(name)) {
+        return existing;
+    }
+
+    llvm::Type* intTy = llvm::Type::getIntNTy(TheContext, bitWidth);
+    llvm::FunctionType* funcTy = llvm::FunctionType::get(intTy, {intTy, intTy}, false);
+    llvm::Function* gcdFunc = llvm::Function::Create(
+        funcTy, llvm::Function::InternalLinkage, name, TheModule.get());
+    gcdFunc->addFnAttr(llvm::Attribute::NoUnwind);
+
+    llvm::Value* argA = gcdFunc->getArg(0);
+    llvm::Value* argB = gcdFunc->getArg(1);
+    argA->setName("a");
+    argB->setName("b");
+
+    llvm::BasicBlock* entryBB  = llvm::BasicBlock::Create(TheContext, "entry",  gcdFunc);
+    llvm::BasicBlock* loopBB   = llvm::BasicBlock::Create(TheContext, "loop",   gcdFunc);
+    llvm::BasicBlock* bodyBB   = llvm::BasicBlock::Create(TheContext, "body",   gcdFunc);
+    llvm::BasicBlock* returnBB = llvm::BasicBlock::Create(TheContext, "return", gcdFunc);
+
+    // entry: take absolute values so negative numerators don't break GCD
+    llvm::IRBuilder<> b(entryBB);
+    llvm::Value* zero = llvm::ConstantInt::get(intTy, 0, true);
+    llvm::Value* absA = b.CreateSelect(b.CreateICmpSLT(argA, zero), b.CreateNeg(argA, "neg.a"), argA, "abs.a");
+    llvm::Value* absB = b.CreateSelect(b.CreateICmpSLT(argB, zero), b.CreateNeg(argB, "neg.b"), argB, "abs.b");
+    b.CreateBr(loopBB);
+
+    // loop header: phi nodes for (a, b)
+    b.SetInsertPoint(loopBB);
+    llvm::PHINode* phiA = b.CreatePHI(intTy, 2, "phi.a");
+    llvm::PHINode* phiB = b.CreatePHI(intTy, 2, "phi.b");
+    phiA->addIncoming(absA, entryBB);
+    phiB->addIncoming(absB, entryBB);
+    llvm::Value* bIsZero = b.CreateICmpEQ(phiB, zero, "b.is.zero");
+    b.CreateCondBr(bIsZero, returnBB, bodyBB);
+
+    // body: a = b, b = a % b  (Euclidean step)
+    b.SetInsertPoint(bodyBB);
+    llvm::Value* rem = b.CreateSRem(phiA, phiB, "rem");
+    phiA->addIncoming(phiB, bodyBB);
+    phiB->addIncoming(rem,  bodyBB);
+    b.CreateBr(loopBB);
+
+    // return: when b == 0, a holds the GCD; guard against gcd==0 (both inputs were 0)
+    b.SetInsertPoint(returnBB);
+    llvm::Value* one = llvm::ConstantInt::get(intTy, 1, true);
+    llvm::Value* gcdIsZero = b.CreateICmpEQ(phiA, zero, "gcd.is.zero");
+    llvm::Value* safeGcd = b.CreateSelect(gcdIsZero, one, phiA, "safe.gcd");
+    b.CreateRet(safeGcd);
+
+    return gcdFunc;
+}
+
 llvm::Value* CodeGenerator::buildFractionValue(llvm::Value* numerator, llvm::Value* denominator, PrimitiveTypeAST::PrimitiveKind kind) {
     if (!numerator || !denominator || !isFractionalPrimitiveKind(kind)) {
         return nullptr;
@@ -144,9 +199,30 @@ llvm::Value* CodeGenerator::buildFractionValue(llvm::Value* numerator, llvm::Val
         return nullptr;
     }
 
+    const unsigned bitWidth = getFractionalComponentBitWidth(kind);
+    llvm::Type* intTy = componentType;
+    llvm::Value* zero = llvm::ConstantInt::get(intTy, 0, true);
+    llvm::Value* one  = llvm::ConstantInt::get(intTy, 1, true);
+    llvm::Value* negOne = llvm::ConstantInt::get(intTy, -1, true);
+
+    // Sign-normalise: denominator is always positive.
+    // If den < 0 flip both signs; if den == 0 force den = 1 (degenerate guard).
+    llvm::Value* denIsNeg  = Builder.CreateICmpSLT(denominator, zero, "den.is.neg");
+    llvm::Value* denIsZero = Builder.CreateICmpEQ(denominator, zero, "den.is.zero");
+    llvm::Value* signFlip  = Builder.CreateSelect(denIsNeg, negOne, one, "sign.flip");
+    numerator   = Builder.CreateMul(numerator,   signFlip, "fr.sign.num");
+    denominator = Builder.CreateMul(denominator, signFlip, "fr.sign.den");
+    denominator = Builder.CreateSelect(denIsZero, one, denominator, "fr.den.safe");
+
+    // GCD reduction
+    llvm::Function* gcdFunc = getOrCreateGcdFunction(bitWidth);
+    llvm::Value* gcd = Builder.CreateCall(gcdFunc, {numerator, denominator}, "fr.gcd");
+    numerator   = Builder.CreateSDiv(numerator,   gcd, "fr.red.num");
+    denominator = Builder.CreateSDiv(denominator, gcd, "fr.red.den");
+
     llvm::StructType* fractionType = getFractionalLLVMType(kind);
     llvm::Value* result = llvm::UndefValue::get(fractionType);
-    result = Builder.CreateInsertValue(result, numerator, {0}, "fr.set.num");
+    result = Builder.CreateInsertValue(result, numerator,   {0}, "fr.set.num");
     result = Builder.CreateInsertValue(result, denominator, {1}, "fr.set.den");
     setValuePrimitiveKind(result, kind);
     return result;
