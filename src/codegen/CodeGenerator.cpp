@@ -13,7 +13,7 @@
 #include "../ast/commonAST.hpp"
 
 CodeGenerator::CodeGenerator()
-    : TheContext(), Builder(TheContext), TheModule(nullptr), NamedValues(), CurrentFunction(nullptr), CurrentClassName(), CurrentClassIsApplication(false) {
+    : TheContext(), Builder(TheContext), TheModule(nullptr), NamedValues(), NamedPrimitiveKinds(), ValuePrimitiveKinds(), ExpectedIntegerResultBits(std::nullopt), CurrentFunction(nullptr), CurrentClassName(), CurrentClassIsApplication(false) {
     TheModule = std::make_unique<llvm::Module>("BluePrint", TheContext);
 }
 
@@ -34,6 +34,81 @@ void CodeGenerator::setNamedValue(const std::string& name, llvm::AllocaInst* val
     NamedValues[name] = value;
 }
 
+void CodeGenerator::setNamedPrimitiveKind(const std::string& name, PrimitiveTypeAST::PrimitiveKind kind) {
+    NamedPrimitiveKinds[name] = kind;
+}
+
+bool CodeGenerator::getNamedPrimitiveKind(const std::string& name, PrimitiveTypeAST::PrimitiveKind& outKind) const {
+    auto it = NamedPrimitiveKinds.find(name);
+    if (it == NamedPrimitiveKinds.end()) {
+        return false;
+    }
+
+    outKind = it->second;
+    return true;
+}
+
+void CodeGenerator::setValuePrimitiveKind(llvm::Value* value, PrimitiveTypeAST::PrimitiveKind kind) {
+    if (value) {
+        ValuePrimitiveKinds[value] = kind;
+    }
+}
+
+bool CodeGenerator::getValuePrimitiveKind(llvm::Value* value, PrimitiveTypeAST::PrimitiveKind& outKind) const {
+    if (!value) {
+        return false;
+    }
+
+    auto it = ValuePrimitiveKinds.find(value);
+    if (it == ValuePrimitiveKinds.end()) {
+        return false;
+    }
+
+    outKind = it->second;
+    return true;
+}
+
+const PrimitiveTypeAST* CodeGenerator::getPrimitiveType(const TypeAST* typeAST) const {
+    return dynamic_cast<const PrimitiveTypeAST*>(typeAST);
+}
+
+bool CodeGenerator::isUnsignedPrimitiveKind(PrimitiveTypeAST::PrimitiveKind kind) const {
+    return kind == PrimitiveTypeAST::UINT8 || kind == PrimitiveTypeAST::UINT16 || kind == PrimitiveTypeAST::UINT32 || kind == PrimitiveTypeAST::UINT64;
+}
+
+bool CodeGenerator::isUnsignedValue(llvm::Value* value) const {
+    PrimitiveTypeAST::PrimitiveKind kind;
+    return getValuePrimitiveKind(value, kind) && isUnsignedPrimitiveKind(kind);
+}
+
+PrimitiveTypeAST::PrimitiveKind CodeGenerator::getIntegerPrimitiveKind(unsigned bitWidth, bool isUnsigned) const {
+    if (isUnsigned) {
+        switch (bitWidth) {
+            case 8:
+                return PrimitiveTypeAST::UINT8;
+            case 16:
+                return PrimitiveTypeAST::UINT16;
+            case 32:
+                return PrimitiveTypeAST::UINT32;
+            case 64:
+            default:
+                return PrimitiveTypeAST::UINT64;
+        }
+    }
+
+    switch (bitWidth) {
+        case 8:
+            return PrimitiveTypeAST::INT8;
+        case 16:
+            return PrimitiveTypeAST::INT16;
+        case 32:
+            return PrimitiveTypeAST::INT32;
+        case 64:
+        default:
+            return PrimitiveTypeAST::INT64;
+    }
+}
+
 llvm::AllocaInst* CodeGenerator::getNamedValue(const std::string& name) {
     auto it = NamedValues.find(name);
     if (it != NamedValues.end()) {
@@ -43,16 +118,28 @@ llvm::AllocaInst* CodeGenerator::getNamedValue(const std::string& name) {
 }
 
 llvm::Type* CodeGenerator::getLLVMType(const TypeAST* typeAST) {
-    auto primitiveType = dynamic_cast<const PrimitiveTypeAST*>(typeAST);
+    auto primitiveType = getPrimitiveType(typeAST);
     if (!primitiveType) {
         return nullptr;
     }
 
     switch (primitiveType->getKind()) {
+        case PrimitiveTypeAST::INT8:
+        case PrimitiveTypeAST::UINT8:
+            return llvm::Type::getInt8Ty(TheContext);
+        case PrimitiveTypeAST::INT16:
+        case PrimitiveTypeAST::UINT16:
+            return llvm::Type::getInt16Ty(TheContext);
         case PrimitiveTypeAST::INT32:
+        case PrimitiveTypeAST::UINT32:
             return llvm::Type::getInt32Ty(TheContext);
+        case PrimitiveTypeAST::INT64:
+        case PrimitiveTypeAST::UINT64:
+            return llvm::Type::getInt64Ty(TheContext);
         case PrimitiveTypeAST::FLOAT32:
             return llvm::Type::getFloatTy(TheContext);
+        case PrimitiveTypeAST::FLOAT64:
+            return llvm::Type::getDoubleTy(TheContext);
         case PrimitiveTypeAST::BOOL:
             return llvm::Type::getInt1Ty(TheContext);
         case PrimitiveTypeAST::CHAR:
@@ -82,8 +169,13 @@ llvm::Value* CodeGenerator::castValueToType(llvm::Value* value, llvm::Type* targ
     if (sourceType->isIntegerTy() && targetType->isIntegerTy()) {
         const unsigned sourceBits = sourceType->getIntegerBitWidth();
         const unsigned targetBits = targetType->getIntegerBitWidth();
+        PrimitiveTypeAST::PrimitiveKind sourceKind;
+        const bool hasSourceKind = getValuePrimitiveKind(value, sourceKind);
+        const bool sourceUnsigned = hasSourceKind && isUnsignedPrimitiveKind(sourceKind);
         if (sourceBits < targetBits) {
-            return Builder.CreateSExt(value, targetType, "sexttmp");
+            return sourceUnsigned
+                ? Builder.CreateZExt(value, targetType, "zexttmp")
+                : Builder.CreateSExt(value, targetType, "sexttmp");
         }
         if (sourceBits > targetBits) {
             return Builder.CreateTrunc(value, targetType, "trunctmp");
@@ -92,7 +184,9 @@ llvm::Value* CodeGenerator::castValueToType(llvm::Value* value, llvm::Type* targ
     }
 
     if (sourceType->isIntegerTy() && targetType->isFloatingPointTy()) {
-        return Builder.CreateSIToFP(value, targetType, "sitofptmp");
+        return isUnsignedValue(value)
+            ? Builder.CreateUIToFP(value, targetType, "uitofptmp")
+            : Builder.CreateSIToFP(value, targetType, "sitofptmp");
     }
 
     if (sourceType->isFloatingPointTy() && targetType->isIntegerTy()) {
@@ -143,19 +237,27 @@ llvm::FunctionCallee CodeGenerator::getPrintfFunction() {
 }
 
 llvm::Value* CodeGenerator::visit(IntegerExprAST& node) {
-    return llvm::ConstantInt::get(TheContext, llvm::APInt(32, static_cast<int64_t>(node.getValue()), true));
+    llvm::Value* value = llvm::ConstantInt::get(TheContext, llvm::APInt(64, static_cast<uint64_t>(node.getValue()), false));
+    setValuePrimitiveKind(value, PrimitiveTypeAST::INT64);
+    return value;
 }
 
 llvm::Value* CodeGenerator::visit(FloatExprAST& node) {
-    return llvm::ConstantFP::get(TheContext, llvm::APFloat(static_cast<float>(node.getValue())));
+    llvm::Value* value = llvm::ConstantFP::get(TheContext, llvm::APFloat(static_cast<double>(node.getValue())));
+    setValuePrimitiveKind(value, PrimitiveTypeAST::FLOAT64);
+    return value;
 }
 
 llvm::Value* CodeGenerator::visit(BoolExprAST& node) {
-    return llvm::ConstantInt::get(TheContext, llvm::APInt(1, node.getValue() ? 1 : 0, false));
+    llvm::Value* value = llvm::ConstantInt::get(TheContext, llvm::APInt(1, node.getValue() ? 1 : 0, false));
+    setValuePrimitiveKind(value, PrimitiveTypeAST::BOOL);
+    return value;
 }
 
 llvm::Value* CodeGenerator::visit(CharExprAST& node) {
-    return llvm::ConstantInt::get(TheContext, llvm::APInt(8, static_cast<uint8_t>(node.getValue()), false));
+    llvm::Value* value = llvm::ConstantInt::get(TheContext, llvm::APInt(8, static_cast<uint8_t>(node.getValue()), false));
+    setValuePrimitiveKind(value, PrimitiveTypeAST::CHAR);
+    return value;
 }
 
 llvm::Value* CodeGenerator::visit(IdentifierExprAST& node) {
@@ -164,7 +266,13 @@ llvm::Value* CodeGenerator::visit(IdentifierExprAST& node) {
         return logError("Unknown variable name");
     }
 
-    return Builder.CreateLoad(alloca->getAllocatedType(), alloca, node.getName() + ".val");
+    llvm::Value* loadedValue = Builder.CreateLoad(alloca->getAllocatedType(), alloca, node.getName() + ".val");
+    PrimitiveTypeAST::PrimitiveKind primitiveKind;
+    if (getNamedPrimitiveKind(node.getName(), primitiveKind)) {
+        setValuePrimitiveKind(loadedValue, primitiveKind);
+    }
+
+    return loadedValue;
 }
 
 llvm::Value* CodeGenerator::visit(BinaryExprAST& node) {
@@ -182,7 +290,9 @@ llvm::Value* CodeGenerator::visit(BinaryExprAST& node) {
         case BinaryExprAST::MULTIPLY:
         case BinaryExprAST::DIVIDE: {
             if (hasFloatOperand) {
-                llvm::Type* floatType = llvm::Type::getFloatTy(TheContext);
+                llvm::Type* floatType = (leftValue->getType()->isDoubleTy() || rightValue->getType()->isDoubleTy())
+                    ? llvm::Type::getDoubleTy(TheContext)
+                    : llvm::Type::getFloatTy(TheContext);
                 leftValue = castValueToType(leftValue, floatType);
                 rightValue = castValueToType(rightValue, floatType);
                 if (!leftValue || !rightValue) {
@@ -207,20 +317,42 @@ llvm::Value* CodeGenerator::visit(BinaryExprAST& node) {
                 return logError("Arithmetic operators require numeric operands");
             }
 
-            const unsigned maxBits = std::max(leftValue->getType()->getIntegerBitWidth(), rightValue->getType()->getIntegerBitWidth());
+            unsigned maxBits = std::max(leftValue->getType()->getIntegerBitWidth(), rightValue->getType()->getIntegerBitWidth());
+            if (ExpectedIntegerResultBits.has_value()) {
+                maxBits = std::max(maxBits, *ExpectedIntegerResultBits);
+            }
             llvm::Type* targetType = llvm::Type::getIntNTy(TheContext, maxBits);
+            const bool useUnsignedIntegerOps = isUnsignedValue(leftValue) || isUnsignedValue(rightValue);
             leftValue = castValueToType(leftValue, targetType);
             rightValue = castValueToType(rightValue, targetType);
 
             switch (node.getOp()) {
                 case BinaryExprAST::PLUS:
-                    return Builder.CreateAdd(leftValue, rightValue, "addtmp");
+                    {
+                        llvm::Value* result = Builder.CreateAdd(leftValue, rightValue, "addtmp");
+                        setValuePrimitiveKind(result, getIntegerPrimitiveKind(maxBits, useUnsignedIntegerOps));
+                        return result;
+                    }
                 case BinaryExprAST::MINUS:
-                    return Builder.CreateSub(leftValue, rightValue, "subtmp");
+                    {
+                        llvm::Value* result = Builder.CreateSub(leftValue, rightValue, "subtmp");
+                        setValuePrimitiveKind(result, getIntegerPrimitiveKind(maxBits, useUnsignedIntegerOps));
+                        return result;
+                    }
                 case BinaryExprAST::MULTIPLY:
-                    return Builder.CreateMul(leftValue, rightValue, "multmp");
+                    {
+                        llvm::Value* result = Builder.CreateMul(leftValue, rightValue, "multmp");
+                        setValuePrimitiveKind(result, getIntegerPrimitiveKind(maxBits, useUnsignedIntegerOps));
+                        return result;
+                    }
                 case BinaryExprAST::DIVIDE:
-                    return Builder.CreateSDiv(leftValue, rightValue, "divtmp");
+                    {
+                        llvm::Value* result = useUnsignedIntegerOps
+                            ? Builder.CreateUDiv(leftValue, rightValue, "udivtmp")
+                            : Builder.CreateSDiv(leftValue, rightValue, "sdivtmp");
+                        setValuePrimitiveKind(result, getIntegerPrimitiveKind(maxBits, useUnsignedIntegerOps));
+                        return result;
+                    }
                 default:
                     break;
             }
@@ -232,11 +364,19 @@ llvm::Value* CodeGenerator::visit(BinaryExprAST& node) {
                 return logError("Modulo requires integer operands");
             }
 
-            const unsigned maxBits = std::max(leftValue->getType()->getIntegerBitWidth(), rightValue->getType()->getIntegerBitWidth());
+            unsigned maxBits = std::max(leftValue->getType()->getIntegerBitWidth(), rightValue->getType()->getIntegerBitWidth());
+            if (ExpectedIntegerResultBits.has_value()) {
+                maxBits = std::max(maxBits, *ExpectedIntegerResultBits);
+            }
             llvm::Type* targetType = llvm::Type::getIntNTy(TheContext, maxBits);
+            const bool useUnsignedIntegerOps = isUnsignedValue(leftValue) || isUnsignedValue(rightValue);
             leftValue = castValueToType(leftValue, targetType);
             rightValue = castValueToType(rightValue, targetType);
-            return Builder.CreateSRem(leftValue, rightValue, "modtmp");
+            llvm::Value* result = useUnsignedIntegerOps
+                ? Builder.CreateURem(leftValue, rightValue, "uremtmp")
+                : Builder.CreateSRem(leftValue, rightValue, "sremtmp");
+            setValuePrimitiveKind(result, getIntegerPrimitiveKind(maxBits, useUnsignedIntegerOps));
+            return result;
         }
 
         case BinaryExprAST::LESS_THAN:
@@ -246,7 +386,9 @@ llvm::Value* CodeGenerator::visit(BinaryExprAST& node) {
         case BinaryExprAST::EQUAL:
         case BinaryExprAST::NOT_EQUAL: {
             if (hasFloatOperand) {
-                llvm::Type* floatType = llvm::Type::getFloatTy(TheContext);
+                llvm::Type* floatType = (leftValue->getType()->isDoubleTy() || rightValue->getType()->isDoubleTy())
+                    ? llvm::Type::getDoubleTy(TheContext)
+                    : llvm::Type::getFloatTy(TheContext);
                 leftValue = castValueToType(leftValue, floatType);
                 rightValue = castValueToType(rightValue, floatType);
                 if (!leftValue || !rightValue) {
@@ -277,18 +419,27 @@ llvm::Value* CodeGenerator::visit(BinaryExprAST& node) {
 
             const unsigned maxBits = std::max(leftValue->getType()->getIntegerBitWidth(), rightValue->getType()->getIntegerBitWidth());
             llvm::Type* targetType = llvm::Type::getIntNTy(TheContext, maxBits);
+            const bool useUnsignedIntegerOps = isUnsignedValue(leftValue) || isUnsignedValue(rightValue);
             leftValue = castValueToType(leftValue, targetType);
             rightValue = castValueToType(rightValue, targetType);
 
             switch (node.getOp()) {
                 case BinaryExprAST::LESS_THAN:
-                    return Builder.CreateICmpSLT(leftValue, rightValue, "icmp");
+                    return useUnsignedIntegerOps
+                        ? Builder.CreateICmpULT(leftValue, rightValue, "icmp")
+                        : Builder.CreateICmpSLT(leftValue, rightValue, "icmp");
                 case BinaryExprAST::LESS_EQUAL:
-                    return Builder.CreateICmpSLE(leftValue, rightValue, "icmp");
+                    return useUnsignedIntegerOps
+                        ? Builder.CreateICmpULE(leftValue, rightValue, "icmp")
+                        : Builder.CreateICmpSLE(leftValue, rightValue, "icmp");
                 case BinaryExprAST::GREATER_THAN:
-                    return Builder.CreateICmpSGT(leftValue, rightValue, "icmp");
+                    return useUnsignedIntegerOps
+                        ? Builder.CreateICmpUGT(leftValue, rightValue, "icmp")
+                        : Builder.CreateICmpSGT(leftValue, rightValue, "icmp");
                 case BinaryExprAST::GREATER_EQUAL:
-                    return Builder.CreateICmpSGE(leftValue, rightValue, "icmp");
+                    return useUnsignedIntegerOps
+                        ? Builder.CreateICmpUGE(leftValue, rightValue, "icmp")
+                        : Builder.CreateICmpSGE(leftValue, rightValue, "icmp");
                 case BinaryExprAST::EQUAL:
                     return Builder.CreateICmpEQ(leftValue, rightValue, "icmp");
                 case BinaryExprAST::NOT_EQUAL:
@@ -362,10 +513,20 @@ llvm::Value* CodeGenerator::visit(VarDeclStmtAST& node) {
     }
 
     llvm::AllocaInst* variableAlloca = createEntryBlockAlloca(CurrentFunction, variableType, node.getName());
+    const PrimitiveTypeAST* primitiveType = getPrimitiveType(node.getType());
 
     llvm::Value* initValue = nullptr;
     if (node.getInitializer()) {
+        const std::optional<unsigned> previousExpectedBits = ExpectedIntegerResultBits;
+        if (variableType->isIntegerTy() && !variableType->isIntegerTy(1)) {
+            ExpectedIntegerResultBits = variableType->getIntegerBitWidth();
+        } else {
+            ExpectedIntegerResultBits = std::nullopt;
+        }
+
         initValue = node.getInitializer()->codegen(*this);
+
+        ExpectedIntegerResultBits = previousExpectedBits;
         if (!initValue) {
             return nullptr;
         }
@@ -379,6 +540,9 @@ llvm::Value* CodeGenerator::visit(VarDeclStmtAST& node) {
 
     Builder.CreateStore(initValue, variableAlloca);
     setNamedValue(node.getName(), variableAlloca);
+    if (primitiveType) {
+        setNamedPrimitiveKind(node.getName(), primitiveType->getKind());
+    }
     return initValue;
 }
 
@@ -388,7 +552,16 @@ llvm::Value* CodeGenerator::visit(AssignmentStmtAST& node) {
         return logError("Assignment to unknown variable");
     }
 
+    const std::optional<unsigned> previousExpectedBits = ExpectedIntegerResultBits;
+    if (variableAlloca->getAllocatedType()->isIntegerTy() && !variableAlloca->getAllocatedType()->isIntegerTy(1)) {
+        ExpectedIntegerResultBits = variableAlloca->getAllocatedType()->getIntegerBitWidth();
+    } else {
+        ExpectedIntegerResultBits = std::nullopt;
+    }
+
     llvm::Value* assignedValue = node.getValue()->codegen(*this);
+
+    ExpectedIntegerResultBits = previousExpectedBits;
     if (!assignedValue) {
         return nullptr;
     }
@@ -425,10 +598,18 @@ llvm::Value* CodeGenerator::visit(PrintStmtAST& node) {
 
     llvm::FunctionCallee printfFunction = getPrintfFunction();
     llvm::Type* type = value->getType();
+    PrimitiveTypeAST::PrimitiveKind primitiveKind;
+    const bool hasPrimitiveKind = getValuePrimitiveKind(value, primitiveKind);
 
     if (type->isIntegerTy(32)) {
-        llvm::Value* format = Builder.CreateGlobalString("%d\n");
+        const bool isUnsigned = hasPrimitiveKind && primitiveKind == PrimitiveTypeAST::UINT32;
+        llvm::Value* format = Builder.CreateGlobalString(isUnsigned ? "%u\n" : "%d\n");
         return Builder.CreateCall(printfFunction, {format, value}, "printi32");
+    }
+
+    if (type->isDoubleTy()) {
+        llvm::Value* format = Builder.CreateGlobalString("%f\n");
+        return Builder.CreateCall(printfFunction, {format, value}, "printf64");
     }
 
     if (type->isFloatTy()) {
@@ -446,12 +627,36 @@ llvm::Value* CodeGenerator::visit(PrintStmtAST& node) {
     }
 
     if (type->isIntegerTy(8)) {
-        llvm::Value* format = Builder.CreateGlobalString("%c\n");
-        llvm::Value* widened = Builder.CreateSExt(value, llvm::Type::getInt32Ty(TheContext), "char_to_i32");
-        return Builder.CreateCall(printfFunction, {format, widened}, "printchar");
+        if (hasPrimitiveKind && primitiveKind == PrimitiveTypeAST::CHAR) {
+            llvm::Value* format = Builder.CreateGlobalString("%c\n");
+            llvm::Value* widened = Builder.CreateSExt(value, llvm::Type::getInt32Ty(TheContext), "char_to_i32");
+            return Builder.CreateCall(printfFunction, {format, widened}, "printchar");
+        }
+
+        const bool isUnsigned = hasPrimitiveKind && primitiveKind == PrimitiveTypeAST::UINT8;
+        llvm::Value* widened = isUnsigned
+            ? Builder.CreateZExt(value, llvm::Type::getInt32Ty(TheContext), "u8_to_i32")
+            : Builder.CreateSExt(value, llvm::Type::getInt32Ty(TheContext), "i8_to_i32");
+        llvm::Value* format = Builder.CreateGlobalString(isUnsigned ? "%u\n" : "%d\n");
+        return Builder.CreateCall(printfFunction, {format, widened}, "printi8");
     }
 
-    return logError("Defaultlogger.log only supports i32, f32, bool, and char");
+    if (type->isIntegerTy(16)) {
+        const bool isUnsigned = hasPrimitiveKind && primitiveKind == PrimitiveTypeAST::UINT16;
+        llvm::Value* widened = isUnsigned
+            ? Builder.CreateZExt(value, llvm::Type::getInt32Ty(TheContext), "u16_to_i32")
+            : Builder.CreateSExt(value, llvm::Type::getInt32Ty(TheContext), "i16_to_i32");
+        llvm::Value* format = Builder.CreateGlobalString(isUnsigned ? "%u\n" : "%d\n");
+        return Builder.CreateCall(printfFunction, {format, widened}, "printi16");
+    }
+
+    if (type->isIntegerTy(64)) {
+        const bool isUnsigned = hasPrimitiveKind && primitiveKind == PrimitiveTypeAST::UINT64;
+        llvm::Value* format = Builder.CreateGlobalString(isUnsigned ? "%llu\n" : "%lld\n");
+        return Builder.CreateCall(printfFunction, {format, value}, "printi64");
+    }
+
+    return logError("Defaultlogger.log only supports primitive scalar values");
 }
 
 llvm::Value* CodeGenerator::visit(IfStmtAST& node) {

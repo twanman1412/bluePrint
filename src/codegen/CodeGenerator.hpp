@@ -8,10 +8,12 @@
 #include <memory>
 #include <map>
 #include <string>
+#include <optional>
 
 #include "../ast/exprAST.hpp"
 #include "../ast/stmtAST.hpp"
 #include "../ast/classAST.hpp"
+#include "../ast/commonAST.hpp"
 
 class CodeGenerator {
 public:
@@ -54,6 +56,9 @@ private:
     llvm::IRBuilder<> Builder;
     std::unique_ptr<llvm::Module> TheModule;
     std::map<std::string, llvm::AllocaInst*> NamedValues;
+    std::map<std::string, PrimitiveTypeAST::PrimitiveKind> NamedPrimitiveKinds;
+    std::map<const llvm::Value*, PrimitiveTypeAST::PrimitiveKind> ValuePrimitiveKinds;
+    std::optional<unsigned> ExpectedIntegerResultBits;
     llvm::Function* CurrentFunction;
     std::string CurrentClassName;
     bool CurrentClassIsApplication;
@@ -65,4 +70,12 @@ private:
     llvm::Value* castValueToType(llvm::Value* value, llvm::Type* targetType);
     llvm::Value* castToBoolean(llvm::Value* value);
     llvm::FunctionCallee getPrintfFunction();
+    const PrimitiveTypeAST* getPrimitiveType(const TypeAST* typeAST) const;
+    bool isUnsignedPrimitiveKind(PrimitiveTypeAST::PrimitiveKind kind) const;
+    void setNamedPrimitiveKind(const std::string& name, PrimitiveTypeAST::PrimitiveKind kind);
+    bool getNamedPrimitiveKind(const std::string& name, PrimitiveTypeAST::PrimitiveKind& outKind) const;
+    void setValuePrimitiveKind(llvm::Value* value, PrimitiveTypeAST::PrimitiveKind kind);
+    bool getValuePrimitiveKind(llvm::Value* value, PrimitiveTypeAST::PrimitiveKind& outKind) const;
+    bool isUnsignedValue(llvm::Value* value) const;
+    PrimitiveTypeAST::PrimitiveKind getIntegerPrimitiveKind(unsigned bitWidth, bool isUnsigned) const;
 };
