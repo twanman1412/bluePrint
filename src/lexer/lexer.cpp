@@ -18,6 +18,8 @@ std::unordered_map<std::string, Token> Lexer::keywords = {
     {"u64", tok_u64},
     {"f32", tok_f32},
     {"f64", tok_f64},
+    {"fr32", tok_fr32},
+    {"fr64", tok_fr64},
     {"bool", tok_bool}, 
 	{"char", tok_char}, 
 	{"void", tok_void},
