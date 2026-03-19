@@ -40,6 +40,17 @@ BluePrint features a strong static type system with generics, multiple inheritan
 | `fr32` | Fractional value with two i16 components (numerator/denominator) |
 | `fr64` | Fractional value with two i32 components (numerator/denominator) |
 
+#### Automatic Canonical Reduction
+
+Every `fr32` and `fr64` value is automatically reduced to its canonical (lowest-terms) form after **every arithmetic step** using the Euclidean GCD algorithm. Sign normalisation is also applied so that the denominator is always positive. Negative fractions carry their sign in the numerator only.
+
+```
+1/2 + 1/4  →  6/8  →  reduced to  3/4  ✓
+3/4 * 2/3  →  6/12 →  reduced to  1/2  ✓
+-1/2       →  stored as  -1/2  (numerator negative, denominator positive)
+1/(-2)     →  normalised to  -1/2  automatically
+```
+
 ```blueprint
 // Fractional arithmetic maintains exact precision
 fr64 half = 1/2;
@@ -52,15 +63,19 @@ fr64 doubled = result * 2;   // Exactly 5/3
 i32 wholeNumber = 5;
 fr64 mixed = half + wholeNumber; // Exactly 11/2
 
-// Operations remain exact as long as no floating point is involved
-fr64 complex = (1/3) * 6 + (2/5); // Exactly 12/5
+// Reduction across a chain: each step is reduced before it feeds the next
+fr64 complex = (1/3) * 6 + (2/5); // step 1: 6/3 → 2/1; step 2: 2/1 + 2/5 → 12/5
+
+// Sign normalisation — denominator always positive
+fr64 neg = -3/4;    // stored as -3/4
+fr64 neg2 = 3/(-4); // normalised to -3/4 automatically
 
 // Type promotion rules:
-// fr32/fr64 + integer = fr32/fr64 (exact arithmetic)
-// fr32 + fr64 = fr64 (exact arithmetic)
+// fr32/fr64 + integer = fr32/fr64 (exact arithmetic, reduced)
+// fr32 + fr64 = fr64 (exact arithmetic, reduced)
 // fr32/fr64 + float = float (converts to floating point)
 f64 floatValue = 3.14;
-f64 converted = result + floatValue;  // Becomes floating point: ~4.9733333...
+f64 converted = result + floatValue;  // Becomes floating point: ~3.9733333...
 
 // Examples of type promotion
 fr32 smallHalf = 1/2;
@@ -81,15 +96,15 @@ f64 approximate = (f64) result;     // 0.8333333333333334
 i32 truncated = (i32) result;       // 0 (truncates towards zero)
 
 // Practical example: Recipe scaling with exact fractions
-fr64 recipeServings = 4/1;           // Original recipe serves 4
-fr64 desiredServings = 6/1;          // Want to serve 6 people
-fr64 scaleFactor = desiredServings / recipeServings;  // Exactly 3/2
+fr64 recipeServings = 4/1;           // Stored as 4/1
+fr64 desiredServings = 6/1;          // Stored as 6/1
+fr64 scaleFactor = desiredServings / recipeServings;  // 6/4 → reduced to 3/2
 
 fr64 originalFlour = 2/1;            // 2 cups flour
-fr64 scaledFlour = originalFlour * scaleFactor;      // Exactly 3 cups
+fr64 scaledFlour = originalFlour * scaleFactor;      // 2/1 * 3/2 → 6/2 → reduced to 3/1
 
-fr64 originalSugar = 3/4;            // 3/4 cup sugar  
-fr64 scaledSugar = originalSugar * scaleFactor;      // Exactly 9/8 cups (1.125 cups exactly)
+fr64 originalSugar = 3/4;            // 3/4 cup sugar
+fr64 scaledSugar = originalSugar * scaleFactor;      // 3/4 * 3/2 → 9/8 (already reduced)
 
 Defaultlogger.logln("Scale factor: " + scaleFactor.toString());     // "3/2"
 Defaultlogger.logln("Scaled flour: " + scaledFlour.toString());     // "3/1"
