@@ -1,7 +1,9 @@
 #pragma once
 
+#include "commonAST.hpp"
 #include <string>
 #include <memory>
+#include <vector>
 #include <llvm/IR/Value.h>
 
 class CodeGenerator;
@@ -55,6 +57,40 @@ class StrExprAST : public ExprAST {
         llvm::Value *codegen(CodeGenerator& generator) override;
     private:
         std::string value;
+};
+
+class ArrayLiteralExprAST : public ExprAST {
+    public:
+        ArrayLiteralExprAST(std::vector<std::unique_ptr<ExprAST>> elements)
+            : elements(std::move(elements)) {}
+        const std::vector<std::unique_ptr<ExprAST>>& getElements() const { return elements; }
+        llvm::Value *codegen(CodeGenerator& generator) override;
+    private:
+        std::vector<std::unique_ptr<ExprAST>> elements;
+};
+
+class ArrayNewExprAST : public ExprAST {
+    public:
+        ArrayNewExprAST(std::unique_ptr<TypeAST> elementType, std::unique_ptr<ExprAST> size)
+            : elementType(std::move(elementType)), size(std::move(size)) {}
+        const TypeAST* getElementType() const { return elementType.get(); }
+        ExprAST* getSize() const { return size.get(); }
+        llvm::Value *codegen(CodeGenerator& generator) override;
+    private:
+        std::unique_ptr<TypeAST> elementType;
+        std::unique_ptr<ExprAST> size;
+};
+
+class IndexExprAST : public ExprAST {
+    public:
+        IndexExprAST(const std::string& name, std::unique_ptr<ExprAST> index)
+            : name(name), index(std::move(index)) {}
+        const std::string& getName() const { return name; }
+        ExprAST* getIndex() const { return index.get(); }
+        llvm::Value *codegen(CodeGenerator& generator) override;
+    private:
+        std::string name;
+        std::unique_ptr<ExprAST> index;
 };
 
 class IdentifierExprAST : public ExprAST {

@@ -37,6 +37,14 @@ class PrimitiveTypeAST : public TypeAST {
 		PrimitiveKind kind;
 };
 
+class ArrayTypeAST : public TypeAST {
+    public:
+        ArrayTypeAST(std::unique_ptr<TypeAST> elementType) : elementType(std::move(elementType)) {}
+        const TypeAST* getElementType() const { return elementType.get(); }
+    private:
+        std::unique_ptr<TypeAST> elementType;
+};
+
 class TypedIdentifierAST {
 	public:
 		TypedIdentifierAST(std::unique_ptr<TypeAST> type, const std::string &name)

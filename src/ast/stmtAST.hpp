@@ -105,3 +105,21 @@ class PrintStmtAST : public StmtAST {
         std::unique_ptr<ExprAST> value;
 };
 
+class IndexAssignStmtAST : public StmtAST {
+    public:
+        IndexAssignStmtAST(const std::string& name,
+                           std::unique_ptr<ExprAST> index,
+                           std::unique_ptr<ExprAST> value)
+            : name(name), index(std::move(index)), value(std::move(value)) {}
+
+        const std::string& getName() const { return name; }
+        ExprAST* getIndex() const { return index.get(); }
+        ExprAST* getValue() const { return value.get(); }
+        llvm::Value *codegen(CodeGenerator& generator) override;
+
+    private:
+        std::string name;
+        std::unique_ptr<ExprAST> index;
+        std::unique_ptr<ExprAST> value;
+};
+

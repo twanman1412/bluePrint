@@ -85,9 +85,24 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     }
 
     if (TokenUtils::isPrimitiveTypeToken(currentToken)) {
-        std::unique_ptr<TypeAST> variableType = ParserUtils::getPrimitiveTypeFromToken(currentToken);
+        std::unique_ptr<TypeAST> elementType = ParserUtils::getPrimitiveTypeFromToken(currentToken);
+        std::unique_ptr<TypeAST> variableType;
 
         currentToken = lexer.getNextToken();
+
+        // Check for array type suffix: T[]
+        if (currentToken == '[') {
+            currentToken = lexer.getNextToken();
+            if (currentToken != ']') {
+                std::cerr << "Error: Expected ']' to close array type." << std::endl;
+                return nullptr;
+            }
+            variableType = std::make_unique<ArrayTypeAST>(std::move(elementType));
+            currentToken = lexer.getNextToken();
+        } else {
+            variableType = std::move(elementType);
+        }
+
         if (currentToken != tok_identifier) {
             std::cerr << "Error: Expected variable name identifier." << std::endl;
             return nullptr;
@@ -119,6 +134,29 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     if (currentToken == tok_identifier) {
         const std::string identifierName = lexer.getIdentifierName();
         currentToken = lexer.getNextToken();
+
+        if (currentToken == '[') {
+            lexer.getNextToken();
+            auto indexExpr = parseExpression();
+            if (!indexExpr) return nullptr;
+            if (lexer.getCurrentToken() != ']') {
+                std::cerr << "Error: Expected ']' after array index in assignment." << std::endl;
+                return nullptr;
+            }
+            if (lexer.getNextToken() != '=') {
+                std::cerr << "Error: Expected '=' after array index in assignment." << std::endl;
+                return nullptr;
+            }
+            lexer.getNextToken();
+            auto valueExpr = parseExpression();
+            if (!valueExpr) return nullptr;
+            if (lexer.getCurrentToken() != ';') {
+                std::cerr << "Error: Expected ';' after array index assignment." << std::endl;
+                return nullptr;
+            }
+            lexer.getNextToken();
+            return std::make_unique<IndexAssignStmtAST>(identifierName, std::move(indexExpr), std::move(valueExpr));
+        }
 
         if (identifierName == "Defaultlogger" && currentToken == '.') {
             currentToken = lexer.getNextToken();

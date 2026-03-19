@@ -40,3 +40,18 @@ llvm::Value *BinaryExprAST::codegen(CodeGenerator& generator) {
 llvm::Value *UnaryExprAST::codegen(CodeGenerator& generator) {
     return generator.visit(*this);
 }
+
+// ArrayLiteralExprAST codegen - delegates to visitor
+llvm::Value *ArrayLiteralExprAST::codegen(CodeGenerator& generator) {
+    return generator.visit(*this);
+}
+
+// ArrayNewExprAST codegen - delegates to visitor
+llvm::Value *ArrayNewExprAST::codegen(CodeGenerator& generator) {
+    return generator.visit(*this);
+}
+
+// IndexExprAST codegen - delegates to visitor
+llvm::Value *IndexExprAST::codegen(CodeGenerator& generator) {
+    return generator.visit(*this);
+}

@@ -29,6 +29,8 @@ class Parser {
         std::unique_ptr<BoolExprAST> parseBoolValue();
         std::unique_ptr<CharExprAST> parseCharValue();
         std::unique_ptr<StrExprAST> parseStrValue();
+		std::unique_ptr<ArrayLiteralExprAST> parseArrayLiteral();
+		std::unique_ptr<ArrayNewExprAST> parseArrayNew();
 
         std::unique_ptr<IdentifierExprAST> parseIdentifier();
 

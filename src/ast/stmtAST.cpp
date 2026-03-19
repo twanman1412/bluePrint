@@ -26,3 +26,7 @@ llvm::Value *BlockStmtAST::codegen(CodeGenerator& generator) {
 llvm::Value *PrintStmtAST::codegen(CodeGenerator& generator) {
     return generator.visit(*this);
 }
+
+llvm::Value *IndexAssignStmtAST::codegen(CodeGenerator& generator) {
+    return generator.visit(*this);
+}
