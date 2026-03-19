@@ -521,6 +521,8 @@ llvm::Type* CodeGenerator::getLLVMType(const TypeAST* typeAST) {
             return llvm::Type::getInt1Ty(TheContext);
         case PrimitiveTypeAST::CHAR:
             return llvm::Type::getInt8Ty(TheContext);
+        case PrimitiveTypeAST::STR:
+            return llvm::PointerType::getUnqual(TheContext);
         case PrimitiveTypeAST::VOID:
             return llvm::Type::getVoidTy(TheContext);
         default:
@@ -693,6 +695,12 @@ llvm::Value* CodeGenerator::visit(CharExprAST& node) {
     llvm::Value* value = llvm::ConstantInt::get(TheContext, llvm::APInt(8, static_cast<uint8_t>(node.getValue()), false));
     setValuePrimitiveKind(value, PrimitiveTypeAST::CHAR);
     return value;
+}
+
+llvm::Value* CodeGenerator::visit(StrExprAST& node) {
+    llvm::Value* strPtr = Builder.CreateGlobalString(node.getValue(), "str.literal");
+    setValuePrimitiveKind(strPtr, PrimitiveTypeAST::STR);
+    return strPtr;
 }
 
 llvm::Value* CodeGenerator::visit(IdentifierExprAST& node) {
@@ -1088,6 +1096,11 @@ llvm::Value* CodeGenerator::visit(PrintStmtAST& node) {
 
         llvm::Value* format = Builder.CreateGlobalString("%d/%d\n");
         return Builder.CreateCall(printfFunction, {format, numerator, denominator}, "printfr64");
+    }
+
+    if (hasPrimitiveKind && primitiveKind == PrimitiveTypeAST::STR) {
+        llvm::Value* format = Builder.CreateGlobalString("%s\n");
+        return Builder.CreateCall(printfFunction, {format, value}, "printstr");
     }
 
     if (type->isIntegerTy(32)) {

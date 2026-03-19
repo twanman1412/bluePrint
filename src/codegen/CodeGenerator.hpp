@@ -25,6 +25,7 @@ public:
     llvm::Value* visit(FloatExprAST& node);
     llvm::Value* visit(BoolExprAST& node);
     llvm::Value* visit(CharExprAST& node);
+    llvm::Value* visit(StrExprAST& node);
     llvm::Value* visit(IdentifierExprAST& node);
     llvm::Value* visit(BinaryExprAST& node);
     llvm::Value* visit(UnaryExprAST& node);
