@@ -22,6 +22,7 @@ class Lexer {
         double getFloatValue();
         bool getBoolValue();
         char getCharValue();
+        std::string getStringValue();
 
         // Identifier retrieval
         std::string getIdentifierName();
@@ -40,6 +41,7 @@ class Lexer {
         double floatValue;
         bool boolValue;
         char charValue;
+        std::string stringValue;
 
         // Identifier storage
         std::string identifierName;

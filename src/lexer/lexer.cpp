@@ -23,6 +23,7 @@ std::unordered_map<std::string, Token> Lexer::keywords = {
     {"bool", tok_bool}, 
 	{"char", tok_char}, 
 	{"void", tok_void},
+    {"str",  tok_str},
     
     // Literals
     {"true", tok_true}, 
@@ -205,6 +206,37 @@ int16_t Lexer::getNextToken() {
         ungetCurrentToken();
     }
 
+    if (lastChar == '"') {
+        std::string strContent;
+        while (true) {
+            char c = this->getchar();
+            if (c == EOF || c == '\n') {
+                std::cerr << "Error: Unterminated string literal." << std::endl;
+                return tok_eof;
+            }
+            if (c == '"') break;
+            if (c == '\\') {
+                char escaped = this->getchar();
+                switch (escaped) {
+                    case '"':  strContent += '"';  break;
+                    case '\\': strContent += '\\'; break;
+                    case 'n':  strContent += '\n'; break;
+                    case 't':  strContent += '\t'; break;
+                    case 'r':  strContent += '\r'; break;
+                    default:
+                        strContent += '\\';
+                        strContent += escaped;
+                        break;
+                }
+            } else {
+                strContent += c;
+            }
+        }
+        this->stringValue = strContent;
+        this->currentToken = tok_str_literal;
+        return this->currentToken;
+    }
+
 	this->currentToken = lastChar;
     return lastChar;
 }
@@ -231,6 +263,10 @@ bool Lexer::getBoolValue() {
 
 char Lexer::getCharValue() {
     return this->charValue;
+}
+
+std::string Lexer::getStringValue() {
+    return this->stringValue;
 }
 
 std::string Lexer::getIdentifierName() {
