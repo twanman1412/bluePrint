@@ -31,6 +31,7 @@ std::unordered_map<std::string, Token> Lexer::keywords = {
     
     // Declaration keywords
     {"class", tok_class},
+    {"new",   tok_new},
     
     // Control flow
     {"if", tok_if}, 

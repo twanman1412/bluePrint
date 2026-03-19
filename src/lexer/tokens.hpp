@@ -38,6 +38,7 @@ enum Token : int16_t {
     
     // Declaration keywords 
     tok_class = -150, 
+	tok_new   = -151,
 
     // Control flow 
     tok_if = -200, 
