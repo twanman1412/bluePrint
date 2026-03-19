@@ -59,6 +59,7 @@ private:
     std::map<std::string, PrimitiveTypeAST::PrimitiveKind> NamedPrimitiveKinds;
     std::map<const llvm::Value*, PrimitiveTypeAST::PrimitiveKind> ValuePrimitiveKinds;
     std::optional<unsigned> ExpectedIntegerResultBits;
+    std::optional<PrimitiveTypeAST::PrimitiveKind> ExpectedFractionResultKind;
     llvm::Function* CurrentFunction;
     std::string CurrentClassName;
     bool CurrentClassIsApplication;
@@ -78,4 +79,16 @@ private:
     bool getValuePrimitiveKind(llvm::Value* value, PrimitiveTypeAST::PrimitiveKind& outKind) const;
     bool isUnsignedValue(llvm::Value* value) const;
     PrimitiveTypeAST::PrimitiveKind getIntegerPrimitiveKind(unsigned bitWidth, bool isUnsigned) const;
+    bool isFractionalPrimitiveKind(PrimitiveTypeAST::PrimitiveKind kind) const;
+    bool isFractionalValue(llvm::Value* value) const;
+    unsigned getFractionalComponentBitWidth(PrimitiveTypeAST::PrimitiveKind kind) const;
+    PrimitiveTypeAST::PrimitiveKind getFractionalPrimitiveKindForType(llvm::Type* type) const;
+    llvm::Type* getFractionalComponentType(PrimitiveTypeAST::PrimitiveKind kind);
+    llvm::StructType* getFractionalLLVMType(PrimitiveTypeAST::PrimitiveKind kind);
+    llvm::Value* buildFractionValue(llvm::Value* numerator, llvm::Value* denominator, PrimitiveTypeAST::PrimitiveKind kind);
+    bool decomposeFractionValue(llvm::Value* fractionValue, PrimitiveTypeAST::PrimitiveKind kind, llvm::Value*& numerator, llvm::Value*& denominator);
+    llvm::Value* castIntegerToFraction(llvm::Value* value, PrimitiveTypeAST::PrimitiveKind targetKind);
+    llvm::Value* castFractionToFloatingPoint(llvm::Value* value, llvm::Type* targetType);
+    llvm::Value* createFractionArithmetic(int op, llvm::Value* leftValue, llvm::Value* rightValue);
+    llvm::Value* createFractionComparison(int op, llvm::Value* leftValue, llvm::Value* rightValue);
 };
