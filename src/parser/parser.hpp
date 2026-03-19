@@ -70,6 +70,10 @@ namespace ParserUtils {
 				return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::FLOAT32);
 				case tok_f64:
 					return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::FLOAT64);
+			case tok_fr32:
+				return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::FRACTIONAL32);
+			case tok_fr64:
+				return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::FRACTIONAL64);
 			case tok_bool:
 				return std::make_unique<PrimitiveTypeAST>(PrimitiveTypeAST::BOOL);
 			case tok_char:

@@ -2,7 +2,6 @@
 
 #include <string>
 #include <memory>
-#include <vector>
 
 class TypeAST {
     public:
@@ -22,6 +21,8 @@ class PrimitiveTypeAST : public TypeAST {
             UINT64,
             FLOAT32,
             FLOAT64,
+            FRACTIONAL32,
+            FRACTIONAL64,
             BOOL,
             CHAR,
 			VOID,
