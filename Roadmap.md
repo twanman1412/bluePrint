@@ -16,7 +16,7 @@ This roadmap outlines the iterative development of the BluePrint programming lan
 ### v0.1.0: Extended Type System
 - [x] **Full Primitive Suite:** Implementation of `i8`-`i64`, `u8`-`u64`, and `f32`.
 - [x] **Fractional Types:** Native support for `fr32` and `fr64` (numerator/denominator logic) and their arithmetic promotion rules.
-- [ ] **Strings:** Implementation of the `str` type (character array) and string literals.
+- [x] **Strings:** Implementation of the `str` type (character array) and string literals.
 - [ ] **Arrays:** Fixed-size array syntax (`T[]`), initialization literals, and index access.
 - [ ] **Control Flow II:** Implement `do-while`, `for` loops (standard and range-based), and `switch` statements.
 

@@ -113,5 +113,20 @@ class PrimitiveSuite : Application {
         Defaultlogger.logln(frCmpInt);
         Defaultlogger.logln(frAssignedWide);
         Defaultlogger.logln(frAssignedNarrow);
+
+        str greeting = "Hello, World!";
+        str language = "BluePrint";
+        str withEscape = "Line1\nLine2";
+        str empty = "";
+
+        str reassigned = greeting;
+        reassigned = language;
+
+        Defaultlogger.logln(greeting);
+        Defaultlogger.logln(language);
+        Defaultlogger.logln(withEscape);
+        Defaultlogger.logln(empty);
+        Defaultlogger.logln(reassigned);
+        Defaultlogger.logln("inline literal");
     }
 }
