@@ -17,7 +17,7 @@ This roadmap outlines the iterative development of the BluePrint programming lan
 - [x] **Full Primitive Suite:** Implementation of `i8`-`i64`, `u8`-`u64`, and `f32`.
 - [x] **Fractional Types:** Native support for `fr32` and `fr64` (numerator/denominator logic) and their arithmetic promotion rules.
 - [x] **Strings:** Implementation of the `str` type (character array) and string literals.
-- [ ] **Arrays:** Fixed-size array syntax (`T[]`), initialization literals, and index access.
+- [x] **Arrays:** Fixed-size array syntax (`T[]`), initialization literals, and index access.
 - [ ] **Control Flow II:** Implement `do-while`, `for` loops (standard and range-based), and `switch` statements.
 
 ### v0.2.0: Object-Oriented Core
